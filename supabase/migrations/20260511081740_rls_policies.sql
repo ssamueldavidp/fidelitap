@@ -47,6 +47,11 @@ create policy "loyalty_cards: owner can update"
     business_id in (
       select id from public.businesses where owner_id = auth.uid()
     )
+  )
+  with check (
+    business_id in (
+      select id from public.businesses where owner_id = auth.uid()
+    )
   );
 
 -- Lectura pública para activación de tarjeta (clientes que escanean el cartel)
@@ -67,7 +72,8 @@ create policy "customers: insert own"
 
 create policy "customers: update own"
   on public.customers for update
-  using (email = auth.email());
+  using (email = auth.email())
+  with check (email = auth.email());
 
 -- ============================================================
 -- CUSTOMER_CARDS: cliente ve las suyas, negocio ve las de sus tarjetas

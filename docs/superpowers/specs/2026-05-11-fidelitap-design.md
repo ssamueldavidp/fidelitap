@@ -129,7 +129,7 @@ features          jsonb
 
 | Plan | Precio COP | Tarjetas | Clientes |
 |------|-----------|----------|----------|
-| Freemium | $0 | 1 | 50 |
+| Freemium | $0 | 1 | 20 |
 | Basic | $49.900/mes | 3 | 500 |
 | Pro | $119.900/mes | Ilimitado | Ilimitado |
 
@@ -312,16 +312,23 @@ Escanea QR del cartel del negocio →
 
 ---
 
-## 10. Límites del MVP (Freemium → Basic → Pro)
+## 10. Límites del MVP (Freemium → Basic → Pro → Premium)
 
-| Feature | Freemium | Basic | Pro |
-|---------|----------|-------|-----|
-| Tarjetas de fidelización | 1 | 3 | Ilimitado |
-| Clientes máximos | 50 | 500 | Ilimitado |
-| Plantillas de cartel | 1 formato | 4 formatos | 4 formatos |
-| Métricas avanzadas | ✗ | ✓ | ✓ |
-| 2FA | ✗ | ✓ | ✓ |
-| Soporte prioritario | ✗ | ✗ | ✓ |
+| Feature | Freemium | Basic | Pro | Premium |
+|---------|----------|-------|-----|---------|
+| Tarjetas de fidelización | 1 | 3 | 10 | Ilimitado |
+| Clientes máximos | 20 | 500 | 2,000 | Ilimitado |
+| Plantillas de cartel | 1 formato (A4) | 4 formatos | 4 formatos | 4 formatos |
+| Métricas avanzadas | ✗ | ✗ | ✓ | ✓ |
+| Exportar reportes CSV | ✗ | ✗ | ✓ | ✓ (CSV + Excel) |
+| 2FA | ✗ | ✗ | ✓ | ✓ |
+| Notificaciones hitos al cliente | ✗ | ✗ | ✓ | ✓ |
+| Multi-sede | ✗ | ✗ | ✗ | ✓ |
+| White-label (sin marca FideliTap) | ✗ | ✗ | ✗ | ✓ |
+| Importar clientes masivo (CSV) | ✗ | ✗ | ✗ | ✓ |
+| Dominio propio de activación | ✗ | ✗ | ✗ | ✓ |
+| Soporte | Comunidad | Email 48h | Prioritario 24h | Prioritario 12h |
+| Precio/mes | $0 | $49,900 | $99,900 | $179,900 |
 
 ---
 
@@ -342,7 +349,8 @@ Escanea QR del cartel del negocio →
 - App mobile nativa (iOS/Android)
 - PWA de cliente (fase 2)
 - Múltiples idiomas
-- API pública para integraciones externas
+- API REST pública para integraciones externas (v2 — cuando haya demanda real de clientes Premium)
+- SLA contractual con compensación económica (v2 — cuando haya tracción y clientes enterprise)
 - Notificaciones push propias (solo Wallet updates)
 - Programa de referidos
 

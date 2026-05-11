@@ -14,6 +14,7 @@ export const businessRegisterSchema = z.object({
   password: z
     .string()
     .min(8, 'Mínimo 8 caracteres')
+    .max(128, 'Máximo 128 caracteres')
     .regex(/[A-Z]/, 'Debe tener al menos una mayúscula')
     .regex(/[0-9]/, 'Debe tener al menos un número'),
 })
@@ -22,8 +23,8 @@ export const cardDesignSchema = z.object({
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color hex inválido'),
   bg_type: z.enum(['solid', 'gradient', 'image']),
   bg_value: z.string().min(1),
-  bg_image_url: z.string().url().nullable(),
-  stamp_icon: z.string().emoji('Debe ser un emoji').max(2),
+  bg_image_url: z.string().url().nullish(),
+  stamp_icon: z.string().emoji('Debe ser un emoji').min(1).max(2),
   font: z.enum(['default', 'rounded', 'mono']),
 })
 

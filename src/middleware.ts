@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const isProtected = PROTECTED_BUSINESS_ROUTES.some(r => pathname.startsWith(r))
+  const isProtected = PROTECTED_BUSINESS_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
   // Redirigir a login si intenta acceder a ruta protegida sin sesión
   if (isProtected && !user) {

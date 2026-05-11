@@ -27,10 +27,11 @@ export const apiRateLimit = new Ratelimit({
   prefix: 'rl:api',
 })
 
-// Helper para obtener IP del request
+// Requires a trusted reverse proxy (Vercel/Cloudflare) that strips client-injected x-forwarded-for.
+// Without a proxy, this header is attacker-controlled and can be spoofed to bypass rate limits.
 export function getIP(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1'
+  const ip = forwarded?.split(',')[0].trim() || '127.0.0.1'
   return ip
 }
 

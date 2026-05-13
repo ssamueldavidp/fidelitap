@@ -110,7 +110,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
                   cardState === 'warning' ? 'bg-amber-400' :
                   'bg-[#00C896]'
                 }`}
-                style={{ width: `${getUsagePct(cards, limits.maxCards) ?? 100}%` }}
+                style={{ width: `${getUsagePct(cards, limits.maxCards) ?? 0}%` }}
               />
             </div>
             {cardState === 'full' && (

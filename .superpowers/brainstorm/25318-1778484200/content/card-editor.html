@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FideliTap — Editor de Tarjeta</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; }
+
+  /* Sidebar reutilizado */
+  .sidebar { width: 240px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; padding: 24px 0; flex-shrink: 0; }
+  .sidebar-logo { padding: 0 24px 32px; font-size: 22px; font-weight: 900; }
+  .sidebar-logo span { color: #00C896; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 24px; font-size: 14px; font-weight: 500; color: #94a3b8; cursor: pointer; }
+  .nav-item.active { background: rgba(0,200,150,0.1); color: #00C896; border-right: 2px solid #00C896; }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* Main */
+  .main { flex: 1; overflow-y: auto; }
+  .topbar { padding: 20px 32px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 16px; }
+  .back-btn { width: 32px; height: 32px; border-radius: 8px; background: #1e293b; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .topbar-title { font-size: 18px; font-weight: 700; }
+  .topbar-sub { font-size: 13px; color: #64748b; margin-left: auto; }
+  .save-btn { padding: 9px 20px; background: #00C896; color: #0f172a; border: none; border-radius: 9px; font-weight: 700; font-size: 14px; cursor: pointer; margin-left: 16px; }
+
+  /* Editor layout */
+  .editor-layout { display: grid; grid-template-columns: 420px 1fr; min-height: calc(100vh - 73px); }
+
+  /* Form panel */
+  .form-panel { border-right: 1px solid #1e293b; padding: 28px; overflow-y: auto; }
+  .form-section { margin-bottom: 28px; }
+  .form-section-title { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+  input[type="text"], textarea { width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 9px; padding: 10px 14px; color: #f1f5f9; font-size: 14px; outline: none; transition: border 0.15s; }
+  input[type="text"]:focus, textarea:focus { border-color: #00C896; }
+  textarea { resize: none; min-height: 80px; }
+  .char-count { font-size: 11px; color: #475569; text-align: right; margin-top: 4px; }
+
+  /* Color picker row */
+  .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-swatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .color-swatch.selected { border-color: #fff; transform: scale(1.1); }
+  .color-input-wrap { display: flex; align-items: center; gap: 8px; }
+  .color-preview { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #334155; flex-shrink: 0; }
+
+  /* BG type tabs */
+  .tabs { display: flex; gap: 4px; background: #0f172a; border-radius: 9px; padding: 3px; margin-bottom: 14px; }
+  .tab { flex: 1; padding: 7px; text-align: center; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; color: #64748b; transition: all 0.15s; }
+  .tab.active { background: #1e293b; color: #f1f5f9; }
+
+  /* Emoji picker */
+  .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .emoji-btn { width: 36px; height: 36px; border-radius: 8px; background: #1e293b; border: 1.5px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all 0.15s; }
+  .emoji-btn.selected { border-color: #00C896; background: rgba(0,200,150,0.1); }
+  .emoji-btn:hover { background: #243044; }
+
+  /* Stepper */
+  .stepper { display: flex; align-items: center; gap: 12px; }
+  .stepper-btn { width: 36px; height: 36px; border-radius: 9px; background: #1e293b; border: 1px solid #334155; color: #f1f5f9; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 300; transition: all 0.15s; }
+  .stepper-btn:hover { background: #334155; }
+  .stepper-value { font-size: 22px; font-weight: 800; min-width: 36px; text-align: center; }
+  .stepper-label { font-size: 12px; color: #64748b; }
+
+  /* Preview panel */
+  .preview-panel { background: #0a1020; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; gap: 32px; }
+  .preview-label { font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* iPhone mockup */
+  .iphone { width: 280px; background: #1a1a1a; border-radius: 44px; padding: 12px; box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.1); position: relative; }
+  .iphone-notch { width: 100px; height: 28px; background: #1a1a1a; border-radius: 0 0 16px 16px; margin: 0 auto 6px; position: relative; z-index: 2; }
+  .iphone-screen { background: #f2f2f7; border-radius: 34px; overflow: hidden; min-height: 400px; }
+  .wallet-header { background: #000; padding: 14px 16px 10px; }
+  .wallet-logo { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 6px; font-weight: 500; }
+
+  /* Wallet card */
+  .wallet-card { margin: 0; border-radius: 0; }
+  .wcard-body { padding: 18px 16px; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+  .wcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .wcard-business { display: flex; align-items: center; gap: 10px; }
+  .wcard-icon { width: 36px; height: 36px; border-radius: 10px; background: #00C896; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .wcard-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .wcard-subtitle { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .wcard-stamps-count { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+  .wcard-stamps-label { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; }
+  .wcard-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .wcard-stamp { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .wcard-stamp.on { background: #00C896; }
+  .wcard-stamp.off { background: rgba(255,255,255,0.1); }
+  .wcard-benefit { background: rgba(0,200,150,0.15); border-radius: 8px; padding: 8px 10px; }
+  .wcard-benefit-label { font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.06em; }
+  .wcard-benefit-text { font-size: 12px; color: #fff; font-weight: 600; }
+  .wcard-qr { background: #fff; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .qr-block { width: 60px; height: 60px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .qr-block svg { width: 50px; height: 50px; }
+  .wcard-code { font-size: 11px; font-weight: 700; color: #1a1a1a; font-family: monospace; letter-spacing: 0.1em; }
+  .wcard-watermark { font-size: 9px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">fideli<span>tap</span></div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+    Mis tarjetas
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Clientes
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+    Escanear
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <div class="topbar">
+    <button class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="topbar-title">Editor de tarjeta</div>
+    <span class="topbar-sub">Los cambios se reflejan en tiempo real</span>
+    <button class="save-btn">Guardar tarjeta</button>
+  </div>
+
+  <div class="editor-layout">
+    <!-- Form -->
+    <div class="form-panel">
+
+      <div class="form-section">
+        <div class="form-section-title">Información básica</div>
+        <div class="form-group">
+          <label>Nombre de la tarjeta</label>
+          <input type="text" value="Café Central" placeholder="Ej: Club VIP, Tarjeta Café...">
+        </div>
+        <div class="form-group">
+          <label>Descripción del premio</label>
+          <textarea placeholder="¿Qué recibe el cliente al completar la tarjeta?">Café gratis de tu elección</textarea>
+          <div class="char-count">27 / 200</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Número de sellos</div>
+        <div class="stepper">
+          <button class="stepper-btn">−</button>
+          <div>
+            <div class="stepper-value">10</div>
+          </div>
+          <button class="stepper-btn">+</button>
+          <div class="stepper-label">sellos para el<br>premio</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Ícono de sello</div>
+        <div class="emoji-grid">
+          <div class="emoji-btn selected">☕</div>
+          <div class="emoji-btn">🍕</div>
+          <div class="emoji-btn">🌮</div>
+          <div class="emoji-btn">🍔</div>
+          <div class="emoji-btn">🧁</div>
+          <div class="emoji-btn">🍜</div>
+          <div class="emoji-btn">💇</div>
+          <div class="emoji-btn">💆</div>
+          <div class="emoji-btn">🛍️</div>
+          <div class="emoji-btn">👟</div>
+          <div class="emoji-btn">🌸</div>
+          <div class="emoji-btn">⭐</div>
+          <div class="emoji-btn">💎</div>
+          <div class="emoji-btn">🔑</div>
+          <div class="emoji-btn">🎵</div>
+          <div class="emoji-btn">🏋️</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Color principal</div>
+        <div class="color-row" style="margin-bottom:12px;">
+          <div class="color-swatch selected" style="background:#0f172a;"></div>
+          <div class="color-swatch" style="background:#1e3a5f;"></div>
+          <div class="color-swatch" style="background:#7c3aed;"></div>
+          <div class="color-swatch" style="background:#dc2626;"></div>
+          <div class="color-swatch" style="background:#d97706;"></div>
+          <div class="color-swatch" style="background:#16a34a;"></div>
+          <div class="color-swatch" style="background:#db2777;"></div>
+          <div class="color-swatch" style="background:#0284c7;"></div>
+        </div>
+        <div class="color-input-wrap">
+          <div class="color-preview" style="background:#0f172a;"></div>
+          <input type="text" value="#0f172a" style="width:120px;">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Tipo de fondo</div>
+        <div class="tabs">
+          <div class="tab active">Sólido</div>
+          <div class="tab">Gradiente</div>
+          <div class="tab">Imagen</div>
+        </div>
+        <div class="color-row">
+          <div class="color-swatch selected" style="background:#0f172a;"></div>
+          <div class="color-swatch" style="background:#1e293b;"></div>
+          <div class="color-swatch" style="background:#18181b;"></div>
+          <div class="color-swatch" style="background:#1e1b4b;"></div>
+          <div class="color-swatch" style="background:#fafafa; border: 1px solid #334155;"></div>
+          <div class="color-swatch" style="background:#fff7ed; border: 1px solid #334155;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-panel">
+      <div class="preview-label">Vista previa — Wallet</div>
+      <div class="iphone">
+        <div class="iphone-notch"></div>
+        <div class="iphone-screen">
+          <div class="wallet-header">
+            <div class="wallet-logo">Apple Wallet</div>
+          </div>
+          <div class="wallet-card">
+            <div class="wcard-body">
+              <div class="wcard-top">
+                <div class="wcard-business">
+                  <div class="wcard-icon">☕</div>
+                  <div>
+                    <div class="wcard-name">Café Central</div>
+                    <div class="wcard-subtitle">Tarjeta de fidelización</div>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="wcard-stamps-count">5</div>
+                  <div class="wcard-stamps-label">de 10</div>
+                </div>
+              </div>
+              <div class="wcard-grid">
+                <div class="wcard-stamp on">☕</div>
+                <div class="wcard-stamp on">☕</div>
+                <div class="wcard-stamp on">☕</div>
+                <div class="wcard-stamp on">☕</div>
+                <div class="wcard-stamp on">☕</div>
+                <div class="wcard-stamp off"></div>
+                <div class="wcard-stamp off"></div>
+                <div class="wcard-stamp off"></div>
+                <div class="wcard-stamp off"></div>
+                <div class="wcard-stamp off"></div>
+              </div>
+              <div class="wcard-benefit">
+                <div class="wcard-benefit-label">Tu premio</div>
+                <div class="wcard-benefit-text">Café gratis de tu elección</div>
+              </div>
+            </div>
+            <div class="wcard-qr">
+              <div>
+                <div class="wcard-code">CFE-A3X9</div>
+                <div class="wcard-watermark">FIDELITAP</div>
+              </div>
+              <div class="qr-block">
+                <svg viewBox="0 0 10 10" fill="black">
+                  <rect x="0" y="0" width="4" height="4"/><rect x="1" y="1" width="2" height="2" fill="white"/>
+                  <rect x="6" y="0" width="4" height="4"/><rect x="7" y="1" width="2" height="2" fill="white"/>
+                  <rect x="0" y="6" width="4" height="4"/><rect x="1" y="7" width="2" height="2" fill="white"/>
+                  <rect x="6" y="6" width="1" height="1"/><rect x="8" y="6" width="2" height="2"/>
+                  <rect x="6" y="8" width="2" height="2"/><rect x="5" y="5" width="1" height="1"/>
+                  <rect x="4" y="3" width="1" height="2"/><rect x="4" y="0" width="1" height="2"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <div style="font-size:12px;color:#475569;margin-bottom:4px;">Así se verá en el teléfono de tu cliente</div>
+        <div style="font-size:11px;color:#334155;">Compatible con Apple Wallet & Google Wallet</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

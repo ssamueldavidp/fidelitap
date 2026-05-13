@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FideliTap</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f8fafc; color:#0f172a; }
+
+  /* NAV */
+  nav {
+    background:white;
+    border-bottom:1px solid #f1f5f9;
+    padding:14px 5%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky; top:0; z-index:100;
+    flex-wrap:wrap; gap:10px;
+  }
+  .logo { font-weight:900; font-size:20px; letter-spacing:-0.5px; }
+  .logo span { color:#00C896; }
+  .nav-links { display:flex; gap:20px; align-items:center; }
+  .nav-links a { font-size:13px; color:#64748b; text-decoration:none; }
+  .nav-actions { display:flex; gap:8px; }
+  .btn-primary { background:#0f172a; color:white; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .btn-secondary { background:white; color:#0f172a; border:2px solid #e2e8f0; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+
+  /* HERO */
+  .hero { background:white; padding:64px 5% 52px; text-align:center; }
+  .hero-badge { display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; color:#00C896; font-size:11px; font-weight:700; letter-spacing:2px; padding:5px 14px; border-radius:20px; margin-bottom:18px; text-transform:uppercase; }
+  .hero h1 { font-size:clamp(32px, 5vw, 54px); font-weight:900; line-height:1.1; letter-spacing:-1.5px; margin-bottom:18px; }
+  .hero h1 em { color:#00C896; font-style:normal; }
+  .hero p { color:#64748b; font-size:clamp(14px, 2vw, 16px); max-width:480px; margin:0 auto 28px; line-height:1.7; }
+  .hero-ctas { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+
+  /* FEATURES STRIP */
+  .features-strip {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    max-width:820px;
+    margin:0 auto;
+    border-radius:14px;
+    border:1px solid #f1f5f9;
+    overflow:hidden;
+    background:white;
+  }
+  .feature-item { padding:20px 12px; text-align:center; border-right:1px solid #f1f5f9; }
+  .feature-item:last-child { border-right:none; }
+  .feature-icon { font-size:22px; margin-bottom:8px; }
+  .feature-title { font-size:12px; font-weight:700; color:#0f172a; margin-bottom:3px; }
+  .feature-desc { font-size:11px; color:#94a3b8; }
+
+  /* HOW IT WORKS */
+  .how { padding:80px 5%; background:#f8fafc; }
+  .section-label { font-size:11px; font-weight:700; color:#00C896; letter-spacing:2px; text-transform:uppercase; text-align:center; margin-bottom:8px; }
+  .section-title { font-size:clamp(24px,3vw,34px); font-weight:900; text-align:center; letter-spacing:-0.5px; margin-bottom:8px; }
+  .section-sub { font-size:14px; color:#64748b; text-align:center; margin-bottom:52px; }
+
+  .how-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:56px;
+    align-items:start;
+    max-width:960px;
+    margin:0 auto;
+  }
+
+  /* STEPS */
+  .steps { display:flex; flex-direction:column; gap:4px; }
+
+  .step-card {
+    border-radius:16px;
+    padding:20px;
+    cursor:pointer;
+    transition:background 0.25s, box-shadow 0.25s, border-color 0.25s;
+    border:1.5px solid transparent;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
+  .step-card.active {
+    background:white;
+    border-color:#e2f7f0;
+    box-shadow:0 4px 24px rgba(0,200,150,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .step-card:not(.active):hover { background:rgba(255,255,255,0.7); }
+
+  .step-icon-wrap {
+    width:48px; height:48px;
+    border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+    flex-shrink:0;
+    transition:background 0.25s, box-shadow 0.25s;
+    background:#f1f5f9;
+  }
+  .step-card.active .step-icon-wrap {
+    background:linear-gradient(135deg,#00C896,#00a878);
+    box-shadow:0 4px 16px rgba(0,200,150,0.3);
+  }
+
+  .step-body { flex:1; }
+  .step-num-label { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#cbd5e1; margin-bottom:4px; transition:color 0.25s; }
+  .step-card.active .step-num-label { color:#00C896; }
+  .step-title { font-size:15px; font-weight:700; color:#94a3b8; margin-bottom:8px; transition:color 0.25s; line-height:1.3; }
+  .step-card.active .step-title { color:#0f172a; }
+
+  /* Desc siempre visible */
+  .step-desc { font-size:12.5px; color:#64748b; line-height:1.75; }
+  .step-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .chip { background:#f0fdf4; color:#00C896; border-radius:20px; padding:3px 11px; font-size:10px; font-weight:600; }
+
+  /* PHONE */
+  .phone-wrap { display:flex; justify-content:center; position:sticky; top:90px; }
+  .iphone {
+    width:248px;
+    background:#1a1a1a;
+    border-radius:48px;
+    padding:12px;
+    box-shadow:
+      0 0 0 1px #3a3a3a,
+      0 0 0 2px #111,
+      inset 0 0 0 1px #2e2e2e,
+      0 40px 80px rgba(0,0,0,0.45),
+      0 16px 40px rgba(0,0,0,0.25);
+    position:relative;
+  }
+  .iphone::before {
+    content:'';
+    position:absolute; left:-3px; top:72px;
+    width:3px; height:28px;
+    background:#2a2a2a; border-radius:2px 0 0 2px;
+    box-shadow:0 36px 0 #2a2a2a, 0 72px 0 #2a2a2a;
+  }
+  .iphone::after {
+    content:'';
+    position:absolute; right:-3px; top:96px;
+    width:3px; height:52px;
+    background:#2a2a2a; border-radius:0 2px 2px 0;
+  }
+  .iphone-inner { background:#000; border-radius:38px; overflow:hidden; }
+  .status-bar { background:#000; padding:12px 20px 4px; display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10; }
+  .status-time { color:white; font-size:13px; font-weight:700; letter-spacing:-0.3px; }
+  .status-icons { display:flex; gap:5px; align-items:center; }
+  .dynamic-island { position:absolute; top:10px; left:50%; transform:translateX(-50%); width:90px; height:28px; background:#000; border-radius:20px; z-index:20; }
+  .iphone-screen { min-height:460px; }
+
+  /* WALLET */
+  .wallet-ui { display:none; flex-direction:column; background:#1c1c1e; min-height:460px; }
+  .wallet-ui.visible { display:flex; }
+  .wallet-nav { padding:8px 16px 10px; display:flex; justify-content:space-between; align-items:center; }
+  .wallet-nav-title { color:white; font-size:17px; font-weight:700; }
+  .wallet-nav-btn { color:#00C896; font-size:13px; }
+  .cards-stack { padding:4px 16px; }
+  .pass-card { border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.4); margin-bottom:10px; position:relative; }
+  .pass-header { padding:12px 14px 8px; display:flex; justify-content:space-between; align-items:flex-start; }
+  .pass-logo-area { display:flex; align-items:center; gap:8px; }
+  .pass-logo-icon { width:28px; height:28px; border-radius:6px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .pass-logo-name { color:white; font-size:13px; font-weight:700; }
+  .pass-type { color:rgba(255,255,255,0.5); font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .pass-stamps-section { padding:6px 14px 10px; }
+  .pass-label { color:rgba(255,255,255,0.45); font-size:9px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; }
+  .pass-stamps { display:flex; gap:5px; }
+  .ps { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .ps.on { background:rgba(255,255,255,0.95); }
+  .ps.off { background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2); }
+  .pass-qr-section { background:rgba(0,0,0,0.2); margin:0 12px 12px; border-radius:12px; padding:10px; display:flex; align-items:center; gap:10px; }
+  .pass-qr-box { background:white; border-radius:8px; padding:6px; flex-shrink:0; }
+  .pass-watermark { position:absolute; bottom:8px; right:12px; font-size:7px; font-weight:800; letter-spacing:1.5px; color:rgba(255,255,255,0.18); text-transform:uppercase; }
+  .pass-card-peek { border-radius:16px; height:44px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; opacity:0.85; }
+  .add-card-btn { margin:4px 16px 16px; background:rgba(255,255,255,0.05); border:1.5px dashed rgba(255,255,255,0.12); border-radius:14px; padding:12px; text-align:center; color:rgba(255,255,255,0.3); font-size:11px; }
+
+  /* SCAN */
+  .scan-ui { display:none; flex-direction:column; background:#000; min-height:460px; align-items:center; justify-content:center; gap:14px; padding:20px; }
+  .scan-ui.visible { display:flex; }
+  .scan-frame { width:160px; height:160px; border:1.5px solid rgba(255,255,255,0.06); border-radius:20px; position:relative; display:flex; align-items:center; justify-content:center; }
+  .sc { position:absolute; width:20px; height:20px; }
+  .sc.tl { top:-2px; left:-2px; border-top:3px solid #00C896; border-left:3px solid #00C896; border-radius:4px 0 0 0; }
+  .sc.tr { top:-2px; right:-2px; border-top:3px solid #00C896; border-right:3px solid #00C896; border-radius:0 4px 0 0; }
+  .sc.bl { bottom:-2px; left:-2px; border-bottom:3px solid #00C896; border-left:3px solid #00C896; border-radius:0 0 0 4px; }
+  .sc.br { bottom:-2px; right:-2px; border-bottom:3px solid #00C896; border-right:3px solid #00C896; border-radius:0 0 4px 0; }
+  .scan-laser { position:absolute; left:10px; right:10px; height:2px; background:linear-gradient(90deg,transparent,#00C896,transparent); animation:laser 2s ease-in-out infinite; }
+  @keyframes laser { 0%,100%{top:12px;opacity:0} 10%{opacity:1} 90%{opacity:1} 50%{top:140px} }
+
+  /* SUCCESS */
+  .success-ui { display:none; flex-direction:column; background:#1c1c1e; min-height:460px; align-items:center; justify-content:center; padding:24px; gap:14px; }
+  .success-ui.visible { display:flex; }
+  .success-check { width:72px; height:72px; background:#00C896; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:34px; box-shadow:0 0 0 12px rgba(0,200,150,0.12); animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-inner { background:#2c2c2e; border-radius:16px; padding:16px; width:100%; text-align:center; }
+  @keyframes sAnim { from{transform:scale(0) rotate(-15deg);opacity:0} 60%{transform:scale(1.2);opacity:1} to{transform:scale(1);opacity:1} }
+  .s-stamp { display:inline-block; font-size:20px; }
+  .s-stamp.new { animation:sAnim 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+  /* CTA */
+  .cta-section { background:white; padding:72px 5%; text-align:center; border-top:1px solid #f1f5f9; }
+
+  /* ===================== */
+  /* RESPONSIVE             */
+  /* ===================== */
+  @media (max-width: 900px) {
+    .how-grid { grid-template-columns:1fr; gap:40px; }
+    .phone-wrap { position:static; }
+    .features-strip { grid-template-columns:repeat(2,1fr); }
+    .features-strip .feature-item:nth-child(2) { border-right:none; }
+    .features-strip .feature-item:nth-child(3) { border-top:1px solid #f1f5f9; }
+    .features-strip .feature-item:nth-child(4) { border-top:1px solid #f1f5f9; border-right:none; }
+  }
+  @media (max-width: 600px) {
+    .nav-links { display:none; }
+    .hero h1 { letter-spacing:-0.5px; }
+    .features-strip { grid-template-columns:1fr 1fr; }
+    .how-grid { gap:32px; }
+    .iphone { width:220px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">fideli<span>tap</span></div>
+  <div class="nav-links">
+    <a href="#">Cómo funciona</a>
+    <a href="#">Precios</a>
+    <a href="#">Negocios</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-secondary">Iniciar sesión</button>
+    <button class="btn-primary">Empezar gratis →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✦ Fidelización digital</div>
+  <h1>Haz que tus clientes<br><em>siempre regresen.</em></h1>
+  <p>Tarjetas de sellos digitales para tu negocio. Tus clientes las guardan en su teléfono y tú construyes lealtad real — sin papel, sin complicaciones.</p>
+  <div class="hero-ctas">
+    <button class="btn-primary" style="font-size:15px;padding:13px 30px;">Crear mi tarjeta gratis →</button>
+    <button class="btn-secondary" style="font-size:15px;padding:13px 30px;">Ver demo</button>
+  </div>
+  <div class="features-strip">
+    <div class="feature-item"><div class="feature-icon">🎨</div><div class="feature-title">Diseño propio</div><div class="feature-desc">Colores, fondos e íconos</div></div>
+    <div class="feature-item"><div class="feature-icon">📱</div><div class="feature-title">Apple & Google Wallet</div><div class="feature-desc">Sin apps adicionales</div></div>
+    <div class="feature-item"><div class="feature-icon">📷</div><div class="feature-title">Escaneo QR</div><div class="feature-desc">Sello instantáneo</div></div>
+    <div class="feature-item"><div class="feature-icon">🔐</div><div class="feature-title">Anti-fraude</div><div class="feature-desc">Código único por tarjeta</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-label">Así funciona</div>
+  <h2 class="section-title">¿Cómo funciona nuestra plataforma?</h2>
+  <p class="section-sub">Simple para el negocio, mágico para el cliente</p>
+
+  <div class="how-grid">
+
+    <!-- STEPS -->
+    <div class="steps">
+
+      <div class="step-card active" id="step1" onclick="selectStep(0)">
+        <div class="step-icon-wrap">🎨</div>
+        <div class="step-body">
+          <div class="step-num-label">Paso 1 — Para el negocio</div>
+          <div class="step-title">Crea y personaliza tu tarjeta de sellos</div>
+          <div class="step-desc">
+            Diseña tu tarjeta en minutos: elige colores, el ícono de cada sello, cuántas visitas necesita el cliente y qué beneficio recibe al completarla. Preview en tiempo real mientras editas.
+            <div class="step-chips">
+              <span class="chip">🎨 Editor visual</span>
+              <span class="chip">⚡ Lista en 5 min</span>
+              <span class="chip">👁 Preview live</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" id="step2" onclick="selectStep(1)">
+        <div class="step-icon-wrap">📱</div>
+        <div class="step-body">
+          <div class="step-num-label">Paso 2 — Para el cliente</div>
+          <div class="step-title">Activa su tarjeta y la guarda en Wallet</div>
+          <div class="step-desc">
+            El cliente escanea el cartel del negocio, se registra en segundos con su email y con un solo tap agrega la tarjeta a Apple Wallet o Google Wallet. Sin descargar ninguna app.
+            <div class="step-chips">
+              <span class="chip">🍎 Apple Wallet</span>
+              <span class="chip">🤖 Google Wallet</span>
+              <span class="chip">⚡ Sin apps extra</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" id="step3" onclick="selectStep(2)">
+        <div class="step-icon-wrap">🎁</div>
+        <div class="step-body">
+          <div class="step-num-label">Paso 3 — Cada visita</div>
+          <div class="step-title">El cliente gana un sello y acumula su premio</div>
+          <div class="step-desc">
+            El cliente muestra el QR de su tarjeta. El negocio lo escanea desde su panel y el sello aparece al instante en la Wallet. Al completar la tarjeta, el cliente recibe automáticamente su beneficio.
+            <div class="step-chips">
+              <span class="chip">📷 Escaneo QR</span>
+              <span class="chip">⚡ Actualización live</span>
+              <span class="chip">🎁 Premio automático</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- IPHONE -->
+    <div class="phone-wrap">
+      <div class="iphone">
+        <div class="iphone-inner">
+          <div class="status-bar">
+            <div class="dynamic-island"></div>
+            <span class="status-time">9:41</span>
+            <div class="status-icons">
+              <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><rect x="0" y="6" width="3" height="6" rx="0.5"/><rect x="4.5" y="4" width="3" height="8" rx="0.5"/><rect x="9" y="2" width="3" height="10" rx="0.5"/><rect x="13.5" y="0" width="2.5" height="12" rx="0.5"/></svg>
+              <svg width="15" height="12" viewBox="0 0 15 12" fill="none"><path d="M7.5 9a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" fill="white"/><path d="M2.8 6.2a6.5 6.5 0 019.4 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M0.5 3.9a10 10 0 0114 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="0" y="1" width="20" height="10" rx="2.5" stroke="white" stroke-width="1"/><rect x="1" y="2" width="16" height="8" rx="1.5" fill="white"/><path d="M21 4v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <div class="iphone-screen">
+
+            <!-- WALLET -->
+            <div class="wallet-ui visible" id="demo-wallet">
+              <div class="wallet-nav">
+                <span class="wallet-nav-title">Wallet</span>
+                <span class="wallet-nav-btn">+ Agregar</span>
+              </div>
+              <div class="cards-stack">
+                <div class="pass-card" style="background:linear-gradient(145deg,#0f172a,#1a2e4a);">
+                  <div class="pass-header">
+                    <div class="pass-logo-area">
+                      <div class="pass-logo-icon">☕</div>
+                      <div><div class="pass-logo-name">Café Luna</div><div class="pass-type">Tarjeta de sellos</div></div>
+                    </div>
+                    <div style="text-align:right;"><div class="pass-label">Sellos</div><div style="color:white;font-size:13px;font-weight:700;">3 / 5</div></div>
+                  </div>
+                  <div class="pass-stamps-section">
+                    <div class="pass-label">Progreso</div>
+                    <div class="pass-stamps">
+                      <div class="ps on">☕</div><div class="ps on">☕</div><div class="ps on">☕</div><div class="ps off">☕</div><div class="ps off">☕</div>
+                    </div>
+                  </div>
+                  <div style="padding:0 14px 8px;"><div class="pass-label">Premio</div><div style="color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;">🎁 1 café gratis al completar</div></div>
+                  <div class="pass-qr-section">
+                    <div class="pass-qr-box">
+                      <svg width="50" height="50" viewBox="0 0 21 21">
+                        <rect x="0" y="0" width="7" height="7" rx="1" fill="#0f172a"/><rect x="1" y="1" width="5" height="5" rx="0.3" fill="white"/><rect x="2" y="2" width="3" height="3" fill="#0f172a"/>
+                        <rect x="14" y="0" width="7" height="7" rx="1" fill="#0f172a"/><rect x="15" y="1" width="5" height="5" rx="0.3" fill="white"/><rect x="16" y="2" width="3" height="3" fill="#0f172a"/>
+                        <rect x="0" y="14" width="7" height="7" rx="1" fill="#0f172a"/><rect x="1" y="15" width="5" height="5" rx="0.3" fill="white"/><rect x="2" y="16" width="3" height="3" fill="#0f172a"/>
+                        <rect x="9" y="0" width="2" height="2" fill="#0f172a"/><rect x="9" y="3" width="2" height="2" fill="#0f172a"/><rect x="12" y="0" width="2" height="2" fill="#0f172a"/>
+                        <rect x="9" y="9" width="2" height="2" fill="#0f172a"/><rect x="12" y="9" width="2" height="2" fill="#0f172a"/><rect x="9" y="12" width="4" height="2" fill="#0f172a"/>
+                        <rect x="14" y="9" width="2" height="4" fill="#0f172a"/><rect x="17" y="9" width="4" height="2" fill="#0f172a"/><rect x="14" y="14" width="2" height="2" fill="#0f172a"/>
+                        <rect x="17" y="14" width="4" height="4" fill="#0f172a"/><rect x="9" y="17" width="4" height="4" fill="#0f172a"/>
+                      </svg>
+                    </div>
+                    <div><div style="color:rgba(255,255,255,0.8);font-family:monospace;font-size:10px;font-weight:700;letter-spacing:1px;">FDL-A2X9-K7M3</div><div style="color:rgba(255,255,255,0.35);font-size:9px;margin-top:2px;">Muestra al negocio para tu sello</div></div>
+                  </div>
+                  <div class="pass-watermark">FIDELITAP</div>
+                </div>
+                <div class="pass-card-peek" style="background:linear-gradient(145deg,#064e3b,#065f46);">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">💇</span><div><div style="color:white;font-size:12px;font-weight:700;">Studio Hair</div><div style="color:rgba(255,255,255,0.5);font-size:10px;">⭐⭐ · 2/5 sellos</div></div></div>
+                  <span style="color:rgba(255,255,255,0.3);font-size:12px;">›</span>
+                </div>
+                <div class="pass-card-peek" style="background:linear-gradient(145deg,#1a0533,#2d1065);">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🍕</span><div><div style="color:white;font-size:12px;font-weight:700;">Don Pizzas</div><div style="color:rgba(255,255,255,0.5);font-size:10px;">🍕🍕🍕 · 3/5 sellos</div></div></div>
+                  <span style="color:rgba(255,255,255,0.3);font-size:12px;">›</span>
+                </div>
+              </div>
+              <div class="add-card-btn">＋ Agregar tarjeta de fidelización</div>
+            </div>
+
+            <!-- SCAN -->
+            <div class="scan-ui" id="demo-scan">
+              <div style="text-align:center;"><div style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Café Luna</div><div style="color:white;font-size:15px;font-weight:700;">Mi tarjeta de sellos</div></div>
+              <div class="scan-frame">
+                <div class="sc tl"></div><div class="sc tr"></div><div class="sc bl"></div><div class="sc br"></div>
+                <div class="scan-laser"></div>
+                <svg width="80" height="80" viewBox="0 0 21 21" style="opacity:0.9">
+                  <rect x="0" y="0" width="7" height="7" rx="1" fill="white"/><rect x="1" y="1" width="5" height="5" rx="0.3" fill="#000"/><rect x="2" y="2" width="3" height="3" fill="white"/>
+                  <rect x="14" y="0" width="7" height="7" rx="1" fill="white"/><rect x="15" y="1" width="5" height="5" rx="0.3" fill="#000"/><rect x="16" y="2" width="3" height="3" fill="white"/>
+                  <rect x="0" y="14" width="7" height="7" rx="1" fill="white"/><rect x="1" y="15" width="5" height="5" rx="0.3" fill="#000"/><rect x="2" y="16" width="3" height="3" fill="white"/>
+                  <rect x="9" y="9" width="5" height="2" fill="white"/><rect x="15" y="9" width="6" height="2" fill="white"/><rect x="9" y="12" width="3" height="4" fill="white"/><rect x="13" y="14" width="8" height="7" fill="white"/>
+                </svg>
+              </div>
+              <div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:8px 16px;text-align:center;"><div style="color:rgba(255,255,255,0.35);font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Código único</div><div style="color:white;font-family:monospace;font-size:13px;font-weight:700;letter-spacing:2px;">FDL-A2X9-K7M3</div></div>
+              <div style="color:rgba(255,255,255,0.25);font-size:10px;text-align:center;line-height:1.6;">Muestra este QR al negocio<br>para recibir tu sello de visita</div>
+            </div>
+
+            <!-- SUCCESS -->
+            <div class="success-ui" id="demo-success">
+              <div class="success-check">✓</div>
+              <div style="color:white;font-size:18px;font-weight:800;letter-spacing:-0.3px;">¡Sello registrado!</div>
+              <div class="success-inner">
+                <div style="color:rgba(255,255,255,0.35);font-size:10px;letter-spacing:0.5px;margin-bottom:10px;">CAFÉ LUNA · MARÍA GONZÁLEZ</div>
+                <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px;">
+                  <span class="s-stamp">☕</span><span class="s-stamp">☕</span><span class="s-stamp">☕</span>
+                  <span class="s-stamp new" style="animation-delay:0.1s">☕</span>
+                  <span class="s-stamp" style="opacity:0.2">☕</span>
+                </div>
+                <div style="color:#00C896;font-size:15px;font-weight:800;">4 / 5 sellos</div>
+                <div style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:4px;">¡Un sello más y ganas tu café gratis! 🎉</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.3);font-size:10px;"><span style="color:#00C896;">✓</span> Wallet actualizada automáticamente</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 style="font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-0.5px;margin-bottom:10px;">¿Listo para fidelizar a tus clientes?</h2>
+  <p style="color:#64748b;margin-bottom:28px;font-size:15px;">Empieza gratis hoy. Sin tarjeta de crédito.</p>
+  <button class="btn-primary" style="font-size:15px;padding:14px 36px;">Crear mi tarjeta gratis →</button>
+  <div style="margin-top:20px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:12px;color:#94a3b8;">
+    <span>✓ Sin contrato</span><span>✓ Cancela cuando quieras</span><span>✓ Soporte en español</span>
+  </div>
+</section>
+
+<script>
+const demoMap = ['wallet','scan','success'];
+function selectStep(idx) {
+  document.querySelectorAll('.step-card').forEach((s,i) => s.classList.toggle('active', i===idx));
+  ['wallet','scan','success'].forEach(t => document.getElementById('demo-'+t).classList.remove('visible'));
+  document.getElementById('demo-'+demoMap[idx]).classList.add('visible');
+}
+</script>
+</body>
+</html>

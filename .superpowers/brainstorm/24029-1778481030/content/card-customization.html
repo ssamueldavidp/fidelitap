@@ -1,0 +1,81 @@
+<h2>¿Qué nivel de personalización de tarjeta ofreces al negocio?</h2>
+<p class="subtitle">Elige el nivel que mejor encaja con tu visión de producto</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Básico — Rápido y Simple</h3>
+      <p>El negocio elige: color principal, logo/ícono, nombre del negocio, número de sellos, y nombre del beneficio. Sin más opciones. Resultado predecible y siempre se ve bien.</p>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <div style="width:180px; height:80px; border-radius:12px; background:linear-gradient(135deg,#6B21A8,#A855F7); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-size:11px; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+          <span style="font-weight:700; font-size:13px;">☕ Café Luna</span>
+          <div style="display:flex; gap:4px;">
+            <span>⬡</span><span>⬡</span><span>⬡</span><span style="opacity:0.3">⬡</span><span style="opacity:0.3">⬡</span>
+          </div>
+          <span style="font-size:9px; opacity:0.8;">3/5 sellos · Café gratis</span>
+        </div>
+        <div style="width:180px; height:80px; border-radius:12px; background:linear-gradient(135deg,#065F46,#10B981); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-size:11px; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+          <span style="font-weight:700; font-size:13px;">💇 Studio Hair</span>
+          <div style="display:flex; gap:4px;">
+            <span>★</span><span>★</span><span style="opacity:0.3">★</span><span style="opacity:0.3">★</span><span style="opacity:0.3">★</span>
+          </div>
+          <span style="font-size:9px; opacity:0.8;">2/5 sellos · Corte gratis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Intermedio — Personalización Visual</h3>
+      <p>Además de lo básico: elegir fondo (color sólido, gradiente, o imagen de fondo), forma del sello (círculo, estrella, hexágono, etc.), fuente del texto. Editor visual drag-and-drop simple.</p>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <div style="width:180px; height:80px; border-radius:12px; background:linear-gradient(135deg,#B45309,#F59E0B); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-size:11px; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; overflow:hidden;">
+          <div style="position:absolute; inset:0; background:url('') center/cover; opacity:0.15;"></div>
+          <span style="font-weight:700; font-size:13px;">🍕 Pizzería Don Juan</span>
+          <div style="display:flex; gap:4px;">
+            <span>🍕</span><span>🍕</span><span>🍕</span><span style="opacity:0.3">🍕</span><span style="opacity:0.3">🍕</span>
+          </div>
+          <span style="font-size:9px; opacity:0.8;">3/5 · Pizza grande gratis</span>
+        </div>
+        <div style="width:180px; height:80px; border-radius:12px; background:linear-gradient(135deg,#1E3A5F,#3B82F6); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-size:11px; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+          <span style="font-weight:700; font-size:13px;">💅 Nails & Co.</span>
+          <div style="display:flex; gap:4px;">
+            <span>💎</span><span>💎</span><span>💎</span><span>💎</span><span style="opacity:0.3">💎</span>
+          </div>
+          <span style="font-size:9px; opacity:0.8;">4/5 · Diseño gratis</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Avanzado — Editor Completo</h3>
+      <p>Control total: posición de elementos, múltiples zonas de texto, imagen de fondo propia, paleta completa, plantillas prediseñadas, preview en tiempo real de la tarjeta en Wallet. Más complejo de construir.</p>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <div style="width:180px; height:80px; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.2); position:relative; background:#0f0f0f;">
+          <div style="position:absolute; inset:0; background:linear-gradient(135deg,#FF006E,#8338EC); opacity:0.9;"></div>
+          <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:white; font-weight:800; font-size:12px;">🔥 BURGER BRO</span>
+              <span style="color:white; font-size:9px; opacity:0.7;">GOLD CARD</span>
+            </div>
+            <div style="display:flex; gap:3px; justify-content:center;">
+              <span style="font-size:14px;">🍔</span><span style="font-size:14px;">🍔</span><span style="font-size:14px;">🍔</span><span style="font-size:14px; opacity:0.3">🍔</span><span style="font-size:14px; opacity:0.3">🍔</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:white; font-size:8px; opacity:0.8;">Código: BRO-8821</span>
+              <span style="color:#FFD700; font-size:9px; font-weight:700;">3/5 sellos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px; font-size:12px;">💡 Tip: puedes elegir empezar con A o B para el MVP, y añadir C en una fase futura</p>

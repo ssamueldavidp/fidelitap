@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FideliTap — Planes Detallados</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f8fafc; color:#0f172a; padding:28px 20px; }
+
+  h1 { font-size:22px; font-weight:900; letter-spacing:-0.5px; margin-bottom:4px; }
+  .subtitle { color:#64748b; font-size:13px; margin-bottom:28px; }
+  .section-label { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#00C896; margin-bottom:10px; margin-top:32px; display:block; }
+
+  /* TABS */
+  .tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .tab { padding:7px 16px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid #e2e8f0; color:#94a3b8; background:white; transition:all 0.2s; }
+  .tab.active { background:#0f172a; color:white; border-color:#0f172a; }
+
+  /* PLAN SECTIONS */
+  .plan-section { display:none; }
+  .plan-section.visible { display:block; }
+
+  /* PLAN HEADER */
+  .plan-header { border-radius:14px; padding:20px 24px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .plan-header-left h2 { font-size:20px; font-weight:900; }
+  .plan-header-left p { font-size:13px; margin-top:4px; opacity:0.8; }
+  .plan-price-big { text-align:right; }
+  .plan-price-big .amount { font-size:32px; font-weight:900; }
+  .plan-price-big .period { font-size:13px; opacity:0.7; }
+
+  /* GRID */
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* CARDS */
+  .detail-card { background:white; border-radius:12px; padding:16px; border:1px solid #e2e8f0; }
+  .detail-card h3 { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#94a3b8; margin-bottom:12px; }
+  .feature-row { display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid #f8fafc; font-size:12px; }
+  .feature-row:last-child { border-bottom:none; }
+  .check { color:#00C896; font-size:13px; font-weight:700; flex-shrink:0; width:16px; }
+  .cross { color:#f87171; font-size:13px; font-weight:700; flex-shrink:0; width:16px; }
+  .dash { color:#cbd5e1; font-size:13px; flex-shrink:0; width:16px; }
+  .feature-text { flex:1; }
+  .feature-text strong { color:#0f172a; }
+  .feature-text span { color:#94a3b8; }
+  .feature-badge { background:#f0fdf4; color:#00C896; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; margin-left:4px; }
+  .feature-badge.limit { background:#fef2f2; color:#f87171; }
+  .feature-badge.new { background:#eff6ff; color:#3b82f6; }
+
+  /* COST BREAKDOWN */
+  .cost-card { background:white; border-radius:12px; padding:16px; border:1px solid #e2e8f0; margin-top:12px; }
+  .cost-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f8fafc; font-size:12px; }
+  .cost-row:last-child { border-bottom:none; }
+  .cost-label { color:#64748b; }
+  .cost-value { font-weight:700; }
+  .cost-value.green { color:#00C896; }
+  .cost-value.red { color:#f87171; }
+  .cost-value.yellow { color:#f59e0b; }
+  .cost-total { background:#0f172a; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+  .cost-total span { color:white; font-size:13px; font-weight:700; }
+  .cost-total .margin { background:#00C896; border-radius:6px; padding:4px 12px; font-size:12px; font-weight:800; color:#0f172a; }
+
+  /* INFRA EXPLANATION */
+  .infra-box { background:white; border-radius:12px; padding:20px; border:1px solid #e2e8f0; }
+  .infra-row { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #f8fafc; }
+  .infra-row:last-child { border-bottom:none; }
+  .infra-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; background:#f8fafc; }
+  .infra-body { flex:1; }
+  .infra-name { font-size:12px; font-weight:700; color:#0f172a; }
+  .infra-desc { font-size:11px; color:#94a3b8; margin-top:2px; line-height:1.5; }
+  .infra-cost { font-size:12px; font-weight:700; color:#00C896; white-space:nowrap; }
+
+  /* FORMULA BOX */
+  .formula { background:#0f172a; border-radius:12px; padding:16px 20px; margin-top:16px; }
+  .formula-title { color:#94a3b8; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+  .formula-eq { color:white; font-size:13px; font-family:monospace; line-height:2; }
+  .formula-eq .op { color:#64748b; }
+  .formula-eq .val { color:#00C896; font-weight:700; }
+  .formula-eq .result { color:#fbbf24; font-weight:800; font-size:14px; }
+  .formula-eq .label { color:#64748b; font-size:10px; display:block; margin-top:-6px; padding-left:16px; }
+
+  /* WOMPI DETAIL */
+  .wompi-flow { display:flex; flex-direction:column; gap:8px; }
+  .wompi-step { display:flex; align-items:center; gap:12px; }
+  .wompi-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .wompi-line { width:2px; height:16px; background:#e2e8f0; margin-left:4px; }
+  .wompi-text { font-size:12px; }
+  .wompi-text strong { color:#0f172a; }
+  .wompi-text span { color:#94a3b8; font-size:11px; }
+
+  @media (max-width: 700px) {
+    .detail-grid { grid-template-columns:1fr; }
+    .plan-header { flex-direction:column; }
+    .plan-price-big { text-align:left; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Planes — Capacidades, Costos y Márgenes</h1>
+<p class="subtitle">Desglose completo de cada plan y cómo se distribuyen los costos de infraestructura</p>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPlan('free',this)">Freemium</div>
+  <div class="tab" onclick="showPlan('basic',this)">Basic</div>
+  <div class="tab" onclick="showPlan('pro',this)">⭐ Pro</div>
+  <div class="tab" onclick="showPlan('premium',this)">Premium</div>
+  <div class="tab" onclick="showPlan('infra',this)">🏗 Cómo se reparte la infra</div>
+  <div class="tab" onclick="showPlan('wompi',this)">💳 Margen Wompi</div>
+</div>
+
+<!-- ======================== FREEMIUM ======================== -->
+<div class="plan-section visible" id="plan-free">
+  <div class="plan-header" style="background:#f8fafc;border:1.5px solid #e2e8f0;">
+    <div class="plan-header-left" style="color:#0f172a;">
+      <h2>Freemium</h2>
+      <p>Para que el negocio pruebe y entienda el valor antes de pagar</p>
+    </div>
+    <div class="plan-price-big" style="color:#0f172a;">
+      <div class="amount">$0</div>
+      <div class="period">para siempre</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h3>✅ Incluye</h3>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>1 tarjeta</strong> de fidelización activa</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Hasta 50 clientes</strong> registrados</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Apple Wallet & Google Wallet</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">QR anti-fraude + código único</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Editor de tarjeta con preview live</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Cartel en formato A4 (PDF/PNG)</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Dashboard básico: clientes y sellos de hoy</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Escáner QR desde panel web</div></div>
+    </div>
+
+    <div class="detail-card">
+      <h3>🚫 No incluye</h3>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 1 tarjeta activa</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 50 clientes (bloquea al llegar)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Formatos de cartel: Historia, Post, Pantalla</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Métricas avanzadas de retención</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Exportar listado de clientes</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>2FA para la cuenta del negocio</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Multi-sede</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Eliminar marca "FideliTap" de la tarjeta</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Soporte prioritario</span></div></div>
+    </div>
+  </div>
+
+  <div class="cost-card" style="margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">💸 Costo para FideliTap por usuario freemium</h3>
+    <div class="cost-row"><span class="cost-label">Infraestructura atribuida</span><span class="cost-value red">~$1,500 COP/mes</span></div>
+    <div class="cost-row"><span class="cost-label">Storage (logo, fondo tarjeta)</span><span class="cost-value red">~$200 COP/mes</span></div>
+    <div class="cost-row"><span class="cost-label">Emails (welcome, confirmaciones)</span><span class="cost-value red">~$300 COP/mes</span></div>
+    <div class="cost-row"><span class="cost-label">Ingresos de este usuario</span><span class="cost-value red">$0</span></div>
+    <div class="cost-total"><span>Costo neto por freemium</span><span class="margin" style="background:#f87171;">-$2,000/mes</span></div>
+    <p style="font-size:10px;color:#94a3b8;margin-top:8px;">ℹ️ Es el costo de adquisición de clientes. El objetivo es que el 15–25% de freemium se convierta a Basic o Pro.</p>
+  </div>
+</div>
+
+<!-- ======================== BASIC ======================== -->
+<div class="plan-section" id="plan-basic">
+  <div class="plan-header" style="background:#f0fdf4;border:1.5px solid #bbf7d0;">
+    <div class="plan-header-left" style="color:#065f46;">
+      <h2>Basic</h2>
+      <p>Para negocios pequeños que quieren empezar a fidelizar en serio</p>
+    </div>
+    <div class="plan-price-big" style="color:#065f46;">
+      <div class="amount">$49,900</div>
+      <div class="period">/mes</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h3>✅ Incluye</h3>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>3 tarjetas</strong> de fidelización activas</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Hasta 500 clientes</strong> registrados</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Apple Wallet & Google Wallet</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">QR anti-fraude + código único</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Editor de tarjeta con preview live</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>4 formatos</strong> de cartel (A4, Historia, Post, Pantalla)</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Dashboard con métricas básicas</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Activar/desactivar tarjetas</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Soporte por email (respuesta 48h)</div></div>
+    </div>
+
+    <div class="detail-card">
+      <h3>🚫 No incluye</h3>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 3 tarjetas activas</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 500 clientes</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Métricas avanzadas (tasa retención, frecuencia)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Exportar clientes a CSV</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Notificaciones de hitos al cliente (email)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>2FA para la cuenta</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Multi-sede</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>White-label (marca FideliTap visible)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>API REST</span></div></div>
+    </div>
+  </div>
+
+  <div class="cost-card" style="margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">💰 Margen real por cliente Basic (100 negocios pagos)</h3>
+    <div class="cost-row"><span class="cost-label">Precio cobrado al negocio</span><span class="cost-value green">+ $49,900</span></div>
+    <div class="cost-row"><span class="cost-label">Comisión Wompi (tarjeta crédito: 2.69% + $900)</span><span class="cost-value red">- $2,243</span></div>
+    <div class="cost-row"><span class="cost-label">Infraestructura atribuida (Basic = 1 unidad)</span><span class="cost-value red">- $3,371</span></div>
+    <div class="cost-row"><span class="cost-label">Storage + emails estimados</span><span class="cost-value red">- $1,500</span></div>
+    <div class="cost-total"><span>Ingreso neto por Basic/mes</span><span class="margin">$42,786 · Margen 86%</span></div>
+  </div>
+</div>
+
+<!-- ======================== PRO ======================== -->
+<div class="plan-section" id="plan-pro">
+  <div class="plan-header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border:1.5px solid #00C896;">
+    <div class="plan-header-left" style="color:white;">
+      <h2>Pro ⭐ Recomendado</h2>
+      <p style="color:rgba(255,255,255,0.7);">Para negocios en crecimiento que quieren datos y control total</p>
+    </div>
+    <div class="plan-price-big" style="color:white;">
+      <div class="amount">$99,900</div>
+      <div class="period" style="color:rgba(255,255,255,0.6);">/mes</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h3>✅ Todo lo de Basic, más:</h3>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>10 tarjetas</strong> de fidelización activas</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Hasta 2,000 clientes</strong> registrados</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Métricas avanzadas <span class="feature-badge">nuevo</span><br><span>Tasa de retención, frecuencia de visita, tasa de canje, clientes en riesgo</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Exportar clientes a <strong>CSV</strong></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Notificaciones por email al cliente en hitos<br><span>(ej. "¡Te falta 1 sello!")</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>2FA</strong> para la cuenta del negocio</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Programar tarjetas por fecha<br><span>(activar/desactivar automáticamente)</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Soporte prioritario</strong> (respuesta 24h)</div></div>
+    </div>
+
+    <div class="detail-card">
+      <h3>🚫 No incluye</h3>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 10 tarjetas activas</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Más de 2,000 clientes</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Multi-sede (varias ubicaciones/locales)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>White-label (marca FideliTap visible)</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Acceso API REST</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Gerente de cuenta dedicado</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Dominio propio de activación</span></div></div>
+      <div class="feature-row"><span class="cross">✗</span><div class="feature-text"><span>Importar clientes masivamente</span></div></div>
+    </div>
+  </div>
+
+  <div class="cost-card" style="margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">💰 Margen real por cliente Pro (100 negocios pagos)</h3>
+    <div class="cost-row"><span class="cost-label">Precio cobrado al negocio</span><span class="cost-value green">+ $99,900</span></div>
+    <div class="cost-row"><span class="cost-label">Comisión Wompi (tarjeta crédito: 2.69% + $900)</span><span class="cost-value red">- $3,587</span></div>
+    <div class="cost-row"><span class="cost-label">Infraestructura atribuida (Pro = 2 unidades)</span><span class="cost-value red">- $6,742</span></div>
+    <div class="cost-row"><span class="cost-label">Storage + emails estimados</span><span class="cost-value red">- $2,500</span></div>
+    <div class="cost-total"><span>Ingreso neto por Pro/mes</span><span class="margin">$87,071 · Margen 87%</span></div>
+  </div>
+</div>
+
+<!-- ======================== PREMIUM ======================== -->
+<div class="plan-section" id="plan-premium">
+  <div class="plan-header" style="background:linear-gradient(135deg,#1a0533,#2d1065);border:1.5px solid #a855f7;">
+    <div class="plan-header-left" style="color:white;">
+      <h2>Premium</h2>
+      <p style="color:rgba(255,255,255,0.7);">Para cadenas, franquicias y negocios que quieren total control y su propia identidad</p>
+    </div>
+    <div class="plan-price-big" style="color:white;">
+      <div class="amount">$179,900</div>
+      <div class="period" style="color:rgba(255,255,255,0.6);">/mes</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h3>✅ Todo lo de Pro, más:</h3>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Tarjetas ilimitadas</strong></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Clientes ilimitados</strong></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Multi-sede</strong> <span class="feature-badge">nuevo</span><br><span>Gestiona varias ubicaciones desde una sola cuenta. Los sellos se dan por sede.</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>White-label</strong> <span class="feature-badge">nuevo</span><br><span>Sin marca "FideliTap" en tarjetas ni carteles</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>API REST</strong> <span class="feature-badge">nuevo</span><br><span>Integra FideliTap con tu POS o app propia</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Exportar en <strong>CSV y Excel</strong></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Importar clientes masivamente (CSV)</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Dominio propio</strong> de activación<br><span>ej. fidelidad.tunegocio.com</span></div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>Gerente de cuenta</strong> dedicado</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text"><strong>SLA 99.9%</strong> uptime garantizado</div></div>
+      <div class="feature-row"><span class="check">✓</span><div class="feature-text">Soporte prioritario — respuesta <strong>12h</strong></div></div>
+    </div>
+
+    <div class="detail-card">
+      <h3>ℹ️ Ideal para</h3>
+      <div class="feature-row"><span class="dash">›</span><div class="feature-text">Cadenas con 2+ locales (peluquerías, restaurantes)</div></div>
+      <div class="feature-row"><span class="dash">›</span><div class="feature-text">Franquicias que quieren su propia marca sin FideliTap visible</div></div>
+      <div class="feature-row"><span class="dash">›</span><div class="feature-text">Negocios que ya tienen app o POS y quieren integrar via API</div></div>
+      <div class="feature-row"><span class="dash">›</span><div class="feature-text">Negocios con base de clientes grande (+1,000 activos)</div></div>
+      <div class="feature-row"><span class="dash">›</span><div class="feature-text">Empresas que necesitan SLA documentado para sus operaciones</div></div>
+    </div>
+  </div>
+
+  <div class="cost-card" style="margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">💰 Margen real por cliente Premium (100 negocios pagos)</h3>
+    <div class="cost-row"><span class="cost-label">Precio cobrado al negocio</span><span class="cost-value green">+ $179,900</span></div>
+    <div class="cost-row"><span class="cost-label">Comisión Wompi (tarjeta crédito: 2.69% + $900)</span><span class="cost-value red">- $5,739</span></div>
+    <div class="cost-row"><span class="cost-label">Infraestructura atribuida (Premium = 4 unidades)</span><span class="cost-value red">- $13,484</span></div>
+    <div class="cost-row"><span class="cost-label">Storage + emails + API calls estimados</span><span class="cost-value red">- $4,000</span></div>
+    <div class="cost-total"><span>Ingreso neto por Premium/mes</span><span class="margin">$156,677 · Margen 87%</span></div>
+  </div>
+</div>
+
+<!-- ======================== INFRA ======================== -->
+<div class="plan-section" id="plan-infra">
+  <h2 style="font-size:16px;font-weight:800;margin-bottom:4px;">¿Cómo se reparte el costo de infraestructura?</h2>
+  <p style="color:#64748b;font-size:13px;margin-bottom:16px;">La infra es un costo fijo de ~$337,050 COP/mes. Se distribuye entre todos los negocios activos usando un sistema de "unidades de peso".</p>
+
+  <div class="infra-box">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px;">Costos fijos mensuales totales</h3>
+    <div class="infra-row">
+      <div class="infra-icon">▲</div>
+      <div class="infra-body"><div class="infra-name">Vercel Pro</div><div class="infra-desc">Hosting del frontend Next.js + API Routes + CDN global. Incluye builds ilimitados y Edge Functions.</div></div>
+      <div class="infra-cost">$84,000/mes</div>
+    </div>
+    <div class="infra-row">
+      <div class="infra-icon">🗄</div>
+      <div class="infra-body"><div class="infra-name">Supabase Pro</div><div class="infra-desc">PostgreSQL 8GB + Auth + Storage 100GB + Realtime. El Realtime es clave para actualizar los sellos en Wallet al instante.</div></div>
+      <div class="infra-cost">$105,000/mes</div>
+    </div>
+    <div class="infra-row">
+      <div class="infra-icon">🍎</div>
+      <div class="infra-body"><div class="infra-name">Apple Developer Program</div><div class="infra-desc">Certificado obligatorio para firmar archivos .pkpass de Apple Wallet. Sin esto no se pueden generar pases de Apple.</div></div>
+      <div class="infra-cost">$34,650/mes</div>
+    </div>
+    <div class="infra-row">
+      <div class="infra-icon">📧</div>
+      <div class="infra-body"><div class="infra-name">Resend (emails)</div><div class="infra-desc">Emails transaccionales: bienvenida, confirmación de sello, tarjeta completada, facturas. 50,000 emails/mes.</div></div>
+      <div class="infra-cost">$84,000/mes</div>
+    </div>
+    <div class="infra-row">
+      <div class="infra-icon">⚡</div>
+      <div class="infra-body"><div class="infra-name">Upstash Redis</div><div class="infra-desc">Rate limiting anti-fraude: máx 10 sellos/min por negocio y bloqueo de fuerza bruta en login.</div></div>
+      <div class="infra-cost">~$21,000/mes</div>
+    </div>
+    <div class="infra-row" style="border-bottom:none;">
+      <div class="infra-icon">🌐</div>
+      <div class="infra-body"><div class="infra-name">Dominio fidelitap.co</div><div class="infra-desc">Registro anual del dominio.</div></div>
+      <div class="infra-cost">~$8,400/mes</div>
+    </div>
+  </div>
+
+  <div class="formula">
+    <div class="formula-title">Sistema de unidades de peso por plan</div>
+    <div class="formula-eq">
+      Freemium  <span class="op">=</span> <span class="val">0.5 unidades</span> <span class="label">(usa pocos recursos, no paga)</span>
+      Basic     <span class="op">=</span> <span class="val">1.0 unidades</span> <span class="label">(uso moderado, 3 tarjetas, 500 clientes)</span>
+      Pro       <span class="op">=</span> <span class="val">2.0 unidades</span> <span class="label">(mayor uso, 10 tarjetas, 2K clientes, métricas)</span>
+      Premium   <span class="op">=</span> <span class="val">4.0 unidades</span> <span class="label">(uso alto, ilimitado + API + multi-sede)</span>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid #1e293b;">
+      <div class="formula-title">Ejemplo a 100 negocios (50 Basic + 30 Pro + 20 Premium)</div>
+      <div class="formula-eq">
+        Total unidades <span class="op">=</span> <span class="val">50×1 + 30×2 + 20×4 = 190 unidades</span>
+        Costo/unidad  <span class="op">=</span> <span class="val">$337,050 ÷ 190 = $1,774/unidad</span>
+        ─────────────────────────────────────
+        Infra Basic   <span class="op">=</span> <span class="val">1 × $1,774 = $1,774/mes</span>
+        Infra Pro     <span class="op">=</span> <span class="val">2 × $1,774 = $3,548/mes</span>
+        Infra Premium <span class="op">=</span> <span class="val">4 × $1,774 = </span><span class="result">$7,096/mes</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;border:1px solid #e2e8f0;margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;">Cómo escala la infra con más clientes</h3>
+    <div class="cost-row"><span class="cost-label">20 negocios pagos → costo infra por negocio</span><span class="cost-value red">~$16,800/mes</span></div>
+    <div class="cost-row"><span class="cost-label">50 negocios pagos → costo infra por negocio</span><span class="cost-value yellow">~$6,700/mes</span></div>
+    <div class="cost-row"><span class="cost-label">100 negocios pagos → costo infra por negocio</span><span class="cost-value green">~$3,370/mes</span></div>
+    <div class="cost-row" style="border-bottom:none;"><span class="cost-label">200 negocios pagos → costo infra por negocio</span><span class="cost-value green">~$1,685/mes</span></div>
+    <p style="font-size:10px;color:#94a3b8;margin-top:8px;">ℹ️ El margen mejora significativamente con la escala. A 200+ negocios la infra por cliente es casi despreciable.</p>
+  </div>
+</div>
+
+<!-- ======================== WOMPI ======================== -->
+<div class="plan-section" id="plan-wompi">
+  <h2 style="font-size:16px;font-weight:800;margin-bottom:4px;">Margen por comisión de Wompi</h2>
+  <p style="color:#64748b;font-size:13px;margin-bottom:16px;">Wompi cobra por cada transacción de suscripción. Así afecta tu margen real.</p>
+
+  <div class="detail-card">
+    <h3>¿Cómo cobra Wompi?</h3>
+    <div class="wompi-flow" style="margin-top:8px;">
+      <div class="wompi-step">
+        <div class="wompi-dot" style="background:#3b82f6;"></div>
+        <div class="wompi-text"><strong>El negocio paga su suscripción mensual</strong> <span>→ Se genera una transacción en Wompi</span></div>
+      </div>
+      <div style="margin-left:4px;"><div class="wompi-line"></div></div>
+      <div class="wompi-step">
+        <div class="wompi-dot" style="background:#f59e0b;"></div>
+        <div class="wompi-text"><strong>Wompi descuenta su comisión automáticamente</strong> <span>→ Antes de transferirte el dinero</span></div>
+      </div>
+      <div style="margin-left:4px;"><div class="wompi-line"></div></div>
+      <div class="wompi-step">
+        <div class="wompi-dot" style="background:#00C896;"></div>
+        <div class="wompi-text"><strong>Recibes el neto en tu cuenta bancaria</strong> <span>→ Entre 1–3 días hábiles</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-card" style="margin-top:12px;">
+    <h3>Tabla de comisiones por plan y método de pago</h3>
+    <div style="overflow-x:auto;margin-top:8px;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead style="background:#0f172a;color:white;">
+          <tr>
+            <th style="padding:8px 12px;text-align:left;font-weight:600;">Plan</th>
+            <th style="padding:8px 12px;text-align:left;">Precio</th>
+            <th style="padding:8px 12px;text-align:left;">Tarjeta (2.69%+$900)</th>
+            <th style="padding:8px 12px;text-align:left;">PSE (0.9%+$900)</th>
+            <th style="padding:8px 12px;text-align:left;">Nequi (1.5%+$900)</th>
+            <th style="padding:8px 12px;text-align:left;">Tú recibes (peor caso)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:8px 12px;font-weight:700;">Basic</td>
+            <td style="padding:8px 12px;">$49,900</td>
+            <td style="padding:8px 12px;color:#f87171;">- $2,243</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $1,349</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $1,649</td>
+            <td style="padding:8px 12px;color:#00C896;font-weight:700;">$47,657</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;background:#f0fdf4;">
+            <td style="padding:8px 12px;font-weight:700;">Pro ⭐</td>
+            <td style="padding:8px 12px;">$99,900</td>
+            <td style="padding:8px 12px;color:#f87171;">- $3,587</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $1,799</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $2,399</td>
+            <td style="padding:8px 12px;color:#00C896;font-weight:700;">$96,313</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 12px;font-weight:700;">Premium</td>
+            <td style="padding:8px 12px;">$179,900</td>
+            <td style="padding:8px 12px;color:#f87171;">- $5,739</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $2,519</td>
+            <td style="padding:8px 12px;color:#f59e0b;">- $3,599</td>
+            <td style="padding:8px 12px;color:#00C896;font-weight:700;">$174,161</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="formula" style="margin-top:12px;">
+    <div class="formula-title">Margen final por plan — después de Wompi + infraestructura (a 100 negocios)</div>
+    <div class="formula-eq">
+      Basic    <span class="op">→</span> $49,900 - $2,243 (Wompi) - $3,371 (infra) - $1,500 (variable) <span class="op">=</span> <span class="result">$42,786 · 86%</span>
+      Pro      <span class="op">→</span> $99,900 - $3,587 (Wompi) - $6,742 (infra) - $2,500 (variable) <span class="op">=</span> <span class="result">$87,071 · 87%</span>
+      Premium  <span class="op">→</span> $179,900 - $5,739 (Wompi) - $13,484 (infra) - $4,000 (variable) <span class="op">=</span> <span class="result">$156,677 · 87%</span>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;border:1px solid #e2e8f0;margin-top:12px;">
+    <h3 style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:10px;">💡 Estrategia para reducir comisión Wompi</h3>
+    <div class="feature-row"><span class="check">✓</span><div class="feature-text">Incentivar pago por <strong>PSE</strong> — solo 0.9%+$900 vs 2.69%+$900 en tarjeta. Ofrecer descuento de $5,000 COP/mes si pagan por PSE.</div></div>
+    <div class="feature-row"><span class="check">✓</span><div class="feature-text">Cobro anual anticipado — ofrece 1 mes gratis por pago anual. Reduces transacciones de 12 a 1 por año, la comisión de Wompi se aplica solo una vez.</div></div>
+    <div class="feature-row"><span class="check">✓</span><div class="feature-text">A >200 negocios, negociar con Wompi tarifa corporativa (suelen bajar a ~1.8% para volumen).</div></div>
+  </div>
+</div>
+
+<script>
+function showPlan(id, el) {
+  document.querySelectorAll('.plan-section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('plan-' + id).classList.add('visible');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{"type":"server-started","port":59372,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:59372","screen_dir":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/content","state_dir":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/state"}
+{"type":"screen-added","file":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/content/landing-v4.html"}
+{"type":"screen-added","file":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/content/landing-v5.html"}
+{"type":"screen-added","file":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/content/pricing-analysis.html"}
+{"type":"screen-added","file":"/Users/samuelrodriguez/development/fidelitap/.superpowers/brainstorm/25318-1778484200/content/pricing-detail.html"}
+{"type":"server-stopped","reason":"idle timeout"}

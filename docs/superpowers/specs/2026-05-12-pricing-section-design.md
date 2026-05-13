@@ -9,7 +9,7 @@ Add a `PricingSection` component to the FideliTap landing page (`/`). The sectio
 | Plan    | Price (monthly) | Cards | Max clients |
 |---------|----------------|-------|-------------|
 | Gratis  | $0             | 1     | 20          |
-| Básico  | $49.900 COP    | 3     | 500         |
+| Básico  | $49.900 COP    | 1     | 500         |
 | Pro     | $99.900 COP    | 10    | 2.000       |
 | Premium | $179.900 COP   | ∞     | ∞           |
 
@@ -58,7 +58,7 @@ All paid CTAs link to `/register` (query param `?plan=basic|pro|premium` for fut
 
 | Feature                    | Gratis | Básico | Pro | Premium |
 |---------------------------|--------|--------|-----|---------|
-| Tarjetas de fidelización  | 1      | 3      | 10  | ∞       |
+| Tarjetas de fidelización  | 1      | 1      | 10  | ∞       |
 | Clientes activos          | 20     | 500    | 2.000 | ∞    |
 | Apple & Google Wallet     | ✓      | ✓      | ✓   | ✓       |
 | Escaneo QR ilimitado      | ✓      | ✓      | ✓   | ✓       |
@@ -100,8 +100,67 @@ All paid CTAs link to `/register` (query param `?plan=basic|pro|premium` for fut
 - Toggle animation: CSS transition on knob position
 - Pulsing dot: `animate-ping` or keyframe animation
 
-## Out of scope
+## Plan Limits & Upgrade Experience
 
-- Actual payment/subscription processing (Stripe, etc.)
-- Plan enforcement in the dashboard
-- Email confirmation flows per plan
+This is a core product requirement. No data is ever deleted or blocked when a business reaches a limit or changes plans. The experience must feel helpful, not punitive.
+
+### Limit enforcement rules
+
+| Plan    | Client limit | Card limit |
+|---------|-------------|------------|
+| Gratis  | 20          | 1          |
+| Básico  | 500         | 1          |
+| Pro     | 2.000       | 10         |
+| Premium | ∞           | ∞          |
+
+Limits are checked in two places:
+1. **Scan endpoint** — before registering a new client stamp, check if `current_clients >= plan_limit`. If at limit: reject the scan and return a friendly error.
+2. **Dashboard** — show usage bar and warnings as the business approaches their limit.
+
+### Warning states (dashboard)
+
+| Usage     | State          | Behavior |
+|-----------|----------------|----------|
+| < 80%     | Normal         | Show usage count only |
+| 80–99%    | Warning        | Yellow banner: "Estás llegando al límite de tu plan. Tienes X espacios restantes." + upgrade CTA |
+| 100%      | Full — soft    | Orange banner: "Alcanzaste el límite de X clientes. Los clientes actuales siguen activos, pero no se registrarán nuevos hasta que actualices tu plan." |
+| New scan at 100% | Full — hard | Scan fails silently for the end customer. Business owner sees in dashboard: "Intento de registro bloqueado — actualiza tu plan para aceptar más clientes." |
+
+### What happens on scan when at limit
+
+The QR scan endpoint returns a response that the kiosk/app handles:
+- If client **already exists** in the business → stamp normally (no block, the client is already registered)
+- If client is **new** and business is at limit → return `{ error: 'limit_reached', upgrade_url: '/dashboard/plan' }`
+
+The end customer never sees a cold error — the kiosk/app shows a generic "Algo salió mal, intenta de nuevo" and the business owner sees the blocked attempt in their dashboard.
+
+### Upgrade flow (no payment backend yet)
+
+Until Stripe is integrated, the upgrade CTA leads to a contact/waitlist form or a WhatsApp link. The `plan` field on the `businesses` table is updated manually by the admin. When it changes:
+- New limits apply immediately (no restart, no data loss)
+- New features unlock immediately (feature flags read `business.plan` at render time)
+- All existing clients, stamps, and card history remain intact — nothing is deleted
+
+### Data preservation guarantee
+
+Plan changes only update `businesses.plan` (a single string field). All client records, stamp history, and loyalty cards belong to the business and are independent of the plan. Downgrading (future) will soft-lock access to features above the new limit but **never delete data**.
+
+### Feature flags by plan
+
+Features gated by plan are checked server-side in the dashboard layout or individual pages:
+
+| Feature                   | Gratis | Básico | Pro | Premium |
+|--------------------------|--------|--------|-----|---------|
+| Multiple cards (>1)      | ✗      | ✗      | ✓   | ✓       |
+| Estadísticas avanzadas   | ✗      | ✗      | ✓   | ✓       |
+| Diseño personalizado avz.| ✗      | ✗      | ✓   | ✓       |
+| Soporte dedicado (WA)    | ✗      | ✗      | ✗   | ✓       |
+| Exportar datos           | ✗      | ✗      | ✗   | ✓       |
+
+Locked features show a "Desbloquea con Plan X" badge instead of the feature UI — never a blank or broken page.
+
+## Out of scope (this spec)
+
+- Stripe / payment processing (separate spec)
+- Automatic plan downgrades / dunning
+- Email alerts when approaching limits (separate notification spec)

@@ -19,12 +19,14 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
   const loyaltyCardIds = (loyaltyCards ?? []).map((c) => c.id)
 
   // Count distinct customers across all loyalty cards for this business
-  const { count: customerCount } = loyaltyCardIds.length > 0
+  const { data: customerRows } = loyaltyCardIds.length > 0
     ? await supabase
         .from('customer_cards')
-        .select('customer_id', { count: 'exact', head: true })
+        .select('customer_id')
         .in('loyalty_card_id', loyaltyCardIds)
-    : { count: 0 }
+    : { data: [] }
+
+  const customerCount = new Set((customerRows ?? []).map((r) => r.customer_id)).size
 
   // Count active loyalty cards for this business
   const { count: cardCount } = await supabase
@@ -70,7 +72,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
                   customerState === 'warning' ? 'bg-amber-400' :
                   'bg-[#00C896]'
                 }`}
-                style={{ width: `${customerPct ?? 100}%` }}
+                style={{ width: `${customerPct ?? 0}%` }}
               />
             </div>
           </div>
@@ -86,6 +88,37 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
           <p className="text-[10px] text-amber-400 leading-relaxed mb-2">
             Casi al límite. Quedan {(limits.maxCustomers ?? 0) - customers} espacios.
           </p>
+        )}
+
+        {/* Card usage */}
+        {limits.maxCards !== null && (
+          <div className="mb-2">
+            <div className="flex justify-between text-[10px] mb-1">
+              <span className="text-slate-400">Tarjetas</span>
+              <span className={
+                cardState === 'full' ? 'text-red-400 font-bold' :
+                cardState === 'warning' ? 'text-amber-400 font-bold' :
+                'text-slate-400'
+              }>
+                {cards}/{limits.maxCards}
+              </span>
+            </div>
+            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  cardState === 'full' ? 'bg-red-500' :
+                  cardState === 'warning' ? 'bg-amber-400' :
+                  'bg-[#00C896]'
+                }`}
+                style={{ width: `${getUsagePct(cards, limits.maxCards) ?? 100}%` }}
+              />
+            </div>
+            {cardState === 'full' && (
+              <p className="text-[10px] text-red-400 leading-relaxed mt-1">
+                Límite de tarjetas alcanzado.
+              </p>
+            )}
+          </div>
         )}
 
         {showWarning ? (

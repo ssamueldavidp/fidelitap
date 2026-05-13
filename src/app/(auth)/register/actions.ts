@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { emailSchema } from '@/lib/validations/common'
 import { z } from 'zod'
 import { redirect } from 'next/navigation'
+import { loginRateLimit } from '@/lib/rate-limit'
+import { headers } from 'next/headers'
 
 const registerSchema = z.object({
   businessName: z.string().min(2, 'Mínimo 2 caracteres').max(100).trim(),
@@ -20,6 +22,16 @@ export async function registerAction(
   _prevState: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
+  // Rate limiting por IP
+  const headersList = await headers()
+  const forwarded = headersList.get('x-forwarded-for')
+  const ip = forwarded?.split(',')[0].trim() || '127.0.0.1'
+
+  const { success } = await loginRateLimit.limit(ip)
+  if (!success) {
+    return { error: 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.' }
+  }
+
   // 1. Validar con Zod antes de tocar Supabase
   const parsed = registerSchema.safeParse({
     businessName: formData.get('businessName'),
@@ -60,7 +72,10 @@ export async function registerAction(
 
   if (bizError) {
     // Limpiar el usuario auth si falla la creación del negocio
-    await admin.auth.admin.deleteUser(data.user.id)
+    const { error: deleteError } = await admin.auth.admin.deleteUser(data.user.id)
+    if (deleteError) {
+      console.error('[register] Failed to delete orphaned auth user', data.user.id, deleteError.message)
+    }
     return { error: 'Error al crear el negocio. Intenta de nuevo.' }
   }
 

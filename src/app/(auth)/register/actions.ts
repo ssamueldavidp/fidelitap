@@ -50,9 +50,6 @@ export async function registerAction(
   })
 
   if (signUpError) {
-    if (signUpError.message.toLowerCase().includes('already registered')) {
-      return { error: 'Este email ya está registrado. Intenta iniciar sesión.' }
-    }
     return { error: 'Error al crear la cuenta. Intenta de nuevo.' }
   }
 

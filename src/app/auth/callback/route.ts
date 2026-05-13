@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  // Redirigir solo a rutas internas — nunca a URLs externas
-  const safeNext = next.startsWith('/') ? next : '/dashboard'
+  // Redirigir solo a rutas internas — nunca a URLs externas (bloquea // también)
+  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard'
   return NextResponse.redirect(`${origin}${safeNext}`)
 }

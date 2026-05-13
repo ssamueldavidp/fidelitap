@@ -8,7 +8,7 @@ import { headers } from 'next/headers'
 
 const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, 'La contraseña es requerida'),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
 })
 
 export async function loginAction(
@@ -46,5 +46,8 @@ export async function loginAction(
   }
 
   // 4. Redirect — sesión en httpOnly cookie, nunca en cliente
-  redirect('/dashboard')
+  // Redirect — validate to prevent open redirect
+  const rawRedirect = (formData.get('redirectTo') as string | null) ?? '/dashboard'
+  const safePath = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard'
+  redirect(safePath)
 }

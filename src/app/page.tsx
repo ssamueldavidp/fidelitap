@@ -1,12 +1,15 @@
+import { Navbar } from '@/components/landing/navbar'
+import { Hero } from '@/components/landing/hero'
+import { HowItWorks } from '@/components/landing/how-it-works'
+import { CtaSection } from '@/components/landing/cta-section'
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950">
-      <div className="text-center">
-        <h1 className="text-4xl font-black text-white">
-          fideli<span className="text-[#00C896]">tap</span>
-        </h1>
-        <p className="mt-2 text-slate-400 text-sm">Landing page — Plan 2</p>
-      </div>
-    </main>
+    <div className="bg-white">
+      <Navbar />
+      <Hero />
+      <HowItWorks />
+      <CtaSection />
+    </div>
   )
 }

@@ -43,6 +43,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       loyalty_cards: {
         Row: {
@@ -78,6 +79,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       customers: {
         Row: {
@@ -101,6 +103,7 @@ export interface Database {
           phone?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       customer_cards: {
         Row: {
@@ -148,6 +151,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       stamp_events: {
         Row: {
@@ -180,6 +184,7 @@ export interface Database {
           device_fingerprint?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       subscription_plans: {
         Row: {
@@ -212,6 +217,7 @@ export interface Database {
           features?: Json
           is_active?: boolean
         }
+        Relationships: []
       }
     }
     Views: Record<string, never>

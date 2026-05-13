@@ -9,6 +9,7 @@ const PROTECTED_BUSINESS_ROUTES = [
   '/customers',
   '/settings',
   '/poster',
+  '/onboarding',
 ]
 
 // Rutas públicas (sin auth requerida)

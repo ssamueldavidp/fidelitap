@@ -217,7 +217,7 @@ export function PricingSection() {
                   </span>
                 )}
               </div>
-              <p className={`text-[11px] mb-1 ${plan.highlight ? 'text-slate-400' : 'text-slate-400'}`}>
+              <p className="text-[11px] mb-1 text-slate-400">
                 /mes · facturación {isAnnual ? 'anual' : 'mensual'}
               </p>
               <p className="text-[11px] font-semibold text-[#00C896] mb-1">

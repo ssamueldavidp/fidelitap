@@ -4,7 +4,7 @@ export function CtaSection() {
   return (
     <>
       {/* CTA */}
-      <section id="precios" className="bg-white py-20 px-6 border-t border-slate-100 text-center">
+      <section className="bg-white py-20 px-6 border-t border-slate-100 text-center">
         <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3">
           ¿Listo para fidelizar a tus clientes?
         </h2>

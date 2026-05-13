@@ -3,10 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
   const { data: business } = await supabase
     .from('businesses')
     .select('name')
-    .eq('owner_id', user!.id)
+    .eq('owner_id', user.id)
     .single()
 
   return (

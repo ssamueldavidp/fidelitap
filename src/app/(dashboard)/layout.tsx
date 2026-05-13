@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { PlanUsage } from '@/components/dashboard/plan-usage'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '⊞' },
@@ -18,11 +19,9 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
 
-  // Verificar sesión
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Verificar que el usuario tiene negocio registrado
   const { data: business } = await supabase
     .from('businesses')
     .select('id, name, plan')
@@ -52,19 +51,7 @@ export default async function DashboardLayout({
           ))}
         </nav>
 
-        {/* Plan badge */}
-        <div className="px-3 mt-4">
-          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-0.5">Plan actual</p>
-            <p className="text-sm font-bold text-white capitalize mb-2">{business.plan}</p>
-            <Link
-              href="/settings#plan"
-              className="block text-center text-xs font-bold bg-[#00C896] text-slate-900 rounded-lg py-1.5 hover:bg-[#00b386] transition-colors"
-            >
-              Actualizar plan →
-            </Link>
-          </div>
-        </div>
+        <PlanUsage businessId={business.id} plan={business.plan} />
       </aside>
 
       {/* Main */}

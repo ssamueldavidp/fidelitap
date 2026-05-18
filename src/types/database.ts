@@ -54,6 +54,8 @@ export interface Database {
           benefit_description: string
           design_config: Json
           is_active: boolean
+          slug: string
+          deleted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -65,6 +67,8 @@ export interface Database {
           benefit_description: string
           design_config?: Json
           is_active?: boolean
+          slug?: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -76,6 +80,8 @@ export interface Database {
           benefit_description?: string
           design_config?: Json
           is_active?: boolean
+          slug?: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }

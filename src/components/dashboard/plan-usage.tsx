@@ -33,7 +33,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
     .from('loyalty_cards')
     .select('id', { count: 'exact', head: true })
     .eq('business_id', businessId)
-    .eq('is_active', true)
+    .is('deleted_at', null)
 
   const limits = getPlanLimits(plan)
   const customers = customerCount ?? 0

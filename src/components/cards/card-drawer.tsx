@@ -26,7 +26,7 @@ export function CardDrawer({
   onClose,
 }: CardDrawerProps) {
   const design = card.design_config as unknown as CardDesignConfig
-  const shareUrl = `${APP_URL}/c/${(card as LoyaltyCard & { slug: string }).slug}`
+  const shareUrl = `${APP_URL}/c/${card.slug}`
 
   const [isActive, setIsActive] = useState(card.is_active)
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
@@ -52,7 +52,9 @@ export function CardDrawer({
   }
 
   function handleCopyLink() {
-    navigator.clipboard.writeText(shareUrl)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).catch(() => {})
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

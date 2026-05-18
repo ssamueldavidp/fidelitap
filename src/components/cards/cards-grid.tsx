@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { CardWidget } from '@/components/cards/card-widget'
 import { CardDrawer } from '@/components/cards/card-drawer'
@@ -33,6 +33,10 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
   const selectedCardData = selectedCardId
     ? cards.find(({ card }) => card.id === selectedCardId)
     : null
+
+  useEffect(() => {
+    if (selectedCardId && !selectedCardData) setSelectedCardId(null)
+  }, [selectedCardId, selectedCardData])
 
   return (
     <>

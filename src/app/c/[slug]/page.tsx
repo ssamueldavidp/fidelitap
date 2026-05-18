@@ -1,0 +1,65 @@
+import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { WalletPreview } from '@/components/cards/wallet-preview'
+import { ActivateForm } from './activate-form'
+import type { CardDesignConfig } from '@/types/database'
+
+export default async function CardActivationPage({
+  params,
+}: {
+  params: { slug: string }
+}) {
+  const supabase = await createClient()
+
+  const { data: card } = await supabase
+    .from('loyalty_cards')
+    .select('id, name, benefit_description, stamps_required, design_config, business_id')
+    .eq('slug', params.slug)
+    .is('deleted_at', null)
+    .eq('is_active', true)
+    .single()
+
+  if (!card) notFound()
+
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('name')
+    .eq('id', card.business_id)
+    .single()
+
+  const design = card.design_config as unknown as CardDesignConfig
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm flex flex-col gap-6">
+        {/* Header */}
+        <div className="text-center">
+          <p className="text-[#00C896] text-xs font-bold uppercase tracking-widest mb-1">
+            {business?.name}
+          </p>
+          <h1 className="text-2xl font-black">{card.name}</h1>
+          <p className="text-slate-400 text-sm mt-1">{card.benefit_description}</p>
+        </div>
+
+        {/* Card Preview */}
+        <WalletPreview
+          businessName={business?.name ?? ''}
+          name={card.name}
+          benefitDescription={card.benefit_description}
+          stampsRequired={card.stamps_required}
+          stampIcon={design.stamp_icon}
+          color={design.color}
+          bgType={design.bg_type === 'image' ? 'image' : 'solid'}
+          bgImageUrl={design.bg_image_url}
+          filledStamps={0}
+        />
+
+        {/* Form */}
+        <ActivateForm
+          loyaltyCardId={card.id}
+          businessId={card.business_id}
+        />
+      </div>
+    </div>
+  )
+}

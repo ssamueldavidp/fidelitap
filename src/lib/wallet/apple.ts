@@ -17,9 +17,13 @@ interface ApplePassData {
 }
 
 export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
-  const wwdr = Buffer.from(process.env.APPLE_WWDR_BASE64!, 'base64')
-  const signerCert = Buffer.from(process.env.APPLE_CERT_BASE64!, 'base64')
-  const signerKey = Buffer.from(process.env.APPLE_KEY_BASE64!, 'base64')
+  if (!process.env.APPLE_WWDR_BASE64 || !process.env.APPLE_CERT_BASE64 || !process.env.APPLE_KEY_BASE64) {
+    throw new Error('Missing Apple Wallet certificate env vars')
+  }
+
+  const wwdr = Buffer.from(process.env.APPLE_WWDR_BASE64, 'base64')
+  const signerCert = Buffer.from(process.env.APPLE_CERT_BASE64, 'base64')
+  const signerKey = Buffer.from(process.env.APPLE_KEY_BASE64, 'base64')
   const signerKeyPassphrase = process.env.APPLE_CERT_PASSPHRASE ?? ''
 
   let iconBuffer: Buffer

@@ -60,20 +60,29 @@ export async function GET(
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
-  const card = cc.loyalty_cards
+  const card = cc.loyalty_cards as {
+    id: string
+    name: string
+    benefit_description: string
+    stamps_required: number
+    design_config: unknown
+    business_id: string
+    businesses: { name: string } | null
+  } | null
   if (!card) return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 })
 
-  const businessesRaw = card.businesses
-  const businessName = Array.isArray(businessesRaw)
-    ? (businessesRaw[0] as { name: string } | undefined)?.name ?? 'FideliTap'
-    : businessesRaw?.name ?? 'FideliTap'
+  const businessName = card.businesses?.name ?? 'FideliTap'
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.app'
 
+  if (!process.env.APPLE_PASS_TYPE_ID || !process.env.APPLE_TEAM_ID) {
+    return NextResponse.json({ error: 'Configuración de Apple Wallet incompleta' }, { status: 503 })
+  }
+
   try {
     const passBuffer = await generateApplePass({
-      passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID!,
-      teamIdentifier: process.env.APPLE_TEAM_ID!,
+      passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID,
+      teamIdentifier: process.env.APPLE_TEAM_ID,
       serialNumber: cc.wallet_pass_serial ?? cc.id,
       authenticationToken: cc.wallet_auth_token!,
       organizationName: businessName,
@@ -85,7 +94,7 @@ export async function GET(
       appUrl,
     })
 
-    return new NextResponse(passBuffer as unknown as BodyInit, {
+    return new NextResponse(Uint8Array.from(passBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.apple.pkpass',

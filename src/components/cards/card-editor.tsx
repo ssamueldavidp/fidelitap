@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { WalletPreview } from '@/components/cards/wallet-preview'
 import { createCardAction, updateCardAction } from '@/app/(dashboard)/cards/actions'
@@ -35,11 +35,22 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    return () => {
+      if (bgImagePreview && bgImagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(bgImagePreview)
+      }
+    }
+  }, [bgImagePreview])
+
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     setBgImageFile(file)
-    setBgImagePreview(URL.createObjectURL(file))
+    setBgImagePreview(prev => {
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
   }
 
   function handleSubmit(e: React.FormEvent) {

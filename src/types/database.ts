@@ -192,6 +192,33 @@ export interface Database {
         }
         Relationships: []
       }
+      device_registrations: {
+        Row: {
+          id: string
+          device_library_identifier: string
+          push_token: string
+          pass_type_identifier: string
+          serial_number: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          device_library_identifier: string
+          push_token: string
+          pass_type_identifier: string
+          serial_number: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          device_library_identifier?: string
+          push_token?: string
+          pass_type_identifier?: string
+          serial_number?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           id: string
@@ -227,7 +254,12 @@ export interface Database {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      add_stamp: {
+        Args: { p_card_id: string }
+        Returns: { current_stamps: number; is_complete: boolean; times_completed: number }
+      }
+    }
     Enums: Record<string, never>
   }
 }
@@ -248,6 +280,8 @@ export type CustomerCardInsert = Database['public']['Tables']['customer_cards'][
 
 export type StampEvent = Database['public']['Tables']['stamp_events']['Row']
 export type StampEventInsert = Database['public']['Tables']['stamp_events']['Insert']
+
+export type DeviceRegistration = Database['public']['Tables']['device_registrations']['Row']
 
 export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 

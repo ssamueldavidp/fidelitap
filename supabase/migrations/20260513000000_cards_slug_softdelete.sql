@@ -7,7 +7,7 @@ ALTER TABLE public.loyalty_cards
 
 -- Backfill slugs for any existing rows
 UPDATE public.loyalty_cards
-SET slug = regexp_replace(lower(unaccent(name)), '[^a-z0-9]+', '-', 'g')
+SET slug = trim(both '-' from regexp_replace(lower(unaccent(name)), '[^a-z0-9]+', '-', 'g'))
            || '-' || substr(gen_random_uuid()::text, 1, 4)
 WHERE slug IS NULL;
 
@@ -40,7 +40,12 @@ CREATE POLICY "card-backgrounds: public read"
 
 CREATE POLICY "card-backgrounds: authenticated upload"
   ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'card-backgrounds' AND auth.uid() IS NOT NULL);
+  WITH CHECK (
+    bucket_id = 'card-backgrounds'
+    AND (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.businesses WHERE owner_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "card-backgrounds: owner delete"
   ON storage.objects FOR DELETE

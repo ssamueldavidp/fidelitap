@@ -28,7 +28,7 @@ export async function GET(
 
   const supabase = createServiceClient()
 
-  const { data: ccRaw } = await supabase
+  const { data: ccRaw, error: ccError } = await supabase
     .from('customer_cards')
     .select(`
       id,
@@ -48,6 +48,11 @@ export async function GET(
     `)
     .eq('id', params.customerCardId)
     .single()
+
+  if (ccError && ccError.code !== 'PGRST116') {
+    // PGRST116 = row not found, treat as 401
+    return NextResponse.json({ error: 'Error de base de datos' }, { status: 500 })
+  }
 
   const cc = ccRaw as CustomerCardRow | null
 

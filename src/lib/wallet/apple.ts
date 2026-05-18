@@ -73,11 +73,6 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
           label: 'Tu código único',
           value: data.uniqueCode,
         },
-        {
-          key: 'instructions',
-          label: 'Cómo funciona',
-          value: 'Muestra el QR en cada visita. El negocio lo escanea para agregar un sello.',
-        },
       ],
     },
     barcodes: [

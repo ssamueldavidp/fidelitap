@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getGoogleWalletSaveUrl } from '@/lib/wallet/google'
@@ -57,7 +58,15 @@ export async function GET(
 
   const cc = ccRaw as CustomerCardRow | null
 
-  if (!cc || cc.wallet_auth_token !== token) {
+  if (!cc) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  const storedToken = cc.wallet_auth_token ?? ''
+  if (
+    storedToken.length !== token.length ||
+    !timingSafeEqual(Buffer.from(storedToken), Buffer.from(token))
+  ) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

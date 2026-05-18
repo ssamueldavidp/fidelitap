@@ -89,8 +89,13 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
+  if (!getRes.ok && getRes.status !== 404) {
+    const text = await getRes.text()
+    throw new Error(`Google Wallet API error checking resource: ${getRes.status} ${text}`)
+  }
+
   if (getRes.status === 404) {
-    await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass`, {
+    const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -98,8 +103,12 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
       },
       body: JSON.stringify(loyaltyClass),
     })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Google Wallet API error: ${res.status} ${text}`)
+    }
   } else {
-    await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass/${classId}`, {
+    const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass/${classId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -107,6 +116,10 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
       },
       body: JSON.stringify({ programName: data.cardName }),
     })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Google Wallet API error: ${res.status} ${text}`)
+    }
   }
 }
 
@@ -144,8 +157,13 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
+  if (!getRes.ok && getRes.status !== 404) {
+    const text = await getRes.text()
+    throw new Error(`Google Wallet API error checking resource: ${getRes.status} ${text}`)
+  }
+
   if (getRes.status === 404) {
-    await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject`, {
+    const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -153,8 +171,12 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
       },
       body: JSON.stringify(loyaltyObject),
     })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Google Wallet API error: ${res.status} ${text}`)
+    }
   } else {
-    await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject/${objectId}`, {
+    const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject/${objectId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -164,6 +186,10 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
         loyaltyPoints: { label: 'Sellos', balance: { int: data.stampsCurrent } },
       }),
     })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Google Wallet API error: ${res.status} ${text}`)
+    }
   }
 }
 

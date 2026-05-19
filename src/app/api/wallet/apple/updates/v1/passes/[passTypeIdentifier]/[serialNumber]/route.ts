@@ -22,6 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
       wallet_pass_serial,
       unique_code,
       current_stamps,
+      updated_at,
       loyalty_cards (
         id,
         name,
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
     wallet_pass_serial: string | null
     unique_code: string
     current_stamps: number
+    updated_at: string | null
     loyalty_cards: {
       id: string
       name: string
@@ -57,6 +59,8 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
   const card = cc.loyalty_cards
   if (!card) return new NextResponse(null, { status: 404 })
 
+  if (!cc.wallet_auth_token) return new NextResponse(null, { status: 500 })
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.app'
 
   if (!process.env.APPLE_PASS_TYPE_ID || !process.env.APPLE_TEAM_ID) {
@@ -68,7 +72,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
       passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID,
       teamIdentifier: process.env.APPLE_TEAM_ID,
       serialNumber: cc.wallet_pass_serial ?? cc.id,
-      authenticationToken: cc.wallet_auth_token!,
+      authenticationToken: cc.wallet_auth_token,
       organizationName: card.businesses?.name ?? 'FideliTap',
       description: card.name,
       stampsCurrent: cc.current_stamps,
@@ -82,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.apple.pkpass',
-        'Last-Modified': new Date().toUTCString(),
+        'Last-Modified': cc.updated_at ? new Date(cc.updated_at).toUTCString() : new Date().toUTCString(),
       },
     })
   } catch (err) {

@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { redirect } from 'next/navigation'
 import { loginRateLimit } from '@/lib/rate-limit'
 import { headers } from 'next/headers'
+import { sendBusinessWelcome } from '@/lib/email/send-business-welcome'
 
 const registerSchema = z.object({
   businessName: z.string().min(2, 'Mínimo 2 caracteres').max(100).trim(),
@@ -76,6 +77,12 @@ export async function registerAction(
     return { error: 'Error al crear el negocio. Intenta de nuevo.' }
   }
 
-  // 4. Redirigir — si hay sesión activa, el middleware lleva al dashboard
+  // 4. Enviar welcome email (fire-and-forget — no bloquea el redirect)
+  void sendBusinessWelcome({
+    to: parsed.data.email,
+    businessName: parsed.data.businessName,
+  })
+
+  // 5. Redirigir — si hay sesión activa, el middleware lleva al dashboard
   redirect('/dashboard')
 }

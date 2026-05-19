@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { addStampAction, type StampResult } from './actions'
 
 type ScanState = 'idle' | 'scanning' | 'success' | 'error'
@@ -15,6 +15,22 @@ export function ScannerClient() {
   const [isPending, startTransition] = useTransition()
   const scannerRef = useRef<{ clear: () => Promise<void> } | null>(null)
   const processedRef = useRef(false)
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleScan = useCallback((code: string) => {
+    setScanState('scanning')
+    startTransition(async () => {
+      const res = await addStampAction(code)
+      if ('error' in res) {
+        setErrorMsg(res.error)
+        setScanState('error')
+        errorTimerRef.current = setTimeout(() => setScanState('idle'), 3000)
+      } else {
+        setSuccessData(res)
+        setScanState('success')
+      }
+    })
+  }, [startTransition])
 
   useEffect(() => {
     if (scanState !== 'idle') return
@@ -51,23 +67,12 @@ export function ScannerClient() {
       mounted = false
       scannerRef.current?.clear().catch(() => {})
       scannerRef.current = null
-    }
-  }, [scanState])
-
-  function handleScan(code: string) {
-    setScanState('scanning')
-    startTransition(async () => {
-      const res = await addStampAction(code)
-      if ('error' in res) {
-        setErrorMsg(res.error)
-        setScanState('error')
-        setTimeout(() => setScanState('idle'), 3000)
-      } else {
-        setSuccessData(res)
-        setScanState('success')
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current)
+        errorTimerRef.current = null
       }
-    })
-  }
+    }
+  }, [scanState, handleScan])
 
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault()

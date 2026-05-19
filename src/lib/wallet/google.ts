@@ -220,3 +220,37 @@ export async function getGoogleWalletSaveUrl(data: LoyaltyPassData): Promise<str
   const jwt = signRS256JWT(jwtPayload, sa.privateKey)
   return `https://pay.google.com/gp/v/save/${jwt}`
 }
+
+export async function updateGoogleWalletStamps(
+  customerCardId: string,
+  loyaltyCardId: string,
+  newStampCount: number
+): Promise<void> {
+  if (
+    !process.env.GOOGLE_WALLET_ISSUER_ID ||
+    !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
+    !process.env.GOOGLE_SERVICE_ACCOUNT_KEY
+  ) {
+    return
+  }
+
+  const sa = getServiceAccount()
+  const accessToken = await getAccessToken(sa)
+  const objectId = `${process.env.GOOGLE_WALLET_ISSUER_ID}.cc-${customerCardId}`
+
+  const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject/${objectId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      loyaltyPoints: { label: 'Sellos', balance: { int: newStampCount } },
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Google Wallet PATCH error: ${res.status} ${text}`)
+  }
+}

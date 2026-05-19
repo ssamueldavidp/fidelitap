@@ -18,6 +18,7 @@ export interface Database {
           plan: 'free' | 'basic' | 'pro' | 'premium'
           subscription_status: 'active' | 'past_due' | 'canceled'
           wompi_customer_id: string | null
+          stamp_cooldown_seconds: number
           created_at: string
           updated_at: string
         }
@@ -29,6 +30,7 @@ export interface Database {
           plan?: 'free' | 'basic' | 'pro' | 'premium'
           subscription_status?: 'active' | 'past_due' | 'canceled'
           wompi_customer_id?: string | null
+          stamp_cooldown_seconds?: number
           created_at?: string
           updated_at?: string
         }
@@ -40,6 +42,7 @@ export interface Database {
           plan?: 'free' | 'basic' | 'pro' | 'premium'
           subscription_status?: 'active' | 'past_due' | 'canceled'
           wompi_customer_id?: string | null
+          stamp_cooldown_seconds?: number
           created_at?: string
           updated_at?: string
         }
@@ -258,6 +261,23 @@ export interface Database {
       add_stamp: {
         Args: { p_card_id: string }
         Returns: { current_stamps: number; is_complete: boolean; times_completed: number }
+      }
+      get_business_metrics: {
+        Args: { p_business_id: string }
+        Returns: { activos: number; sellos_hoy: number; canjes_totales: number; retencion_pct: number }
+      }
+      get_customers_list: {
+        Args: { p_business_id: string; p_q?: string; p_card_id?: string }
+        Returns: {
+          customer_id: string
+          customer_name: string
+          card_name: string
+          loyalty_card_id: string
+          current_stamps: number
+          stamps_required: number
+          times_completed: number
+          last_visit: string | null
+        }[]
       }
     }
     Enums: Record<string, never>

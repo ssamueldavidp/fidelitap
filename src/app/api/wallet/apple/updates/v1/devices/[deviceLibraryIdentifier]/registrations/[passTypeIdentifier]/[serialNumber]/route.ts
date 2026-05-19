@@ -40,12 +40,16 @@ export async function DELETE(request: NextRequest, { params }: { params: Params 
 
   const supabase = createServiceClient()
 
-  await supabase
+  const { error } = await supabase
     .from('device_registrations')
     .delete()
     .eq('device_library_identifier', deviceLibraryIdentifier)
     .eq('pass_type_identifier', passTypeIdentifier)
     .eq('serial_number', serialNumber)
+
+  if (error) {
+    console.error('device_registrations delete error:', error)
+  }
 
   return new NextResponse(null, { status: 200 })
 }

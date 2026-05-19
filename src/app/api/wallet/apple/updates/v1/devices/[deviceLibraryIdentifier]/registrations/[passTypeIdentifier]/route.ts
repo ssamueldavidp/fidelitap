@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
 
   const { data: updatedCards } = await supabase
     .from('customer_cards')
-    .select('wallet_pass_serial')
+    .select('wallet_pass_serial, updated_at')
     .in('wallet_pass_serial', allSerials)
     .gt('updated_at', passesUpdatedSince)
 
@@ -42,8 +42,14 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
     return new NextResponse(null, { status: 204 })
   }
 
+  const maxUpdatedAt = (updatedCards ?? [])
+    .map((c) => c.updated_at)
+    .filter((d): d is string => d !== null)
+    .sort()
+    .at(-1) ?? new Date().toISOString()
+
   return NextResponse.json({
     serialNumbers: filteredSerials,
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: maxUpdatedAt,
   })
 }

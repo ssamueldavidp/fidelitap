@@ -135,12 +135,11 @@ Two-column layout:
 ## 8. API Route
 
 ```
-GET /api/poster/[cardId]?format=png|pdf&orientation=vertical|horizontal&bgColor=%230B0B0B&rewardText=...
+GET /api/poster/[cardId]?format=png|pdf&orientation=vertical|horizontal
 ```
 
 - Auth: validates that `cardId` belongs to the authenticated business (via Supabase session cookie)
-- `bgColor`: hex string (used when no `poster_bg_image_url`)
-- `rewardText`: URL-encoded string
+- All poster settings (`poster_reward_text`, `poster_bg_color`, `poster_bg_image_url`) are read from the DB — the business must save settings first via `savePosterSettingsAction` before downloading
 - Response headers:
   - PNG: `Content-Type: image/png`, `Content-Disposition: attachment; filename="cartel.png"`
   - PDF: `Content-Type: application/pdf`, `Content-Disposition: attachment; filename="cartel.pdf"`

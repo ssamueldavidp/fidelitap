@@ -35,6 +35,7 @@ export async function GET(
       businesses ( id, owner_id, name, poster_bg_color, poster_bg_image_url )
     `)
     .eq('id', params.cardId)
+    .is('deleted_at', null)
     .maybeSingle()
 
   if (!cardRaw) return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 })

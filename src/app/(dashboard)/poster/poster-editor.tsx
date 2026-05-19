@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition } from 'react'
 import { savePosterSettingsAction } from './actions'
 
 interface Card {
@@ -36,7 +36,6 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
   const [downloadError, setDownloadError] = useState('')
   const [isPending, startTransition] = useTransition()
   const [isDownloading, setIsDownloading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleCardChange(id: string) {
     setCardId(id)
@@ -187,10 +186,9 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
         ) : (
           <div>
             <input
-              ref={fileInputRef}
               type="file"
               name="bgImage"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/png,image/jpeg"
               className="text-sm text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700"
             />
             {business.poster_bg_image_url && (
@@ -229,7 +227,7 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
             onClick={() => handleDownload('pdf')}
             className="border border-slate-600 text-slate-300 font-bold text-sm rounded-lg px-4 py-2.5 hover:border-slate-400 disabled:opacity-40 transition-colors"
           >
-            Descargar PDF
+            {isDownloading ? 'Descargando...' : 'Descargar PDF'}
           </button>
         </div>
         {downloadError && <p className="text-red-400 text-sm mt-2">{downloadError}</p>}

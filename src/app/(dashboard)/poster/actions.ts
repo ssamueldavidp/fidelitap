@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -15,6 +16,7 @@ export async function savePosterSettingsAction(
   const cardId = formData.get('cardId') as string
   const rewardText = (formData.get('rewardText') as string | null) ?? ''
   const bgType = formData.get('bgType') as 'color' | 'photo'
+  if (bgType !== 'color' && bgType !== 'photo') return { error: 'Tipo de fondo inválido' }
   const bgColor = (formData.get('bgColor') as string | null) ?? '#0B0B0B'
   const bgImage = formData.get('bgImage') as File | null
 
@@ -73,8 +75,8 @@ export async function savePosterSettingsAction(
       .eq('id', businessId)
 
     if (bizErr) return { error: 'Error al guardar fondo' }
-  } else {
-    // Color mode — validate hex
+  } else if (bgType === 'color') {
+    // Color mode — validate hex and clear image
     if (!/^#[0-9A-Fa-f]{6}$/.test(bgColor)) return { error: 'Color inválido' }
 
     const { error: bizErr } = await serviceClient
@@ -84,6 +86,8 @@ export async function savePosterSettingsAction(
 
     if (bizErr) return { error: 'Error al guardar color' }
   }
+  // if bgType === 'photo' but no new file: keep existing photo as-is
 
+  revalidatePath('/poster')
   return {}
 }

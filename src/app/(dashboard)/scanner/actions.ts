@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
+import { sendCardComplete } from '@/lib/email/send-card-complete'
 
 export type StampResult =
   | { error: string }
@@ -24,7 +25,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, stamp_cooldown_seconds')
+    .select('id, name, stamp_cooldown_seconds')
     .eq('owner_id', user.id)
     .single()
   if (!business) return { error: 'Negocio no encontrado' }
@@ -38,7 +39,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
       wallet_pass_serial,
       loyalty_card_id,
       loyalty_cards ( id, stamps_required, business_id ),
-      customers ( name )
+      customers ( name, email )
     `)
     .eq('unique_code', uniqueCode.trim())
     .maybeSingle()
@@ -50,7 +51,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     wallet_pass_serial: string | null
     loyalty_card_id: string
     loyalty_cards: { id: string; stamps_required: number; business_id: string } | null
-    customers: { name: string } | null
+    customers: { name: string; email: string | null } | null
   }
 
   const card = cc.loyalty_cards
@@ -110,9 +111,20 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     pushTokens = registrations?.map((r) => r.push_token) ?? []
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
+  const customerEmail = cc.customers?.email
   void Promise.allSettled([
     pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
     updateGoogleWalletStamps(cc.id, card.id, currentStamps),
+    isComplete && customerEmail
+      ? sendCardComplete({
+          to: customerEmail,
+          customerName: cc.customers?.name ?? 'Cliente',
+          businessName: business.name,
+          appleWalletUrl: `${appUrl}/api/wallet/apple/${cc.id}`,
+          googleWalletUrl: `${appUrl}/api/wallet/google/${cc.id}`,
+        })
+      : Promise.resolve(),
   ])
 
   return {

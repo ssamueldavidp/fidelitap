@@ -15,6 +15,7 @@ export async function savePosterSettingsAction(
 
   const cardId = formData.get('cardId') as string
   const rewardText = (formData.get('rewardText') as string | null) ?? ''
+  if (rewardText.length > 120) return { error: 'El texto de recompensa no puede superar 120 caracteres' }
   const bgType = formData.get('bgType') as 'color' | 'photo'
   if (bgType !== 'color' && bgType !== 'photo') return { error: 'Tipo de fondo inválido' }
   const bgColor = (formData.get('bgColor') as string | null) ?? '#0B0B0B'
@@ -55,6 +56,9 @@ export async function savePosterSettingsAction(
   if (bgType === 'photo' && bgImage && bgImage.size > 0) {
     if (bgImage.size > 5 * 1024 * 1024) return { error: 'La imagen no debe superar 5MB' }
 
+    const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg']
+    if (!ALLOWED_IMAGE_TYPES.includes(bgImage.type)) return { error: 'Solo se permiten PNG o JPEG' }
+
     const arrayBuffer = await bgImage.arrayBuffer()
     const ext = bgImage.type === 'image/png' ? 'png' : 'jpg'
     const filePath = `${businessId}/bg.${ext}`
@@ -85,6 +89,12 @@ export async function savePosterSettingsAction(
       .eq('id', businessId)
 
     if (bizErr) return { error: 'Error al guardar color' }
+
+    // Clean up orphaned storage files (attempt both extensions, ignore errors)
+    await Promise.allSettled([
+      serviceClient.storage.from('poster-backgrounds').remove([`${businessId}/bg.png`]),
+      serviceClient.storage.from('poster-backgrounds').remove([`${businessId}/bg.jpg`]),
+    ])
   }
   // if bgType === 'photo' but no new file: keep existing photo as-is
 

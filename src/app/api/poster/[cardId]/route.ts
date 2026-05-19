@@ -81,6 +81,7 @@ export async function GET(
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': 'attachment; filename="cartel.pdf"',
+          'Cache-Control': 'no-store',
         },
       })
     }
@@ -90,6 +91,7 @@ export async function GET(
       headers: {
         'Content-Type': 'image/png',
         'Content-Disposition': 'attachment; filename="cartel.png"',
+        'Cache-Control': 'no-store',
       },
     })
   } catch (err) {

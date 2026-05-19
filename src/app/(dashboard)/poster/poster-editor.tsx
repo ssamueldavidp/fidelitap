@@ -142,6 +142,7 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
           value={rewardText}
           onChange={(e) => setRewardText(e.target.value)}
           rows={2}
+          maxLength={120}
           placeholder="Ej: Café gratis al completar tus 10 sellos"
           className={`${inputClass} resize-none`}
         />

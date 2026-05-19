@@ -107,7 +107,7 @@ export function VerticalPosterTemplate(data: PosterData) {
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 24 }}>
         <div style={{ height: 1, background: '#222', width: '100%' }} />
         <WalletSection />
-        <div style={{ color: '#333', fontSize: 12, textAlign: 'center' }}>
+        <div style={{ color: GREY, fontSize: 12, textAlign: 'center' }}>
           powered by FideliTap
         </div>
       </div>
@@ -168,7 +168,7 @@ export function HorizontalPosterTemplate(data: PosterData) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ height: 1, background: '#222', width: '100%' }} />
           <WalletSection />
-          <div style={{ color: '#333', fontSize: 11 }}>powered by FideliTap</div>
+          <div style={{ color: GREY, fontSize: 11 }}>powered by FideliTap</div>
         </div>
       </div>
 

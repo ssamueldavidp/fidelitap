@@ -15,8 +15,8 @@ const interBold = fs.readFileSync(
 )
 
 const FONTS = [
-  { name: 'Inter', data: interRegular.buffer as ArrayBuffer, weight: 400 as const, style: 'normal' as const },
-  { name: 'Inter', data: interBold.buffer as ArrayBuffer, weight: 700 as const, style: 'normal' as const },
+  { name: 'Inter', data: interRegular.buffer.slice(interRegular.byteOffset, interRegular.byteOffset + interRegular.byteLength) as ArrayBuffer, weight: 400 as const, style: 'normal' as const },
+  { name: 'Inter', data: interBold.buffer.slice(interBold.byteOffset, interBold.byteOffset + interBold.byteLength) as ArrayBuffer, weight: 700 as const, style: 'normal' as const },
 ]
 
 async function buildPng(data: PosterData): Promise<Buffer> {

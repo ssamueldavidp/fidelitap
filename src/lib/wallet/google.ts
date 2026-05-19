@@ -223,20 +223,15 @@ export async function getGoogleWalletSaveUrl(data: LoyaltyPassData): Promise<str
 
 export async function updateGoogleWalletStamps(
   customerCardId: string,
-  loyaltyCardId: string,
+  _loyaltyCardId: string, // reserved — objectId is sufficient for PATCH
   newStampCount: number
 ): Promise<void> {
-  if (
-    !process.env.GOOGLE_WALLET_ISSUER_ID ||
-    !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
-    !process.env.GOOGLE_SERVICE_ACCOUNT_KEY
-  ) {
-    return
-  }
+  if (!process.env.GOOGLE_WALLET_ISSUER_ID) return
 
+  const issuerId = process.env.GOOGLE_WALLET_ISSUER_ID
   const sa = getServiceAccount()
   const accessToken = await getAccessToken(sa)
-  const objectId = `${process.env.GOOGLE_WALLET_ISSUER_ID}.cc-${customerCardId}`
+  const objectId = `${issuerId}.cc-${customerCardId}`
 
   const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject/${objectId}`, {
     method: 'PATCH',

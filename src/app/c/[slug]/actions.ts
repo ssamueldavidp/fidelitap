@@ -45,7 +45,7 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
   }
 
   // 2. Find or create customer_card
-  let { data: existing } = await supabase
+  const { data: existing } = await supabase
     .from('customer_cards')
     .select('id, wallet_auth_token')
     .eq('customer_id', customer.id)

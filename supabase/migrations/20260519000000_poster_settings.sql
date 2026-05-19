@@ -18,8 +18,30 @@ ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'poster-backgrounds'
-  AND (storage.foldername(name))[1] = (
-    SELECT id::text FROM businesses WHERE owner_id = auth.uid() LIMIT 1
+  AND (storage.foldername(name))[1] IN (
+    SELECT id::text FROM public.businesses WHERE owner_id = auth.uid()
+  )
+);
+
+-- Allow authenticated users to update their own poster bg
+CREATE POLICY "business owners can update poster bg"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'poster-backgrounds'
+  AND (storage.foldername(name))[1] IN (
+    SELECT id::text FROM public.businesses WHERE owner_id = auth.uid()
+  )
+);
+
+-- Allow authenticated users to delete their own poster bg
+CREATE POLICY "business owners can delete poster bg"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'poster-backgrounds'
+  AND (storage.foldername(name))[1] IN (
+    SELECT id::text FROM public.businesses WHERE owner_id = auth.uid()
   )
 );
 

@@ -24,7 +24,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id')
+    .select('id, stamp_cooldown_seconds')
     .eq('owner_id', user.id)
     .single()
   if (!business) return { error: 'Negocio no encontrado' }
@@ -56,6 +56,25 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
   const card = cc.loyalty_cards
   if (!card || card.business_id !== business.id) {
     return { error: 'Esta tarjeta pertenece a otro negocio' }
+  }
+
+  // Cooldown check — prevent double-scanning within the configured window
+  if (business.stamp_cooldown_seconds > 0) {
+    const { data: lastStamp } = await serviceClient
+      .from('stamp_events')
+      .select('created_at')
+      .eq('customer_card_id', cc.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (lastStamp) {
+      const secondsSinceLast = (Date.now() - new Date(lastStamp.created_at).getTime()) / 1000
+      if (secondsSinceLast < business.stamp_cooldown_seconds) {
+        const waitMinutes = Math.ceil((business.stamp_cooldown_seconds - secondsSinceLast) / 60)
+        return { error: `Espera ${waitMinutes} min antes del próximo sello` }
+      }
+    }
   }
 
   const { data: stampResult, error: rpcError } = await serviceClient.rpc('add_stamp', {

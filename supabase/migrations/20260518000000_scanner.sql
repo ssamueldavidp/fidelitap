@@ -29,17 +29,28 @@ BEGIN
   JOIN loyalty_cards lc ON cc.loyalty_card_id = lc.id
   WHERE cc.id = p_card_id;
 
+  IF v_stamps_required IS NULL THEN
+    RAISE EXCEPTION 'loyalty_card not found for customer_card: %', p_card_id;
+  END IF;
+
+  -- Lock the row to prevent concurrent double-completion
+  PERFORM id FROM customer_cards WHERE id = p_card_id FOR UPDATE;
+
   UPDATE customer_cards
   SET current_stamps = current_stamps + 1,
       updated_at = NOW()
   WHERE id = p_card_id
   RETURNING current_stamps INTO v_new_stamps;
 
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'customer_card not found: %', p_card_id;
+  END IF;
+
   IF v_new_stamps >= v_stamps_required THEN
     v_is_complete := TRUE;
     UPDATE customer_cards
     SET current_stamps = 0,
-        is_complete = TRUE,
+        is_complete = FALSE,
         times_completed = times_completed + 1,
         updated_at = NOW()
     WHERE id = p_card_id

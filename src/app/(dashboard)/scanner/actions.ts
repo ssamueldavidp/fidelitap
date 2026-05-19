@@ -64,27 +64,37 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   if (rpcError || !stampResult) return { error: 'Error al agregar sello' }
 
-  const { current_stamps: currentStamps, is_complete: isComplete, times_completed: timesCompleted } =
-    stampResult as { current_stamps: number; is_complete: boolean; times_completed: number }
+  const result = stampResult as { current_stamps?: number; is_complete?: boolean; times_completed?: number }
+  if (result.current_stamps === undefined || result.is_complete === undefined || result.times_completed === undefined) {
+    return { error: 'Error al agregar sello' }
+  }
+  const currentStamps = result.current_stamps
+  const isComplete = result.is_complete
+  const timesCompleted = result.times_completed
 
-  await serviceClient.from('stamp_events').insert({
+  const { error: stampEventError } = await serviceClient.from('stamp_events').insert({
     customer_card_id: cc.id,
     business_id: business.id,
     stamped_by: user.id,
     scan_token: crypto.randomUUID(),
   })
+  if (stampEventError) {
+    console.error('stamp_events insert failed:', stampEventError)
+  }
 
-  const { data: registrations } = await serviceClient
-    .from('device_registrations')
-    .select('push_token')
-    .eq('serial_number', cc.wallet_pass_serial ?? '')
+  let pushTokens: string[] = []
+  if (cc.wallet_pass_serial) {
+    const { data: registrations } = await serviceClient
+      .from('device_registrations')
+      .select('push_token')
+      .eq('serial_number', cc.wallet_pass_serial)
+    pushTokens = registrations?.map((r) => r.push_token) ?? []
+  }
 
-  const pushTokens = registrations?.map((r) => r.push_token) ?? []
-
-  Promise.allSettled([
+  void Promise.allSettled([
     pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
     updateGoogleWalletStamps(cc.id, card.id, currentStamps),
-  ]).catch(() => {})
+  ])
 
   return {
     customerName: cc.customers?.name ?? 'Cliente',

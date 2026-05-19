@@ -19,6 +19,8 @@ export interface Database {
           subscription_status: 'active' | 'past_due' | 'canceled'
           wompi_customer_id: string | null
           stamp_cooldown_seconds: number
+          poster_bg_color: string
+          poster_bg_image_url: string | null
           created_at: string
           updated_at: string
         }
@@ -31,6 +33,8 @@ export interface Database {
           subscription_status?: 'active' | 'past_due' | 'canceled'
           wompi_customer_id?: string | null
           stamp_cooldown_seconds?: number
+          poster_bg_color?: string
+          poster_bg_image_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -43,6 +47,8 @@ export interface Database {
           subscription_status?: 'active' | 'past_due' | 'canceled'
           wompi_customer_id?: string | null
           stamp_cooldown_seconds?: number
+          poster_bg_color?: string
+          poster_bg_image_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -58,6 +64,7 @@ export interface Database {
           design_config: Json
           is_active: boolean
           slug: string
+          poster_reward_text: string | null
           deleted_at: string | null
           created_at: string
           updated_at: string
@@ -71,6 +78,7 @@ export interface Database {
           design_config?: Json
           is_active?: boolean
           slug?: string
+          poster_reward_text?: string | null
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
@@ -84,6 +92,7 @@ export interface Database {
           design_config?: Json
           is_active?: boolean
           slug?: string
+          poster_reward_text?: string | null
           deleted_at?: string | null
           created_at?: string
           updated_at?: string

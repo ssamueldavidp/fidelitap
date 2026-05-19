@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
+import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 
 const schema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres').max(80).trim(),
@@ -26,6 +27,13 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
 
   const { name, email, loyalty_card_id, business_id } = parsed.data
   const supabase = createServiceClient()
+
+  // Fetch card slug + business name for the welcome email
+  const { data: cardInfo } = (await supabase
+    .from('loyalty_cards')
+    .select('slug, businesses(name)')
+    .eq('id', loyalty_card_id)
+    .single()) as { data: { slug: string; businesses: { name: string } | null } | null; error: unknown }
 
   // 1. Find or create customer
   let { data: customer } = await supabase
@@ -78,6 +86,18 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
     .single()
 
   if (cardErr || !newCard) return { error: 'Error al activar la tarjeta. Intenta de nuevo.' }
+
+  // Send welcome email fire-and-forget
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
+  const biz = cardInfo?.businesses
+  if (biz && cardInfo?.slug) {
+    void sendCustomerWelcome({
+      to: email,
+      customerName: name,
+      businessName: biz.name,
+      cardUrl: `${appUrl}/c/${cardInfo.slug}`,
+    })
+  }
 
   return {
     customerCardId: newCard.id,

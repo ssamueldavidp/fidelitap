@@ -112,20 +112,8 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
       const text = await res.text()
       throw new Error(`Google Wallet API error: ${res.status} ${text}`)
     }
-  } else {
-    const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass/${classId}`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ programName: data.cardName }),
-    })
-    if (!res.ok) {
-      const text = await res.text()
-      throw new Error(`Google Wallet API error: ${res.status} ${text}`)
-    }
   }
+  // If class already exists, skip update — Google rejects PATCH on APPROVED classes
 }
 
 async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): Promise<void> {

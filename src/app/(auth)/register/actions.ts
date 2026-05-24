@@ -51,10 +51,12 @@ export async function registerAction(
   })
 
   if (signUpError) {
+    console.error('[register] signUpError:', signUpError.message, signUpError.status)
     return { error: 'Error al crear la cuenta. Intenta de nuevo.' }
   }
 
   if (!data.user) {
+    console.error('[register] no user returned, data:', JSON.stringify(data))
     return { error: 'Error al crear la cuenta. Intenta de nuevo.' }
   }
 
@@ -69,6 +71,7 @@ export async function registerAction(
   })
 
   if (bizError) {
+    console.error('[register] bizError:', bizError.message, bizError.code)
     // Limpiar el usuario auth si falla la creación del negocio
     const { error: deleteError } = await admin.auth.admin.deleteUser(data.user.id)
     if (deleteError) {

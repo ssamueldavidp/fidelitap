@@ -70,14 +70,19 @@ export interface LoyaltyPassData {
 }
 
 async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): Promise<void> {
-  const classId = `${data.issuerId}.card-${data.loyaltyCardId}`
+  const classId = `${data.issuerId}.lc-${data.loyaltyCardId}`
+
+  const isLocalUrl = data.appUrl.includes('localhost') || data.appUrl.includes('ngrok')
+  const logoUri = isLocalUrl
+    ? 'https://placehold.co/96x96/00C896/000000.png'
+    : `${data.appUrl}/wallet-icon.png`
 
   const loyaltyClass = {
     id: classId,
     issuerName: 'FideliTap',
     programName: data.cardName,
     programLogo: {
-      sourceUri: { uri: `${data.appUrl}/wallet-icon.png` },
+      sourceUri: { uri: logoUri },
       contentDescription: { defaultValue: { language: 'es', value: data.cardName } },
     },
     rewardsTierLabel: 'Sellos',
@@ -124,8 +129,8 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
 }
 
 async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): Promise<void> {
-  const classId = `${data.issuerId}.card-${data.loyaltyCardId}`
-  const objectId = `${data.issuerId}.cc-${data.customerCardId}`
+  const classId = `${data.issuerId}.lc-${data.loyaltyCardId}`
+  const objectId = `${data.issuerId}.lo-${data.customerCardId}`
 
   const loyaltyObject = {
     id: objectId,
@@ -210,8 +215,8 @@ export async function getGoogleWalletSaveUrl(data: LoyaltyPassData): Promise<str
     payload: {
       loyaltyObjects: [
         {
-          id: `${data.issuerId}.cc-${data.customerCardId}`,
-          classId: `${data.issuerId}.card-${data.loyaltyCardId}`,
+          id: `${data.issuerId}.lo-${data.customerCardId}`,
+          classId: `${data.issuerId}.lc-${data.loyaltyCardId}`,
         },
       ],
     },
@@ -231,7 +236,7 @@ export async function updateGoogleWalletStamps(
   const issuerId = process.env.GOOGLE_WALLET_ISSUER_ID
   const sa = getServiceAccount()
   const accessToken = await getAccessToken(sa)
-  const objectId = `${issuerId}.cc-${customerCardId}`
+  const objectId = `${issuerId}.lo-${customerCardId}`
 
   const res = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyObject/${objectId}`, {
     method: 'PATCH',

@@ -5,15 +5,14 @@ import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { SidebarNav } from './sidebar-nav'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { PlanUsage } from './plan-usage'
+import type { ReactNode } from 'react'
 
 interface MobileNavProps {
-  businessId: string
-  plan: string
   businessName: string
+  planContent: ReactNode
 }
 
-export function MobileNav({ businessId, plan, businessName }: MobileNavProps) {
+export function MobileNav({ businessName, planContent }: MobileNavProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -73,7 +72,7 @@ export function MobileNav({ businessId, plan, businessName }: MobileNavProps) {
         </div>
 
         <div className="border-t border-border/30">
-          <PlanUsage businessId={businessId} plan={plan} />
+          {planContent}
         </div>
       </div>
     </>

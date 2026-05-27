@@ -45,9 +45,8 @@ export default async function DashboardLayout({
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile nav (includes hamburger) */}
         <MobileNav
-          businessId={business.id}
-          plan={business.plan}
           businessName={business.name}
+          planContent={<PlanUsage businessId={business.id} plan={business.plan} />}
         />
         {/* Desktop top bar */}
         <TopBar businessName={business.name} />

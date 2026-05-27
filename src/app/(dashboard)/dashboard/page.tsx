@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { Users, Stamp, Gift, TrendingUp } from 'lucide-react'
+import { SubscriptionSuccessNotice } from '@/components/dashboard/subscription-success-notice'
 
 const METRIC_CONFIG = [
   {
@@ -74,6 +76,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-4xl">
+      <Suspense fallback={null}>
+        <SubscriptionSuccessNotice />
+      </Suspense>
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-black text-foreground">

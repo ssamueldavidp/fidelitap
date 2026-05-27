@@ -48,24 +48,24 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
   return (
     <div className="px-3 mt-4 flex flex-col gap-2">
       {/* Plan badge */}
-      <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
-        <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-0.5">Plan actual</p>
-        <p className="text-sm font-bold text-white capitalize mb-2">{plan}</p>
+      <div className="bg-muted rounded-xl p-3 border border-border">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Plan actual</p>
+        <p className="text-sm font-bold text-foreground capitalize mb-2">{plan}</p>
 
         {/* Customer usage */}
         {limits.maxCustomers !== null && (
           <div className="mb-2">
             <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-slate-400">Clientes</span>
+              <span className="text-muted-foreground">Clientes</span>
               <span className={
                 customerState === 'full' ? 'text-red-400 font-bold' :
                 customerState === 'warning' ? 'text-amber-400 font-bold' :
-                'text-slate-400'
+                'text-muted-foreground'
               }>
                 {customers}/{limits.maxCustomers}
               </span>
             </div>
-            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
                   customerState === 'full' ? 'bg-red-500' :
@@ -94,16 +94,16 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
         {limits.maxCards !== null && (
           <div className="mb-2">
             <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-slate-400">Tarjetas</span>
+              <span className="text-muted-foreground">Tarjetas</span>
               <span className={
                 cardState === 'full' ? 'text-red-400 font-bold' :
                 cardState === 'warning' ? 'text-amber-400 font-bold' :
-                'text-slate-400'
+                'text-muted-foreground'
               }>
                 {cards}/{limits.maxCards}
               </span>
             </div>
-            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
                   cardState === 'full' ? 'bg-red-500' :
@@ -131,7 +131,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
         ) : (
           <Link
             href="/settings#plan"
-            className="block text-center text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
+            className="block text-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
           >
             Actualizar plan →
           </Link>

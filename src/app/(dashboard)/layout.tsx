@@ -2,15 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PlanUsage } from '@/components/dashboard/plan-usage'
-
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: '⊞' },
-  { href: '/cards', label: 'Mis tarjetas', icon: '◉' },
-  { href: '/customers', label: 'Clientes', icon: '◎' },
-  { href: '/scanner', label: 'Escanear', icon: '⌻' },
-  { href: '/poster', label: 'Plantilla', icon: '▤' },
-  { href: '/settings', label: 'Ajustes', icon: '⚙' },
-]
+import { SidebarNav } from '@/components/dashboard/sidebar-nav'
+import { TopBar } from '@/components/dashboard/top-bar'
+import { MobileNav } from '@/components/dashboard/mobile-nav'
 
 export default async function DashboardLayout({
   children,
@@ -18,7 +12,6 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -31,33 +24,38 @@ export default async function DashboardLayout({
   if (!business) redirect('/onboarding')
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
-      {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-slate-800 flex flex-col py-6">
-        <Link href="/dashboard" className="px-6 pb-8 text-xl font-black tracking-tight">
-          fideli<span className="text-[#00C896]">tap</span>
+    <div className="flex min-h-screen bg-background text-foreground">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-[hsl(var(--sidebar))]">
+        <Link
+          href="/dashboard"
+          className="px-6 h-14 flex items-center text-xl font-black tracking-tight border-b border-border/30 text-[hsl(var(--sidebar-foreground))]"
+        >
+          fideli<span className="text-primary">tap</span>
         </Link>
 
-        <nav className="flex-1 flex flex-col gap-0.5 px-3">
-          {NAV_ITEMS.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <SidebarNav />
 
-        <PlanUsage businessId={business.id} plan={business.plan} />
+        <div className="border-t border-border/30">
+          <PlanUsage businessId={business.id} plan={business.plan} />
+        </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+      {/* Right panel */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile nav (includes hamburger) */}
+        <MobileNav
+          businessId={business.id}
+          plan={business.plan}
+          businessName={business.name}
+        />
+        {/* Desktop top bar */}
+        <TopBar businessName={business.name} />
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

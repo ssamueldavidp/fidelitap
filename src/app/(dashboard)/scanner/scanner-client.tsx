@@ -2,12 +2,38 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { ScanLine, Camera, CameraOff, CheckCircle2, AlertCircle, RefreshCw, Keyboard } from 'lucide-react'
-import { addStampAction, type StampResult } from './actions'
+import { addStampAction, claimRewardAction, type StampResult, type ClaimResult } from './actions'
 
 type CameraState = 'idle' | 'requesting' | 'active' | 'denied' | 'scanning' | 'success' | 'error'
 type SuccessData = Exclude<StampResult, { error: string }>
 
 const QR_ELEMENT_ID = 'qr-video-container'
+
+function Confetti() {
+  const colors = ['#00C896', '#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {Array.from({ length: 24 }).map((_, i) => {
+        const color = colors[i % colors.length]
+        const angle = (i / 24) * 360
+        const delay = (i * 0.05).toFixed(2)
+        const distance = 80 + (i % 3) * 20
+        return (
+          <div
+            key={i}
+            className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full confetti-dot"
+            style={{
+              backgroundColor: color,
+              '--angle': `${angle}deg`,
+              '--distance': `${distance}px`,
+              animationDelay: `${delay}s`,
+            } as React.CSSProperties}
+          />
+        )
+      })}
+    </div>
+  )
+}
 
 export function ScannerClient() {
   const [cameraState, setCameraState] = useState<CameraState>('idle')
@@ -16,6 +42,8 @@ export function ScannerClient() {
   const [manualCode, setManualCode] = useState('')
   const [showManual, setShowManual] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [claimDone, setClaimDone] = useState(false)
+  const [isClaiming, startClaimTransition] = useTransition()
 
   const scannerRef = useRef<import('html5-qrcode').Html5Qrcode | null>(null)
   const processedRef = useRef(false)
@@ -39,6 +67,7 @@ export function ScannerClient() {
         }, 3500)
       } else {
         setSuccessData(res)
+        setClaimDone(false)
         setCameraState('success')
       }
     })
@@ -86,13 +115,89 @@ export function ScannerClient() {
 
   function handleReset() {
     setSuccessData(null)
+    setClaimDone(false)
     setManualCode('')
     processedRef.current = false
     setCameraState('idle')
   }
 
+  function handleClaim() {
+    if (!successData) return
+    startClaimTransition(async () => {
+      const res: ClaimResult = await claimRewardAction(successData.customerCardId)
+      if (!('error' in res)) {
+        setClaimDone(true)
+      }
+    })
+  }
+
   // ─── SUCCESS ─────────────────────────────────────────────────────────────
   if (cameraState === 'success' && successData) {
+    // Celebration overlay: card is complete and prize not yet claimed
+    if (successData.isComplete && !claimDone) {
+      return (
+        <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
+          <div className="relative bg-card border border-primary/30 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-lg shadow-primary/10 overflow-hidden">
+            <Confetti />
+            <div className="relative z-10 w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center">
+              <span className="text-3xl">🎉</span>
+            </div>
+            <div className="relative z-10 text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">¡Tarjeta completada!</p>
+              <p className="text-2xl font-black text-foreground mt-1">{successData.customerName}</p>
+              <p className="text-sm text-primary font-semibold mt-1">
+                Completada {successData.timesCompleted} {successData.timesCompleted === 1 ? 'vez' : 'veces'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClaim}
+              disabled={isClaiming}
+              className="relative z-10 w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-60"
+            >
+              {isClaiming ? 'Registrando...' : 'Reclamar premio'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleReset}
+              className="relative z-10 w-full flex items-center justify-center gap-2 bg-muted text-foreground font-semibold py-3 rounded-xl hover:bg-muted/80 transition-colors text-sm"
+            >
+              <RefreshCw size={16} />
+              Escanear otro
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // Prize claimed confirmation
+    if (successData.isComplete && claimDone) {
+      return (
+        <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
+          <div className="bg-card border border-primary/30 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-lg shadow-primary/10">
+            <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center">
+              <CheckCircle2 size={28} className="text-primary" />
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-black text-foreground">Premio registrado ✓</p>
+              <p className="text-sm text-muted-foreground mt-1">{successData.customerName}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              <RefreshCw size={16} />
+              Escanear otro
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // Normal stamp (card not yet complete)
     return (
       <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
         <div className="bg-card border border-primary/30 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-lg shadow-primary/10">
@@ -102,11 +207,6 @@ export function ScannerClient() {
           <div className="text-center">
             <p className="text-xs text-muted-foreground">Sello agregado</p>
             <p className="text-2xl font-black text-foreground mt-1">{successData.customerName}</p>
-            {successData.isComplete && (
-              <p className="text-sm text-primary font-semibold mt-1">
-                🎉 ¡Tarjeta completada! (#{successData.timesCompleted})
-              </p>
-            )}
           </div>
 
           <div className="flex flex-wrap justify-center gap-2 w-full">

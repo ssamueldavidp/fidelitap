@@ -64,3 +64,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Confetti dot animation for reward celebration */
+@keyframes confetti-fly {
+  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1); opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--distance)) scale(0.5); opacity: 0; }
+}
+.confetti-dot {
+  animation: confetti-fly 0.8s ease-out forwards;
+}

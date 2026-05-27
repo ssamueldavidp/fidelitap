@@ -62,6 +62,7 @@ export function MobileNav({ businessId, plan, businessName }: MobileNavProps) {
             type="button"
             onClick={() => setOpen(false)}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
+            aria-label="Cerrar menú"
           >
             <X size={18} />
           </button>

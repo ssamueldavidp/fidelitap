@@ -15,6 +15,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
     .from('loyalty_cards')
     .select('id')
     .eq('business_id', businessId)
+    .is('deleted_at', null)
 
   const loyaltyCardIds = (loyaltyCards ?? []).map((c) => c.id)
 
@@ -124,7 +125,7 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
         {showWarning ? (
           <Link
             href="/settings#plan"
-            className="block text-center text-xs font-bold bg-[#00C896] text-slate-900 rounded-lg py-1.5 hover:bg-[#00b386] transition-colors"
+            className="block text-center text-xs font-bold bg-[#00C896] text-background rounded-lg py-1.5 hover:bg-[#00b386] transition-colors"
           >
             ↑ Actualizar plan
           </Link>

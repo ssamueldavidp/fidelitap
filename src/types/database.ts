@@ -178,6 +178,7 @@ export interface Database {
           business_id: string
           stamped_by: string
           scan_token: string
+          type: string
           ip_address: string | null
           device_fingerprint: string | null
           created_at: string
@@ -188,6 +189,7 @@ export interface Database {
           business_id: string
           stamped_by: string
           scan_token: string
+          type?: string
           ip_address?: string | null
           device_fingerprint?: string | null
           created_at?: string
@@ -198,6 +200,7 @@ export interface Database {
           business_id?: string
           stamped_by?: string
           scan_token?: string
+          type?: string
           ip_address?: string | null
           device_fingerprint?: string | null
           created_at?: string
@@ -270,6 +273,10 @@ export interface Database {
       add_stamp: {
         Args: { p_card_id: string }
         Returns: { current_stamps: number; is_complete: boolean; times_completed: number }
+      }
+      claim_reward: {
+        Args: { p_card_id: string }
+        Returns: { times_completed: number; status: string }
       }
       get_business_metrics: {
         Args: { p_business_id: string }

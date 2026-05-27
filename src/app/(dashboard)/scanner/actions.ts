@@ -69,14 +69,14 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   // Cooldown check — only count 'stamp' type events
   if (business.stamp_cooldown_seconds > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: lastStamp } = await (serviceClient.from('stamp_events') as any)
+    const { data: lastStamp } = await serviceClient
+      .from('stamp_events')
       .select('created_at')
       .eq('customer_card_id', cc.id)
       .eq('type', 'stamp')
       .order('created_at', { ascending: false })
       .limit(1)
-      .maybeSingle() as { data: { created_at: string } | null }
+      .maybeSingle()
 
     if (lastStamp) {
       const secondsSinceLast = (Date.now() - new Date(lastStamp.created_at).getTime()) / 1000
@@ -114,8 +114,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
   const status = (result.status ?? 'active') as CardStatus
 
   // Record stamp event with type='stamp'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (serviceClient.from('stamp_events') as any).insert({
+  await serviceClient.from('stamp_events').insert({
     customer_card_id: cc.id,
     business_id: business.id,
     stamped_by: user.id,
@@ -189,10 +188,9 @@ export async function claimRewardAction(customerCardId: string): Promise<ClaimRe
     return { error: 'No autorizado' }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: claimResult, error: rpcError } = await (serviceClient as any).rpc('claim_reward', {
+  const { data: claimResult, error: rpcError } = await serviceClient.rpc('claim_reward', {
     p_card_id: customerCardId,
-  }) as { data: { times_completed?: number; status?: string } | null; error: unknown }
+  })
 
   if (rpcError || !claimResult) {
     return { error: 'Error al reclamar el premio' }
@@ -201,8 +199,7 @@ export async function claimRewardAction(customerCardId: string): Promise<ClaimRe
   const result = claimResult as { times_completed?: number; status?: string }
 
   // Record reward_claimed event
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (serviceClient.from('stamp_events') as any).insert({
+  await serviceClient.from('stamp_events').insert({
     customer_card_id: customerCardId,
     business_id: business.id,
     stamped_by: user.id,

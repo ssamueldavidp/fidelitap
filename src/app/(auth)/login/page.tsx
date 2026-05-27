@@ -24,14 +24,14 @@ function LoginForm() {
   const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800">
-      <h1 className="text-2xl font-black text-white mb-1">Bienvenido de vuelta</h1>
-      <p className="text-slate-500 text-sm mb-7">Ingresa a tu panel de negocio</p>
+    <div className="bg-card rounded-2xl p-8 border border-border">
+      <h1 className="text-2xl font-black text-foreground mb-1">Bienvenido de vuelta</h1>
+      <p className="text-muted-foreground text-sm mb-7">Ingresa a tu panel de negocio</p>
 
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="redirectTo" value={redirectTo} />
         <div>
-          <label htmlFor="email" className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+          <label htmlFor="email" className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
             Email
           </label>
           <input
@@ -41,13 +41,13 @@ function LoginForm() {
             autoComplete="email"
             required
             placeholder="tu@negocio.com"
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
           />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label htmlFor="password" className="block text-xs font-semibold text-slate-400 uppercase tracking-wide">
+            <label htmlFor="password" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Contraseña
             </label>
           </div>
@@ -58,7 +58,7 @@ function LoginForm() {
             autoComplete="current-password"
             required
             placeholder="••••••••"
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
           />
         </div>
 
@@ -71,7 +71,7 @@ function LoginForm() {
         <SubmitButton />
       </form>
 
-      <p className="text-center text-sm text-slate-500 mt-6">
+      <p className="text-center text-sm text-muted-foreground mt-6">
         ¿No tienes cuenta?{' '}
         <Link href="/register" className="text-[#00C896] font-semibold hover:underline">
           Regístrate gratis

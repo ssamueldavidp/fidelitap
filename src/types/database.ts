@@ -16,7 +16,10 @@ export interface Database {
           name: string
           email: string
           plan: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status: 'active' | 'past_due' | 'canceled'
+          subscription_status: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
+          mp_preapproval_id: string | null
+          mp_payer_email: string | null
+          subscription_end_date: string | null
           wompi_customer_id: string | null
           stamp_cooldown_seconds: number
           poster_bg_color: string
@@ -30,7 +33,10 @@ export interface Database {
           name: string
           email: string
           plan?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'past_due' | 'canceled'
+          subscription_status?: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
+          mp_preapproval_id?: string | null
+          mp_payer_email?: string | null
+          subscription_end_date?: string | null
           wompi_customer_id?: string | null
           stamp_cooldown_seconds?: number
           poster_bg_color?: string
@@ -44,7 +50,10 @@ export interface Database {
           name?: string
           email?: string
           plan?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'past_due' | 'canceled'
+          subscription_status?: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
+          mp_preapproval_id?: string | null
+          mp_payer_email?: string | null
+          subscription_end_date?: string | null
           wompi_customer_id?: string | null
           stamp_cooldown_seconds?: number
           poster_bg_color?: string
@@ -266,6 +275,53 @@ export interface Database {
           is_active?: boolean
         }
         Relationships: []
+      }
+      payment_events: {
+        Row: {
+          id: string
+          business_id: string
+          mp_preapproval_id: string | null
+          mp_payment_id: string | null
+          event_type: string
+          plan_slug: string | null
+          amount_cop: number | null
+          status: string | null
+          raw_payload: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          mp_preapproval_id?: string | null
+          mp_payment_id?: string | null
+          event_type: string
+          plan_slug?: string | null
+          amount_cop?: number | null
+          status?: string | null
+          raw_payload?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          mp_preapproval_id?: string | null
+          mp_payment_id?: string | null
+          event_type?: string
+          plan_slug?: string | null
+          amount_cop?: number | null
+          status?: string | null
+          raw_payload?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'payment_events_business_id_fkey'
+            columns: ['business_id']
+            isOneToOne: false
+            referencedRelation: 'businesses'
+            referencedColumns: ['id']
+          }
+        ]
       }
     }
     Views: Record<string, never>

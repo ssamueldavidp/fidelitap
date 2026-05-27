@@ -8,12 +8,13 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => { setMounted(true) }, [])
 
-  if (!mounted) return <div className="w-8 h-8" />
+  if (!mounted) return <div className="w-10 h-10" />
 
   return (
     <button
+      type="button"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
       aria-label="Cambiar tema"

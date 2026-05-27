@@ -6,15 +6,23 @@ import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
 
+export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
+
 export type StampResult =
   | { error: string }
   | {
+      customerCardId: string
       customerName: string
       currentStamps: number
       stampsRequired: number
       isComplete: boolean
       timesCompleted: number
+      status: CardStatus
     }
+
+export type ClaimResult =
+  | { error: string }
+  | { timesCompleted: number; status: CardStatus }
 
 export async function addStampAction(uniqueCode: string): Promise<StampResult> {
   const supabase = await createClient()
@@ -59,15 +67,16 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     return { error: 'Esta tarjeta pertenece a otro negocio' }
   }
 
-  // Cooldown check — prevent double-scanning within the configured window
+  // Cooldown check — only count 'stamp' type events
   if (business.stamp_cooldown_seconds > 0) {
-    const { data: lastStamp } = await serviceClient
-      .from('stamp_events')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: lastStamp } = await (serviceClient.from('stamp_events') as any)
       .select('created_at')
       .eq('customer_card_id', cc.id)
+      .eq('type', 'stamp')
       .order('created_at', { ascending: false })
       .limit(1)
-      .maybeSingle()
+      .maybeSingle() as { data: { created_at: string } | null }
 
     if (lastStamp) {
       const secondsSinceLast = (Date.now() - new Date(lastStamp.created_at).getTime()) / 1000
@@ -84,23 +93,35 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   if (rpcError || !stampResult) return { error: 'Error al agregar sello' }
 
-  const result = stampResult as { current_stamps?: number; is_complete?: boolean; times_completed?: number }
-  if (result.current_stamps === undefined || result.is_complete === undefined || result.times_completed === undefined) {
+  const result = stampResult as {
+    current_stamps?: number
+    is_complete?: boolean
+    times_completed?: number
+    status?: string
+  }
+
+  if (
+    result.current_stamps === undefined ||
+    result.is_complete === undefined ||
+    result.times_completed === undefined
+  ) {
     return { error: 'Error al agregar sello' }
   }
+
   const currentStamps = result.current_stamps
   const isComplete = result.is_complete
   const timesCompleted = result.times_completed
+  const status = (result.status ?? 'active') as CardStatus
 
-  const { error: stampEventError } = await serviceClient.from('stamp_events').insert({
+  // Record stamp event with type='stamp'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (serviceClient.from('stamp_events') as any).insert({
     customer_card_id: cc.id,
     business_id: business.id,
     stamped_by: user.id,
     scan_token: crypto.randomUUID(),
+    type: 'stamp',
   })
-  if (stampEventError) {
-    console.error('stamp_events insert failed:', stampEventError)
-  }
 
   let pushTokens: string[] = []
   if (cc.wallet_pass_serial) {
@@ -128,10 +149,69 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
   ])
 
   return {
+    customerCardId: cc.id,
     customerName: cc.customers?.name ?? 'Cliente',
     currentStamps,
     stampsRequired: card.stamps_required,
     isComplete,
     timesCompleted,
+    status,
+  }
+}
+
+export async function claimRewardAction(customerCardId: string): Promise<ClaimResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('id, name')
+    .eq('owner_id', user.id)
+    .single()
+  if (!business) return { error: 'Negocio no encontrado' }
+
+  const serviceClient = createServiceClient()
+
+  // Verify the card belongs to this business
+  const { data: cc } = await serviceClient
+    .from('customer_cards')
+    .select('id, loyalty_cards(business_id)')
+    .eq('id', customerCardId)
+    .maybeSingle()
+
+  if (!cc) return { error: 'Tarjeta no encontrada' }
+
+  const lcRaw = cc.loyalty_cards as unknown as { business_id: string } | null
+  if (!lcRaw || lcRaw.business_id !== business.id) {
+    return { error: 'No autorizado' }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: claimResult, error: rpcError } = await (serviceClient as any).rpc('claim_reward', {
+    p_card_id: customerCardId,
+  }) as { data: { times_completed?: number; status?: string } | null; error: unknown }
+
+  if (rpcError || !claimResult) {
+    return { error: 'Error al reclamar el premio' }
+  }
+
+  const result = claimResult as { times_completed?: number; status?: string }
+
+  // Record reward_claimed event
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (serviceClient.from('stamp_events') as any).insert({
+    customer_card_id: customerCardId,
+    business_id: business.id,
+    stamped_by: user.id,
+    scan_token: crypto.randomUUID(),
+    type: 'reward_claimed',
+  })
+
+  return {
+    timesCompleted: result.times_completed ?? 0,
+    status: (result.status ?? 'active') as CardStatus,
   }
 }

@@ -1,111 +1,122 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { ScanLine, Camera, CameraOff, CheckCircle2, AlertCircle, RefreshCw, Keyboard } from 'lucide-react'
 import { addStampAction, type StampResult } from './actions'
 
-type ScanState = 'idle' | 'scanning' | 'success' | 'error'
-
+type CameraState = 'idle' | 'requesting' | 'active' | 'denied' | 'scanning' | 'success' | 'error'
 type SuccessData = Exclude<StampResult, { error: string }>
 
+const QR_ELEMENT_ID = 'qr-video-container'
+
 export function ScannerClient() {
-  const [scanState, setScanState] = useState<ScanState>('idle')
+  const [cameraState, setCameraState] = useState<CameraState>('idle')
   const [successData, setSuccessData] = useState<SuccessData | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [manualCode, setManualCode] = useState('')
+  const [showManual, setShowManual] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const scannerRef = useRef<{ clear: () => Promise<void> } | null>(null)
+
+  const scannerRef = useRef<import('html5-qrcode').Html5Qrcode | null>(null)
   const processedRef = useRef(false)
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleScan = useCallback((code: string) => {
-    setScanState('scanning')
+  const processCode = useCallback((code: string) => {
+    if (processedRef.current) return
+    processedRef.current = true
+    setCameraState('scanning')
+
+    scannerRef.current?.stop().catch(() => {})
+
     startTransition(async () => {
       const res = await addStampAction(code)
       if ('error' in res) {
         setErrorMsg(res.error)
-        setScanState('error')
-        errorTimerRef.current = setTimeout(() => setScanState('idle'), 3000)
+        setCameraState('error')
+        errorTimerRef.current = setTimeout(() => {
+          processedRef.current = false
+          setCameraState('idle')
+        }, 3500)
       } else {
         setSuccessData(res)
-        setScanState('success')
+        setCameraState('success')
       }
     })
   }, [startTransition])
 
-  useEffect(() => {
-    if (scanState !== 'idle') return
+  const startCamera = useCallback(async () => {
+    setCameraState('requesting')
     processedRef.current = false
 
-    let mounted = true
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode(QR_ELEMENT_ID)
+      scannerRef.current = scanner
 
-    async function startCamera() {
-      const { Html5QrcodeScanner } = await import('html5-qrcode')
-      if (!mounted) return
-
-      const scanner = new Html5QrcodeScanner(
-        'qr-reader',
-        { fps: 10, qrbox: { width: 240, height: 240 } },
-        false
-      )
-
-      scanner.render(
-        (decodedText) => {
-          if (!processedRef.current) {
-            processedRef.current = true
-            handleScan(decodedText)
-          }
-        },
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => processCode(decodedText),
         () => {}
       )
-
-      scannerRef.current = scanner
-    }
-
-    startCamera()
-
-    return () => {
-      mounted = false
-      scannerRef.current?.clear().catch(() => {})
-      scannerRef.current = null
-      if (errorTimerRef.current) {
-        clearTimeout(errorTimerRef.current)
-        errorTimerRef.current = null
+      setCameraState('active')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('Permission') || msg.includes('NotAllowed') || msg.includes('denied')) {
+        setCameraState('denied')
+      } else {
+        setErrorMsg('No se pudo acceder a la cámara')
+        setCameraState('denied')
       }
     }
-  }, [scanState, handleScan])
+  }, [processCode])
+
+  useEffect(() => {
+    return () => {
+      scannerRef.current?.stop().catch(() => {})
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+    }
+  }, [])
 
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault()
     const code = manualCode.trim()
-    if (code && scanState === 'idle') handleScan(code)
+    if (code) processCode(code)
   }
 
   function handleReset() {
     setSuccessData(null)
     setManualCode('')
-    setScanState('idle')
+    processedRef.current = false
+    setCameraState('idle')
   }
 
-  if (scanState === 'success' && successData) {
+  // ─── SUCCESS ─────────────────────────────────────────────────────────────
+  if (cameraState === 'success' && successData) {
     return (
-      <div className="w-full max-w-sm flex flex-col gap-4">
-        <div className="bg-slate-900 border border-[#00C896] rounded-2xl p-6 flex flex-col items-center gap-4 shadow-[0_0_24px_rgba(0,200,150,0.15)]">
-          <div className="w-12 h-12 rounded-full bg-[#00C896]/20 flex items-center justify-center">
-            <span className="text-[#00C896] text-2xl">✓</span>
+      <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
+        <div className="bg-card border border-primary/30 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-lg shadow-primary/10">
+          <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center">
+            <CheckCircle2 size={28} className="text-primary" />
           </div>
           <div className="text-center">
-            <p className="text-xs text-slate-400">Sello agregado</p>
-            <p className="text-xl font-black text-white mt-1">{successData.customerName}</p>
+            <p className="text-xs text-muted-foreground">Sello agregado</p>
+            <p className="text-2xl font-black text-foreground mt-1">{successData.customerName}</p>
+            {successData.isComplete && (
+              <p className="text-sm text-primary font-semibold mt-1">
+                🎉 ¡Tarjeta completada! (#{successData.timesCompleted})
+              </p>
+            )}
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2 w-full">
             {Array.from({ length: successData.stampsRequired }).map((_, i) => (
               <div
                 key={i}
-                className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                   i < successData.currentStamps
-                    ? 'bg-[#00C896] border-[#00C896] text-slate-900'
-                    : 'border-slate-600 text-slate-600'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted border border-border text-muted-foreground'
                 }`}
               >
                 {i < successData.currentStamps ? '✓' : ''}
@@ -113,68 +124,191 @@ export function ScannerClient() {
             ))}
           </div>
 
-          <p className="text-sm text-slate-400">
-            {successData.isComplete
-              ? `🎉 ¡Tarjeta completada! (${successData.timesCompleted}ª vez)`
-              : `${successData.currentStamps} / ${successData.stampsRequired} sellos`}
+          <p className="text-sm text-muted-foreground">
+            {successData.currentStamps} / {successData.stampsRequired} sellos
           </p>
-        </div>
 
-        <button
-          onClick={handleReset}
-          className="w-full bg-[#00C896] text-slate-900 font-bold text-sm rounded-xl py-3 hover:bg-[#00b386] transition-colors"
-        >
-          Escanear otro cliente
-        </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            <RefreshCw size={16} />
+            Escanear otro
+          </button>
+        </div>
       </div>
     )
   }
 
-  if (scanState === 'error') {
+  // ─── DENIED ──────────────────────────────────────────────────────────────
+  if (cameraState === 'denied') {
     return (
-      <div className="w-full max-w-sm">
-        <div className="bg-red-950/40 border border-red-800 rounded-2xl p-6 text-center">
-          <p className="text-2xl mb-2">✗</p>
-          <p className="text-red-400 font-semibold">{errorMsg}</p>
-          <p className="text-xs text-slate-500 mt-2">Volviendo al scanner...</p>
+      <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
+        <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+            <CameraOff size={28} className="text-destructive" />
+          </div>
+          <div>
+            <p className="font-bold text-foreground">Permiso denegado</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Activa el permiso de cámara en la configuración de tu navegador, luego recarga la página.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="w-full bg-muted text-foreground font-semibold py-3 rounded-xl hover:bg-muted/80 transition-colors"
+          >
+            Recargar página
+          </button>
+        </div>
+        <ManualEntry
+          manualCode={manualCode}
+          setManualCode={setManualCode}
+          onSubmit={handleManualSubmit}
+          isPending={isPending}
+        />
+      </div>
+    )
+  }
+
+  // ─── SCANNING / PROCESSING ────────────────────────────────────────────────
+  if (cameraState === 'scanning') {
+    return (
+      <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center animate-pulse">
+          <ScanLine size={28} className="text-primary" />
+        </div>
+        <p className="text-foreground font-semibold">Procesando código...</p>
+      </div>
+    )
+  }
+
+  // ─── ERROR ───────────────────────────────────────────────────────────────
+  if (cameraState === 'error') {
+    return (
+      <div className="w-full max-w-sm mx-auto">
+        <div className="bg-card border border-destructive/30 rounded-2xl p-6 flex flex-col items-center gap-3 text-center">
+          <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle size={28} className="text-destructive" />
+          </div>
+          <div>
+            <p className="font-bold text-foreground">Error</p>
+            <p className="text-sm text-muted-foreground mt-1">{errorMsg}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">Volviendo en un momento...</p>
         </div>
       </div>
     )
   }
 
+  // ─── IDLE + ACTIVE ────────────────────────────────────────────────────────
   return (
-    <div className="w-full max-w-sm flex flex-col gap-6">
-      <div className="relative">
-        <div
-          id="qr-reader"
-          className="rounded-2xl overflow-hidden bg-slate-900"
-          style={{ width: '100%' }}
-        />
-        {scanState === 'scanning' && (
-          <div className="absolute inset-0 bg-slate-950/60 rounded-2xl flex items-center justify-center">
-            <p className="text-[#00C896] font-semibold text-sm">Procesando...</p>
+    <div className="w-full max-w-sm mx-auto flex flex-col gap-4">
+      <div className="relative bg-card border border-border rounded-2xl overflow-hidden aspect-square">
+        <div id={QR_ELEMENT_ID} className="w-full h-full" />
+
+        {(cameraState === 'idle' || cameraState === 'requesting') && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-card">
+            {cameraState === 'requesting' ? (
+              <>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                  <Camera size={32} className="text-primary" />
+                </div>
+                <p className="text-sm text-muted-foreground font-medium">Solicitando permiso...</p>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <Camera size={32} className="text-muted-foreground" />
+                </div>
+                <div className="text-center px-6">
+                  <p className="font-bold text-foreground">Escanear código QR</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Activa la cámara para escanear la tarjeta del cliente
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  className="flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm"
+                >
+                  <Camera size={18} />
+                  Activar cámara
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {cameraState === 'active' && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="relative w-48 h-48">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-sm" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-sm" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-sm" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-sm" />
+              <div className="absolute inset-x-0 h-0.5 bg-primary/70 animate-bounce top-1/2 shadow-lg shadow-primary/50" />
+            </div>
           </div>
         )}
       </div>
 
-      <div className="bg-slate-900 rounded-2xl p-4">
-        <p className="text-xs text-slate-400 mb-3">Ingresar código manualmente</p>
-        <form onSubmit={handleManualSubmit} className="flex gap-2">
-          <input
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value)}
-            placeholder="Código del cliente"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-[#00C896]"
-          />
-          <button
-            type="submit"
-            disabled={!manualCode.trim() || scanState !== 'idle' || isPending}
-            className="bg-[#00C896] text-slate-900 font-bold text-sm rounded-lg px-4 py-2 hover:bg-[#00b386] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            OK
-          </button>
-        </form>
-      </div>
+      {cameraState === 'active' && (
+        <p className="text-center text-sm text-muted-foreground">
+          Apunta al código QR de la tarjeta del cliente
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setShowManual(!showManual)}
+        className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <Keyboard size={14} />
+        {showManual ? 'Ocultar entrada manual' : 'Ingresar código manualmente'}
+      </button>
+
+      {showManual && (
+        <ManualEntry
+          manualCode={manualCode}
+          setManualCode={setManualCode}
+          onSubmit={handleManualSubmit}
+          isPending={isPending}
+        />
+      )}
     </div>
+  )
+}
+
+function ManualEntry({
+  manualCode,
+  setManualCode,
+  onSubmit,
+  isPending,
+}: {
+  manualCode: string
+  setManualCode: (v: string) => void
+  onSubmit: (e: React.FormEvent) => void
+  isPending: boolean
+}) {
+  return (
+    <form onSubmit={onSubmit} className="flex gap-2">
+      <input
+        type="text"
+        value={manualCode}
+        onChange={(e) => setManualCode(e.target.value)}
+        placeholder="Código del cliente"
+        className="flex-1 bg-muted border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+      <button
+        type="submit"
+        disabled={!manualCode.trim() || isPending}
+        className="bg-primary text-primary-foreground font-semibold px-4 py-2.5 rounded-xl text-sm disabled:opacity-50 hover:bg-primary/90 transition-colors"
+      >
+        Agregar
+      </button>
+    </form>
   )
 }

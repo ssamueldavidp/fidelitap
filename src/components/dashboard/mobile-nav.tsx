@@ -12,7 +12,7 @@ interface MobileNavProps {
   planContent: ReactNode
 }
 
-export function MobileNav({ businessName, planContent }: MobileNavProps) {
+export function MobileNav({ planContent }: MobileNavProps) {
   const [open, setOpen] = useState(false)
 
   return (

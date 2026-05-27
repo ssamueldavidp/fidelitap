@@ -4,6 +4,7 @@ import { Redis } from '@upstash/redis'
 const isDev = process.env.NODE_ENV === 'development'
 
 const noopLimiter = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   limit: async (_id: string) => ({ success: true, limit: 999, remaining: 999, reset: 0, pending: Promise.resolve() }),
 }
 

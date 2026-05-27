@@ -45,7 +45,7 @@ function WalletSection() {
           ¿Cómo guardar tu tarjeta?
         </div>
         <div style={{ color: GREY, fontSize: 11 }}>① Escanea el QR de arriba y regístrate</div>
-        <div style={{ color: GREY, fontSize: 11 }}>② Toca "Agregar a Apple Wallet" o "Google Wallet"</div>
+        <div style={{ color: GREY, fontSize: 11 }}>② Toca &quot;Agregar a Apple Wallet&quot; o &quot;Google Wallet&quot;</div>
         <div style={{ color: GREY, fontSize: 11 }}>③ ¡Listo! Tu tarjeta queda en tu teléfono</div>
         <div style={{ color: ACCENT, fontSize: 11, marginTop: 4 }}>fidelitap.co/ayuda/wallet</div>
       </div>

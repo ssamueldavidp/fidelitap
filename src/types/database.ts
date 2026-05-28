@@ -385,7 +385,13 @@ export interface CardDesignConfig {
   bg_image_url: string | null
   stamp_icon: string
   font: 'default' | 'rounded' | 'mono'
+  // v2 fields
+  style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
+  bg_mode: 'light' | 'dark'
+  logo_url: string | null
 }
+
+export type CardStyle = CardDesignConfig['style']
 
 // Plan slugs
 export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'

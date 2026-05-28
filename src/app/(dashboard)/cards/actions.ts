@@ -14,6 +14,8 @@ const cardFormSchema = z.object({
   stamp_icon: z.string().min(1, 'Selecciona un ícono'),
   bg_type: z.enum(['solid', 'image']),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido'),
+  style: z.enum(['clean', 'modern', 'luxury', 'editorial', 'minimal']).default('clean'),
+  bg_mode: z.enum(['light', 'dark']).default('light'),
 })
 
 async function uploadImage(
@@ -31,6 +33,25 @@ async function uploadImage(
   if (error) return { error: 'Error subiendo imagen. Intenta de nuevo.' }
   const { data: { publicUrl } } = supabase.storage
     .from('card-backgrounds')
+    .getPublicUrl(path)
+  return publicUrl
+}
+
+async function uploadLogo(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+  file: File
+): Promise<string | { error: string }> {
+  if (file.size > 2 * 1024 * 1024) return { error: 'El logo no puede superar 2MB' }
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const path = `${businessId}/${crypto.randomUUID()}.${ext}`
+  const bytes = await file.arrayBuffer()
+  const { error } = await supabase.storage
+    .from('card-logos')
+    .upload(path, bytes, { contentType: file.type, upsert: false })
+  if (error) return { error: 'Error subiendo logo. Intenta de nuevo.' }
+  const { data: { publicUrl } } = supabase.storage
+    .from('card-logos')
     .getPublicUrl(path)
   return publicUrl
 }
@@ -67,10 +88,12 @@ export async function createCardAction(
     stamp_icon: formData.get('stamp_icon'),
     bg_type: formData.get('bg_type'),
     color: formData.get('color'),
+    style: formData.get('style'),
+    bg_mode: formData.get('bg_mode'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color } = parsed.data
+  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
 
   let bgImageUrl: string | null = null
   if (bg_type === 'image') {
@@ -82,6 +105,14 @@ export async function createCardAction(
     }
   }
 
+  let logoUrl: string | null = null
+  const logoFile = formData.get('logo') as File | null
+  if (logoFile && logoFile.size > 0) {
+    const result = await uploadLogo(supabase, business.id, logoFile)
+    if (typeof result !== 'string') return result
+    logoUrl = result
+  }
+
   const design_config = {
     color,
     bg_type: bgImageUrl ? 'image' : 'solid',
@@ -89,6 +120,9 @@ export async function createCardAction(
     bg_image_url: bgImageUrl,
     stamp_icon,
     font: 'default',
+    style,
+    bg_mode,
+    logo_url: logoUrl,
   }
 
   const { error } = await supabase.from('loyalty_cards').insert({
@@ -142,16 +176,17 @@ export async function updateCardAction(
     stamp_icon: formData.get('stamp_icon'),
     bg_type: formData.get('bg_type'),
     color: formData.get('color'),
+    style: formData.get('style'),
+    bg_mode: formData.get('bg_mode'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color } = parsed.data
+  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
   const existingConfig = card.design_config as Record<string, unknown>
 
   let bgImageUrl = bg_type === 'image'
     ? (existingConfig.bg_image_url as string | null) ?? null
     : null
-
   if (bg_type === 'image') {
     const file = formData.get('bg_image') as File | null
     if (file && file.size > 0) {
@@ -161,6 +196,15 @@ export async function updateCardAction(
     }
   }
 
+  let logoUrl = (existingConfig.logo_url as string | null) ?? null
+  const logoFile = formData.get('logo') as File | null
+  if (logoFile && logoFile.size > 0) {
+    const result = await uploadLogo(supabase, business.id, logoFile)
+    if (typeof result !== 'string') return result
+    logoUrl = result
+  }
+  if (formData.get('remove_logo') === 'true') logoUrl = null
+
   const design_config = {
     color,
     bg_type: bgImageUrl ? 'image' : 'solid',
@@ -168,6 +212,9 @@ export async function updateCardAction(
     bg_image_url: bgImageUrl,
     stamp_icon,
     font: 'default',
+    style,
+    bg_mode,
+    logo_url: logoUrl,
   }
 
   const { error } = await supabase

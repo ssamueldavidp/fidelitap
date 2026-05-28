@@ -18,9 +18,9 @@ type SubscriptionData = {
 }
 
 const PLAN_PRICES: Record<string, number> = {
-  basic:   19900,
-  pro:     49900,
-  premium: 99900,
+  basic:   49900,
+  pro:     99900,
+  premium: 179900,
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -118,10 +118,14 @@ export function SubscriptionTab() {
 
   if (!data) return null
 
+  const PLAN_ORDER = ['free', 'basic', 'pro', 'premium']
   const statusCfg  = STATUS_CONFIG[data.subscriptionStatus as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.active
   const StatusIcon = statusCfg.icon
   const isPaid     = data.plan !== 'free'
   const planPrice  = PLAN_PRICES[data.plan]
+  const upgradePlans = (['basic', 'pro', 'premium'] as const).filter(
+    (slug) => PLAN_ORDER.indexOf(slug) > PLAN_ORDER.indexOf(data.plan)
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,10 +158,12 @@ export function SubscriptionTab() {
       </div>
 
       {/* Upgrade options */}
-      {data.plan === 'free' && (
+      {upgradePlans.length > 0 && (
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Actualizar plan</p>
-          {(['basic', 'pro', 'premium'] as const).map((slug) => (
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            {data.plan === 'free' ? 'Elige tu plan' : 'Mejorar plan'}
+          </p>
+          {upgradePlans.map((slug) => (
             <div key={slug} className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3">
               <div>
                 <p className="font-semibold text-foreground text-sm">{PLAN_LABELS[slug]}</p>

@@ -11,9 +11,9 @@ export const mpPreApproval = new PreApproval(mpClient)
 export type PlanSlug = 'basic' | 'pro' | 'premium'
 
 const PLAN_PRICES_COP: Record<PlanSlug, number> = {
-  basic:   19900,
-  pro:     49900,
-  premium: 99900,
+  basic:   49900,
+  pro:     99900,
+  premium: 179900,
 }
 
 const PLAN_NAMES: Record<PlanSlug, string> = {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { mpPreApproval, getMpPlanId, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
+import { mpPreApproval, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
 
 const VALID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -36,21 +36,24 @@ export async function POST(request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
 
   try {
-    const preapprovalPlanId = getMpPlanId(planSlug)
-    const price             = getPlanPrice(planSlug)
-    const planName          = getPlanName(planSlug)
+    const price    = getPlanPrice(planSlug)
+    const planName = getPlanName(planSlug)
+
+    // start_date required for standalone preapproval (no preapproval_plan_id)
+    const startDate = new Date(Date.now() + 60_000).toISOString()
 
     const response = await mpPreApproval.create({
       body: {
-        preapproval_plan_id: preapprovalPlanId,
-        reason: `FideliTap Plan ${planName}`,
-        payer_email: business.email,
-        back_url: `${appUrl}/dashboard?subscription=success`,
+        reason:             `FideliTap Plan ${planName}`,
+        external_reference: business.id,
+        payer_email:        business.email,
+        back_url:           `${appUrl}/dashboard?subscription=success`,
         auto_recurring: {
           frequency:          1,
           frequency_type:     'months',
           transaction_amount: price,
           currency_id:        'COP',
+          start_date:         startDate,
         },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,

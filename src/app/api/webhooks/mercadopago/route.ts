@@ -58,7 +58,18 @@ async function handlePreapproval(
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle()
 
-  const { data: businessByEmail } = !business
+  // Fallback 1: external_reference stores the business.id set at subscription creation
+  const extRef = preapproval.external_reference as string | undefined
+  const { data: businessByRef } = (!business && extRef)
+    ? await serviceClient
+        .from('businesses')
+        .select('id, plan')
+        .eq('id', extRef)
+        .maybeSingle()
+    : { data: null }
+
+  // Fallback 2: payer email
+  const { data: businessByEmail } = (!business && !businessByRef)
     ? await serviceClient
         .from('businesses')
         .select('id, plan')
@@ -66,7 +77,7 @@ async function handlePreapproval(
         .maybeSingle()
     : { data: null }
 
-  const biz = business ?? businessByEmail
+  const biz = business ?? businessByRef ?? businessByEmail
   if (!biz) {
     console.warn('[mp-webhook] Business not found for preapproval:', preapprovalId)
     return

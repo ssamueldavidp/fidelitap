@@ -94,11 +94,15 @@ export function CardDrawer({
             name={card.name}
             benefitDescription={card.benefit_description}
             stampsRequired={card.stamps_required}
-            stampIcon={design.stamp_icon}
-            color={design.color}
+            stampIcon={design.stamp_icon ?? '⭐'}
+            color={design.color ?? '#00C896'}
+            cardStyle={design.style ?? 'clean'}
+            bgMode={design.bg_mode ?? 'light'}
             bgType={design.bg_type === 'image' ? 'image' : 'solid'}
             bgImageUrl={design.bg_image_url}
+            logoUrl={design.logo_url}
             filledStamps={3}
+            qrDataUrl={qrDataUrl || null}
             size="sm"
           />
 
@@ -142,14 +146,10 @@ export function CardDrawer({
             </button>
           </div>
 
-          {/* QR + Share link */}
-          <div className="bg-slate-800 rounded-xl p-4 flex flex-col items-center gap-3">
-            <p className="text-xs text-slate-400 self-start">Enlace para clientes</p>
-            {qrDataUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrDataUrl} alt="QR" className="w-24 h-24 rounded-lg" />
-            )}
-            <p className="text-xs text-[#00C896] break-all text-center">{shareUrl}</p>
+          {/* Share link */}
+          <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-xs text-slate-400">Enlace para clientes</p>
+            <p className="text-xs text-[#00C896] break-all">{shareUrl}</p>
             <button
               onClick={handleCopyLink}
               className="w-full text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg py-1.5 transition-colors"

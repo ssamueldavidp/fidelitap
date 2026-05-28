@@ -1,5 +1,8 @@
-import type { LoyaltyCard } from '@/types/database'
-import type { CardDesignConfig } from '@/types/database'
+'use client'
+
+import { motion } from 'framer-motion'
+import { WalletPreview } from '@/components/cards/wallet-preview'
+import type { LoyaltyCard, CardDesignConfig } from '@/types/database'
 
 interface CardWidgetProps {
   card: LoyaltyCard
@@ -12,67 +15,54 @@ interface CardWidgetProps {
 export function CardWidget({ card, customerCount, redemptionCount, onClick, dimmed }: CardWidgetProps) {
   const design = card.design_config as unknown as CardDesignConfig
 
-  const cardStyle: React.CSSProperties = design.bg_type === 'image' && design.bg_image_url
-    ? {
-        backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.4)), url(${design.bg_image_url})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }
-    : {}
-
   return (
-    <div
+    <motion.div
       onClick={onClick}
-      className={`relative rounded-2xl p-5 border cursor-pointer transition-all hover:-translate-y-1 ${dimmed ? 'opacity-40' : ''}`}
-      style={{
-        borderColor: design.color,
-        backgroundColor: design.bg_type !== 'image' ? '#0f172a' : undefined,
-        ...cardStyle,
-      }}
+      whileHover={{ y: -6, scale: 1.02 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className={`cursor-pointer transition-opacity ${dimmed ? 'opacity-40' : ''}`}
     >
-      {/* Active badge */}
-      <div
-        className="absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full border"
-        style={{
-          color: design.color,
-          background: `${design.color}15`,
-          borderColor: `${design.color}40`,
-        }}
-      >
-        ● {card.is_active ? 'Activa' : 'Inactiva'}
-      </div>
-
-      <p className="text-3xl mb-2">{design.stamp_icon}</p>
-      <p className="font-black text-white text-sm mb-0.5">{card.name}</p>
-      <p className="text-xs text-slate-400 mb-3">{card.benefit_description}</p>
-
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {Array.from({ length: card.stamps_required }).map((_, i) => (
-          <div
-            key={i}
-            className="w-3 h-3 rounded-full"
+      <WalletPreview
+        businessName={card.name}
+        name={card.name}
+        benefitDescription={card.benefit_description}
+        stampsRequired={card.stamps_required}
+        stampIcon={design.stamp_icon ?? '⭐'}
+        color={design.color ?? '#00C896'}
+        cardStyle={design.style ?? 'clean'}
+        bgMode={design.bg_mode ?? 'light'}
+        bgType={design.bg_type === 'image' ? 'image' : 'solid'}
+        bgImageUrl={design.bg_image_url}
+        logoUrl={design.logo_url}
+        filledStamps={3}
+        size="sm"
+      />
+      <div className="mt-2.5 flex gap-4 px-1">
+        <div>
+          <p className="text-sm font-bold text-white">{customerCount}</p>
+          <p className="text-[10px] text-white/30">clientes</p>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white">{card.stamps_required}</p>
+          <p className="text-[10px] text-white/30">sellos</p>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white">{redemptionCount}</p>
+          <p className="text-[10px] text-white/30">canjes</p>
+        </div>
+        <div className="ml-auto">
+          <span
+            className="text-[9px] font-bold px-2 py-0.5 rounded-full"
             style={{
-              background: i < 3 ? design.color : '#1e293b',
-              border: i < 3 ? 'none' : '1px solid #334155',
+              color: design.color ?? '#00C896',
+              background: `${design.color ?? '#00C896'}18`,
             }}
-          />
-        ))}
-      </div>
-
-      <div className="flex gap-4">
-        <div>
-          <p className="text-sm font-bold text-slate-300">{customerCount}</p>
-          <p className="text-[10px] text-slate-500">clientes</p>
-        </div>
-        <div>
-          <p className="text-sm font-bold text-slate-300">{card.stamps_required}</p>
-          <p className="text-[10px] text-slate-500">sellos</p>
-        </div>
-        <div>
-          <p className="text-sm font-bold text-slate-300">{redemptionCount}</p>
-          <p className="text-[10px] text-slate-500">canjes</p>
+          >
+            {card.is_active ? '● Activa' : '● Inactiva'}
+          </span>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

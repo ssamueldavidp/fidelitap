@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (topic === 'preapproval' && notificationId) {
       await handlePreapproval(notificationId, body, serviceClient)
     } else if (topic === 'payment' && notificationId) {
-      await handlePayment(notificationId, body, serviceClient)
+      await handlePayment(notificationId, body)
     }
   } catch (err) {
     console.error('[mp-webhook] processing error:', err)
@@ -145,7 +145,6 @@ async function handlePreapproval(
 async function handlePayment(
   paymentId: string,
   rawPayload: Json,
-  serviceClient: ReturnType<typeof createServiceClient>,
 ) {
   console.log('[mp-webhook] payment received:', paymentId, rawPayload)
 }

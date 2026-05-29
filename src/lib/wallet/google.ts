@@ -67,27 +67,45 @@ export interface LoyaltyPassData {
   stampsCurrent: number
   uniqueCode: string
   appUrl: string
+  color?: string | null
+  logoUrl?: string | null
+  bgImageUrl?: string | null
 }
 
 async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): Promise<void> {
   const classId = `${data.issuerId}.lc-${data.loyaltyCardId}`
 
   const isLocalUrl = data.appUrl.includes('localhost') || data.appUrl.includes('ngrok')
-  const logoUri = isLocalUrl
-    ? 'https://placehold.co/96x96/00C896/000000.png'
-    : `${data.appUrl}/wallet-icon.png`
 
-  const loyaltyClass = {
+  // Resolve logo: use business logo if available, else branded placeholder
+  const resolvedLogoUrl = data.logoUrl && data.logoUrl.startsWith('https')
+    ? data.logoUrl
+    : (isLocalUrl ? 'https://placehold.co/300x300/00C896/000000.png' : `${data.appUrl}/wallet-icon.png`)
+
+  const loyaltyClass: Record<string, unknown> = {
     id: classId,
     issuerName: 'FideliTap',
     programName: data.cardName,
     programLogo: {
-      sourceUri: { uri: logoUri },
+      sourceUri: { uri: resolvedLogoUrl },
       contentDescription: { defaultValue: { language: 'es', value: data.cardName } },
     },
     rewardsTierLabel: 'Sellos',
     reviewStatus: 'UNDER_REVIEW',
     countryCode: 'CO',
+  }
+
+  // Apply brand color if provided (must be valid hex)
+  if (data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color)) {
+    loyaltyClass.hexBackgroundColor = data.color
+  }
+
+  // Apply hero image only if it's a public HTTPS URL
+  if (data.bgImageUrl && data.bgImageUrl.startsWith('https')) {
+    loyaltyClass.heroImage = {
+      sourceUri: { uri: data.bgImageUrl },
+      contentDescription: { defaultValue: { language: 'es', value: data.cardName } },
+    }
   }
 
   const getRes = await fetch(`${GOOGLE_WALLET_BASE_URL}/loyaltyClass/${classId}`, {
@@ -124,6 +142,7 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
     id: objectId,
     classId,
     state: 'ACTIVE',
+    ...(data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color) ? { hexBackgroundColor: data.color } : {}),
     loyaltyPoints: {
       label: 'Sellos',
       balance: { int: data.stampsCurrent },

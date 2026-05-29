@@ -82,7 +82,12 @@ export async function GET(
 
   if (!card) return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 })
 
+  const design = (card.design_config ?? {}) as Record<string, unknown>
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.app'
+
+  // Only use HTTPS URLs for Google Wallet (rejects localhost)
+  const logoUrl = (design.logo_url as string | null)?.startsWith('https') ? (design.logo_url as string) : null
+  const bgImageUrl = (design.bg_image_url as string | null)?.startsWith('https') ? (design.bg_image_url as string) : null
 
   try {
     const saveUrl = await getGoogleWalletSaveUrl({
@@ -96,6 +101,9 @@ export async function GET(
       stampsCurrent: cc.current_stamps,
       uniqueCode: cc.unique_code,
       appUrl,
+      color: design.color as string | null,
+      logoUrl,
+      bgImageUrl,
     })
 
     return NextResponse.redirect(saveUrl)

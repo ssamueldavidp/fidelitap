@@ -1,18 +1,32 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
+
 interface SuccessScreenProps {
   customerCardId: string
   walletAuthToken: string
   alreadyHadCard: boolean
+  shareUrl: string
 }
 
 export function SuccessScreen({
   customerCardId,
   walletAuthToken,
   alreadyHadCard,
+  shareUrl,
 }: SuccessScreenProps) {
-  const appleUrl = `/api/wallet/apple/${customerCardId}?token=${walletAuthToken}`
+  const appleUrl  = `/api/wallet/apple/${customerCardId}?token=${walletAuthToken}`
   const googleUrl = `/api/wallet/google/${customerCardId}?token=${walletAuthToken}`
+  const [qrDataUrl, setQrDataUrl] = useState<string>('')
+
+  useEffect(() => {
+    QRCode.toDataURL(shareUrl, {
+      width: 240,
+      margin: 2,
+      color: { dark: '#111827', light: '#ffffff' },
+    }).then(setQrDataUrl)
+  }, [shareUrl])
 
   return (
     <div className="flex flex-col gap-5 text-center">
@@ -26,8 +40,8 @@ export function SuccessScreen({
         </p>
       </div>
 
+      {/* Wallet buttons */}
       <div className="flex flex-col gap-3">
-        {/* Apple Wallet */}
         <a
           href={appleUrl}
           className="flex items-center justify-center gap-2 bg-black text-white font-semibold text-sm rounded-xl py-3 border border-slate-700 hover:border-slate-500 transition-colors"
@@ -38,7 +52,6 @@ export function SuccessScreen({
           Agregar a Apple Wallet
         </a>
 
-        {/* Google Wallet */}
         <a
           href={googleUrl}
           className="flex items-center justify-center gap-2 bg-white text-slate-900 font-semibold text-sm rounded-xl py-3 hover:bg-slate-100 transition-colors"
@@ -53,8 +66,22 @@ export function SuccessScreen({
         </a>
       </div>
 
+      {/* Large QR */}
+      {qrDataUrl && (
+        <div className="flex flex-col items-center gap-3 bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tu código QR</p>
+          <div className="bg-white rounded-2xl p-3">
+            <img src={qrDataUrl} alt="QR de tu tarjeta" className="w-48 h-48" />
+          </div>
+          <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+            Muestra este QR en cada visita para acumular sellos.<br/>
+            También puedes escanearlo con la cámara de tu teléfono.
+          </p>
+        </div>
+      )}
+
       <p className="text-xs text-slate-600">
-        Muestra el QR de tu tarjeta en cada visita para acumular sellos
+        Tu tarjeta está guardada. Agrégala a Wallet para acceso rápido.
       </p>
     </div>
   )

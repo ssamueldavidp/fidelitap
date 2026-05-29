@@ -7,9 +7,10 @@ import { SuccessScreen } from './success-screen'
 interface ActivateFormProps {
   loyaltyCardId: string
   businessId: string
+  shareUrl: string
 }
 
-export function ActivateForm({ loyaltyCardId, businessId }: ActivateFormProps) {
+export function ActivateForm({ loyaltyCardId, businessId, shareUrl }: ActivateFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<{
@@ -18,7 +19,7 @@ export function ActivateForm({ loyaltyCardId, businessId }: ActivateFormProps) {
     alreadyHadCard: boolean
   } | null>(null)
 
-  if (result) return <SuccessScreen {...result} />
+  if (result) return <SuccessScreen {...result} shareUrl={shareUrl} />
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

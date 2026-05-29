@@ -37,7 +37,7 @@ export function CardDrawer({
   const [actionError, setActionError] = useState<string | null>(null)
 
   useEffect(() => {
-    QRCode.toDataURL(shareUrl, { width: 120, margin: 1 }).then(setQrDataUrl)
+    QRCode.toDataURL(shareUrl, { width: 300, margin: 2, color: { dark: '#111827', light: '#ffffff' } }).then(setQrDataUrl)
   }, [shareUrl])
 
   function handleToggle() {
@@ -146,6 +146,19 @@ export function CardDrawer({
               />
             </button>
           </div>
+
+          {/* Large QR for scanning */}
+          {qrDataUrl && (
+            <div className="flex flex-col items-center gap-3 bg-slate-800 rounded-2xl p-5">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider self-start">QR de activación</p>
+              <div className="bg-white rounded-2xl p-3 shadow-lg">
+                <img src={qrDataUrl} alt="QR de activación" className="w-44 h-44" />
+              </div>
+              <p className="text-[10px] text-slate-500 text-center leading-relaxed">
+                Muestra este QR a tus clientes para que activen su tarjeta
+              </p>
+            </div>
+          )}
 
           {/* Share link */}
           <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-3">

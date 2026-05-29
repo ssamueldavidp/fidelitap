@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import QRCode from 'qrcode'
 import { WalletPreview } from '@/components/cards/wallet-preview'
+import { resolveStorageUrl } from '@/lib/storage-url'
 import { toggleCardAction, deleteCardAction } from '@/app/(dashboard)/cards/actions'
 import type { LoyaltyCard } from '@/types/database'
 import type { CardDesignConfig } from '@/types/database'
@@ -99,8 +100,8 @@ export function CardDrawer({
             cardStyle={design.style ?? 'clean'}
             bgMode={design.bg_mode ?? 'light'}
             bgType={design.bg_type === 'image' ? 'image' : 'solid'}
-            bgImageUrl={design.bg_image_url}
-            logoUrl={design.logo_url}
+            bgImageUrl={resolveStorageUrl(design.bg_image_url)}
+            logoUrl={resolveStorageUrl(design.logo_url)}
             filledStamps={3}
             qrDataUrl={qrDataUrl || null}
             size="sm"

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { WalletPreview } from '@/components/cards/wallet-preview'
 import { ActivateForm } from './activate-form'
 import type { CardDesignConfig } from '@/types/database'
+import { resolveStorageUrl } from '@/lib/storage-url'
 
 export default async function CardActivationPage({
   params,
@@ -47,10 +48,13 @@ export default async function CardActivationPage({
           name={card.name}
           benefitDescription={card.benefit_description}
           stampsRequired={card.stamps_required}
-          stampIcon={design.stamp_icon}
-          color={design.color}
+          stampIcon={design.stamp_icon ?? '⭐'}
+          color={design.color ?? '#00C896'}
+          cardStyle={design.style ?? 'clean'}
+          bgMode={design.bg_mode ?? 'light'}
           bgType={design.bg_type === 'image' ? 'image' : 'solid'}
-          bgImageUrl={design.bg_image_url}
+          bgImageUrl={resolveStorageUrl(design.bg_image_url)}
+          logoUrl={resolveStorageUrl(design.logo_url) ?? null}
           filledStamps={0}
         />
 

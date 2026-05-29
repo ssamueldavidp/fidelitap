@@ -248,7 +248,8 @@ export function WalletPreview({
         >
           {logoUrl
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+            ? <img src={logoUrl} alt="" className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
             : <span className={isSm ? 'text-xl' : 'text-3xl'}>{stampIcon}</span>
           }
         </div>

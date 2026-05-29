@@ -1,4 +1,6 @@
 // src/components/cards/wallet-preview.tsx
+'use client'
+
 import React from 'react'
 
 export type CardStyle = 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'

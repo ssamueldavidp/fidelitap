@@ -139,10 +139,10 @@ export function CardDrawer({
             <button
               onClick={handleToggle}
               disabled={isPending}
-              className={`relative w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${isActive ? 'bg-[#00C896]' : 'bg-slate-600'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-50 ${isActive ? 'bg-[#00C896]' : 'bg-slate-600'}`}
             >
               <span
-                className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isActive ? 'translate-x-5' : 'translate-x-1'}`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}
               />
             </button>
           </div>

@@ -92,6 +92,11 @@ export async function GET(
       benefitDescription: card.benefit_description,
       uniqueCode: cc.unique_code,
       appUrl,
+      color: (card.design_config as Record<string, unknown>)?.color as string | null,
+      logoUrl: (() => {
+        const url = (card.design_config as Record<string, unknown>)?.logo_url as string | null
+        return url?.startsWith('https') ? url : null
+      })(),
     })
 
     return new NextResponse(Uint8Array.from(passBuffer), {

@@ -14,6 +14,25 @@ interface ApplePassData {
   benefitDescription: string
   uniqueCode: string
   appUrl: string
+  color?: string | null
+  logoUrl?: string | null
+}
+
+function hexToRgb(hex: string): string {
+  const clean = hex.replace('#', '')
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  return `rgb(${r}, ${g}, ${b})`
+}
+
+function isLightColor(hex: string): boolean {
+  const clean = hex.replace('#', '')
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  // Perceived luminance
+  return (r * 299 + g * 587 + b * 114) / 1000 > 140
 }
 
 export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
@@ -37,6 +56,20 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
     )
   }
 
+  // Attempt to fetch business logo for the pass
+  let logoBuffer: Buffer = iconBuffer // fallback to icon
+  if (data.logoUrl && data.logoUrl.startsWith('https')) {
+    try {
+      const logoRes = await fetch(data.logoUrl, { signal: AbortSignal.timeout(3000) })
+      if (logoRes.ok) {
+        const arrayBuf = await logoRes.arrayBuffer()
+        logoBuffer = Buffer.from(arrayBuf)
+      }
+    } catch {
+      // Logo fetch failed — use icon fallback silently
+    }
+  }
+
   const passJson = {
     formatVersion: 1,
     passTypeIdentifier: data.passTypeIdentifier,
@@ -44,9 +77,15 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
     teamIdentifier: data.teamIdentifier,
     organizationName: data.organizationName,
     description: data.description,
-    backgroundColor: 'rgb(15, 23, 42)',
-    foregroundColor: 'rgb(255, 255, 255)',
-    labelColor: 'rgb(148, 163, 184)',
+    backgroundColor: data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color)
+      ? hexToRgb(data.color)
+      : 'rgb(15, 23, 42)',
+    foregroundColor: data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color) && isLightColor(data.color)
+      ? 'rgb(15, 23, 42)'
+      : 'rgb(255, 255, 255)',
+    labelColor: data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color) && isLightColor(data.color)
+      ? 'rgb(80, 80, 80)'
+      : 'rgb(200, 210, 220)',
     webServiceURL: `${data.appUrl}/api/wallet/apple/updates`,
     authenticationToken: data.authenticationToken,
     storeCard: {
@@ -98,6 +137,8 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
       'pass.json': Buffer.from(JSON.stringify(passJson)),
       'icon.png': iconBuffer,
       'icon@2x.png': iconBuffer,
+      'logo.png': logoBuffer,
+      'logo@2x.png': logoBuffer,
     },
     {
       wwdr,

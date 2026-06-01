@@ -28,12 +28,15 @@ export async function GET() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  return NextResponse.json({
-    plan:                business.plan,
-    subscriptionStatus:  business.subscription_status,
-    mpPreapprovalId:     business.mp_preapproval_id,
-    payerEmail:          business.mp_payer_email,
-    subscriptionEndDate: business.subscription_end_date,
-    paymentHistory:      events ?? [],
-  })
+  return NextResponse.json(
+    {
+      plan:                business.plan,
+      subscriptionStatus:  business.subscription_status,
+      mpPreapprovalId:     business.mp_preapproval_id,
+      payerEmail:          business.mp_payer_email,
+      subscriptionEndDate: business.subscription_end_date,
+      paymentHistory:      events ?? [],
+    },
+    { headers: { 'Cache-Control': 'no-store' } }
+  )
 }

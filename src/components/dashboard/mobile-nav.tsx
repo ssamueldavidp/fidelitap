@@ -5,14 +5,16 @@ import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { SidebarNav } from './sidebar-nav'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { LogoutButton } from './logout-button'
 import type { ReactNode } from 'react'
 
 interface MobileNavProps {
   businessName: string
+  userEmail: string
   planContent: ReactNode
 }
 
-export function MobileNav({ planContent }: MobileNavProps) {
+export function MobileNav({ planContent, userEmail }: MobileNavProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -73,6 +75,12 @@ export function MobileNav({ planContent }: MobileNavProps) {
 
         <div className="border-t border-border/30">
           {planContent}
+        </div>
+
+        {/* Footer: email + logout */}
+        <div className="border-t border-border/30 px-3 py-3">
+          <p className="text-[10px] text-muted-foreground/50 px-3 mb-1 truncate">{userEmail}</p>
+          <LogoutButton />
         </div>
       </div>
     </>

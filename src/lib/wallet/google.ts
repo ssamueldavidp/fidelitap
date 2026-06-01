@@ -84,7 +84,7 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
 
   const loyaltyClass: Record<string, unknown> = {
     id: classId,
-    issuerName: 'FideliTap',
+    issuerName: data.businessName,
     programName: data.cardName,
     programLogo: {
       sourceUri: { uri: resolvedLogoUrl },

@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
       body: {
         reason:             `FideliTap Plan ${planName}`,
         external_reference: `${business.id}:${planSlug}`,
-        payer_email:        business.email,
         back_url:           `${appUrl}/dashboard?subscription=success`,
         auto_recurring: {
           frequency:          1,

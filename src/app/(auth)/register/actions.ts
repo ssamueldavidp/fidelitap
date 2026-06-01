@@ -99,7 +99,6 @@ export async function registerAction(
       body: {
         reason:             `FideliTap Plan ${planName}`,
         external_reference: `${newBiz.id}:${planSlug}`,
-        payer_email:        email,
         back_url:           `${appUrl}/dashboard?subscription=success`,
         auto_recurring: {
           frequency:          1,

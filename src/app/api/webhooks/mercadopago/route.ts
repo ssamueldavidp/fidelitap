@@ -3,7 +3,10 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { mpPreApproval, verifyMpSignature } from '@/lib/mercadopago'
 import type { Json } from '@/types/database'
 
-const SUBSCRIPTION_PLANS: Record<string, 'basic' | 'pro' | 'premium'> = {
+const VALID_PAID_PLANS = ['basic', 'pro', 'premium'] as const
+type PaidPlan = typeof VALID_PAID_PLANS[number]
+
+const SUBSCRIPTION_PLANS: Record<string, PaidPlan> = {
   [process.env.MP_PLAN_ID_BASIC   ?? 'UNSET_BASIC']:   'basic',
   [process.env.MP_PLAN_ID_PRO     ?? 'UNSET_PRO']:     'pro',
   [process.env.MP_PLAN_ID_PREMIUM ?? 'UNSET_PREMIUM']: 'premium',
@@ -52,27 +55,29 @@ async function handlePreapproval(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const preapproval = await mpPreApproval.get({ id: preapprovalId }) as any
 
+  // Lookup 1: by mp_preapproval_id (already linked)
   const { data: business } = await serviceClient
     .from('businesses')
-    .select('id, plan')
+    .select('id, plan, subscription_end_date')
     .eq('mp_preapproval_id', preapprovalId)
     .maybeSingle()
 
-  // Fallback 1: external_reference stores the business.id set at subscription creation
+  // Lookup 2: by external_reference (business.id or business.id:planSlug)
   const extRef = preapproval.external_reference as string | undefined
-  const { data: businessByRef } = (!business && extRef)
+  const extRefBusinessId = extRef?.split(':')[0]
+  const { data: businessByRef } = (!business && extRefBusinessId)
     ? await serviceClient
         .from('businesses')
-        .select('id, plan')
-        .eq('id', extRef)
+        .select('id, plan, subscription_end_date')
+        .eq('id', extRefBusinessId)
         .maybeSingle()
     : { data: null }
 
-  // Fallback 2: payer email
+  // Lookup 3: payer email fallback
   const { data: businessByEmail } = (!business && !businessByRef)
     ? await serviceClient
         .from('businesses')
-        .select('id, plan')
+        .select('id, plan, subscription_end_date')
         .eq('mp_payer_email', preapproval.payer_email ?? '')
         .maybeSingle()
     : { data: null }
@@ -83,10 +88,16 @@ async function handlePreapproval(
     return
   }
 
-  const planSlug =
-    preapproval.preapproval_plan_id
-      ? (SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id] ?? biz.plan)
-      : biz.plan
+  // Resolve the plan slug — priority: MP plan ID > external_reference > current plan
+  let planSlug: 'free' | 'basic' | 'pro' | 'premium' = biz.plan as 'free' | 'basic' | 'pro' | 'premium'
+  if (preapproval.preapproval_plan_id && SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]) {
+    planSlug = SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]
+  } else if (extRef?.includes(':')) {
+    const slugFromRef = extRef.split(':')[1]
+    if (VALID_PAID_PLANS.includes(slugFromRef as PaidPlan)) {
+      planSlug = slugFromRef as PaidPlan
+    }
+  }
 
   if (preapproval.status === 'authorized') {
     await serviceClient
@@ -108,12 +119,18 @@ async function handlePreapproval(
       status:            'authorized',
       raw_payload:       rawPayload as Json,
     })
+
   } else if (preapproval.status === 'cancelled') {
+    // Only downgrade to free if there's no grace period remaining
+    const hasGrace = biz.subscription_end_date
+      ? new Date(biz.subscription_end_date) > new Date()
+      : false
+
     await serviceClient
       .from('businesses')
       .update({
         subscription_status: 'canceled',
-        plan:                'free',
+        ...(hasGrace ? {} : { plan: 'free' }),
       })
       .eq('id', biz.id)
 
@@ -125,6 +142,7 @@ async function handlePreapproval(
       status:            'cancelled',
       raw_payload:       rawPayload as Json,
     })
+
   } else if (preapproval.status === 'paused' || preapproval.status === 'pending') {
     await serviceClient
       .from('businesses')

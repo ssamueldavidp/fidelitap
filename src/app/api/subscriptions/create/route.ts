@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const response = await mpPreApproval.create({
       body: {
         reason:             `FideliTap Plan ${planName}`,
-        external_reference: business.id,
+        external_reference: `${business.id}:${planSlug}`,
         payer_email:        business.email,
         back_url:           `${appUrl}/dashboard?subscription=success`,
         auto_recurring: {

@@ -8,7 +8,7 @@ export interface PlanLimits {
 
 export const PLAN_LIMITS: Record<PlanSlug, PlanLimits> = {
   free:    { maxCustomers: 20,   maxCards: 1 },
-  basic:   { maxCustomers: 500,  maxCards: 1 },
+  basic:   { maxCustomers: 500,  maxCards: 3 },
   pro:     { maxCustomers: 2000, maxCards: 10 },
   premium: { maxCustomers: null, maxCards: null },
 }

@@ -1,3 +1,4 @@
+import 'server-only'
 import { createSign } from 'crypto'
 
 const GOOGLE_WALLET_BASE_URL = 'https://walletobjects.googleapis.com/walletobjects/v1'

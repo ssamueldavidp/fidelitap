@@ -1,3 +1,4 @@
+import 'server-only'
 // src/lib/mercadopago.ts
 // Server-only MercadoPago client. Never import in 'use client' files.
 import { MercadoPagoConfig, PreApproval, Payment } from 'mercadopago'

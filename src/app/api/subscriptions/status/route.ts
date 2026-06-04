@@ -11,7 +11,7 @@ export async function GET() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, plan, subscription_status, mp_preapproval_id, mp_payer_email, subscription_end_date')
+    .select('id, plan, subscription_status, subscription_end_date')
     .eq('owner_id', user.id)
     .single()
 
@@ -28,13 +28,13 @@ export async function GET() {
     .order('created_at', { ascending: false })
     .limit(10)
 
+  // No exponer mp_preapproval_id ni mp_payer_email al cliente
   return NextResponse.json(
     {
       plan:                business.plan,
       subscriptionStatus:  business.subscription_status,
-      mpPreapprovalId:     business.mp_preapproval_id,
-      payerEmail:          business.mp_payer_email,
       subscriptionEndDate: business.subscription_end_date,
+      hasActiveSubscription: !!business.subscription_status && business.subscription_status !== 'canceled',
       paymentHistory:      events ?? [],
     },
     { headers: { 'Cache-Control': 'no-store' } }

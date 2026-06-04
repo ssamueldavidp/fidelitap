@@ -1,12 +1,13 @@
 // src/lib/mercadopago.ts
 // Server-only MercadoPago client. Never import in 'use client' files.
-import { MercadoPagoConfig, PreApproval } from 'mercadopago'
+import { MercadoPagoConfig, PreApproval, Payment } from 'mercadopago'
 
 export const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN ?? '',
 })
 
 export const mpPreApproval = new PreApproval(mpClient)
+export const mpPayment = new Payment(mpClient)
 
 export type PlanSlug = 'basic' | 'pro' | 'premium'
 

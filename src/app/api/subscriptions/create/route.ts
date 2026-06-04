@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { mpPreference, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
+import { mpPreference, getPlanPrice, getPlanName, getCheckoutUrl, type PlanSlug } from '@/lib/mercadopago'
 
 const VALID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -41,30 +41,32 @@ export async function POST(request: NextRequest) {
       body: {
         items: [
           {
-            id:         planSlug,
-            title:      `FideliTap Plan ${planName}`,
-            quantity:   1,
-            unit_price: price,
-            currency_id: 'COP',
+            id:           planSlug,
+            title:        `FideliTap Plan ${planName}`,
+            quantity:     1,
+            unit_price:   price,
+            currency_id:  'COP',
           },
         ],
-        external_reference: `${business.id}:${planSlug}`,
+        external_reference:   `${business.id}:${planSlug}`,
         back_urls: {
           success: `${appUrl}/dashboard?subscription=success`,
           failure: `${appUrl}/settings?tab=suscripcion&payment=failed`,
           pending: `${appUrl}/dashboard?subscription=pending`,
         },
-        auto_return:        'approved',
+        auto_return:          'approved',
         statement_descriptor: 'FideliTap',
-        notification_url: `${appUrl}/api/webhooks/mercadopago`,
+        notification_url:     `${appUrl}/api/webhooks/mercadopago`,
+        binary_mode:          true,
       },
     })
 
-    if (!response.init_point) {
+    const checkoutUrl = getCheckoutUrl(response)
+    if (!checkoutUrl) {
       return NextResponse.json({ error: 'No se pudo crear el enlace de pago' }, { status: 500 })
     }
 
-    return NextResponse.json({ init_point: response.init_point })
+    return NextResponse.json({ init_point: checkoutUrl })
   } catch (err) {
     console.error('[subscriptions/create]', err)
     return NextResponse.json({ error: 'Error al crear la suscripción' }, { status: 500 })

@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 import { loginRateLimit } from '@/lib/rate-limit'
 import { headers } from 'next/headers'
 import { sendBusinessWelcome } from '@/lib/email/send-business-welcome'
-import { mpPreference, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
+import { mpPreference, getPlanPrice, getPlanName, getCheckoutUrl, type PlanSlug } from '@/lib/mercadopago'
 
 const PAID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -114,14 +114,16 @@ export async function registerAction(
         auto_return:          'approved',
         statement_descriptor: 'FideliTap',
         notification_url:     `${appUrl}/api/webhooks/mercadopago`,
+        binary_mode:          true,
       },
     })
 
-    if (!response.init_point) {
+    const checkoutUrl = getCheckoutUrl(response)
+    if (!checkoutUrl) {
       redirect('/dashboard')
     }
 
-    return { checkoutUrl: response.init_point }
+    return { checkoutUrl }
   } catch (err) {
     console.error('[register] MP preference error:', err)
     redirect('/dashboard')

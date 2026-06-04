@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { mpPreApproval, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
+import { mpPreference, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
 
 const VALID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, email, plan, subscription_status')
+    .select('id, plan, subscription_status')
     .eq('owner_id', user.id)
     .single()
 
@@ -22,9 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   let body: { planSlug?: string }
-  try {
-    body = await request.json()
-  } catch {
+  try { body = await request.json() } catch {
     return NextResponse.json({ error: 'Cuerpo de solicitud inválido' }, { status: 400 })
   }
 
@@ -39,27 +37,30 @@ export async function POST(request: NextRequest) {
     const price    = getPlanPrice(planSlug)
     const planName = getPlanName(planSlug)
 
-    // start_date required for standalone preapproval (no preapproval_plan_id)
-    const startDate = new Date(Date.now() + 60_000).toISOString()
-
-    const response = await mpPreApproval.create({
+    const response = await mpPreference.create({
       body: {
-        reason:             `FideliTap Plan ${planName}`,
+        items: [
+          {
+            id:         planSlug,
+            title:      `FideliTap Plan ${planName}`,
+            quantity:   1,
+            unit_price: price,
+            currency_id: 'COP',
+          },
+        ],
         external_reference: `${business.id}:${planSlug}`,
-        back_url:           `${appUrl}/dashboard?subscription=success`,
-        auto_recurring: {
-          frequency:          1,
-          frequency_type:     'months',
-          transaction_amount: price,
-          currency_id:        'COP',
-          start_date:         startDate,
+        back_urls: {
+          success: `${appUrl}/dashboard?subscription=success`,
+          failure: `${appUrl}/settings?tab=suscripcion&payment=failed`,
+          pending: `${appUrl}/dashboard?subscription=pending`,
         },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+        auto_return:      'approved',
+        notification_url: `${appUrl}/api/webhooks/mercadopago`,
+      },
     })
 
     if (!response.init_point) {
-      return NextResponse.json({ error: 'No se pudo crear la suscripción' }, { status: 500 })
+      return NextResponse.json({ error: 'No se pudo crear el enlace de pago' }, { status: 500 })
     }
 
     return NextResponse.json({ init_point: response.init_point })

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true })
 }
 
-// Handles payment webhooks — used when subscription_preapproval topic isn't available
+// Handles payment webhooks from Checkout Pro (Preferences) and PreApproval
 async function handlePayment(
   paymentId: string,
   rawPayload: Json,
@@ -61,40 +61,44 @@ async function handlePayment(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payment = await mpPayment.get({ id: Number(paymentId) }) as any
 
-  // Only process subscription payments (have a preapproval_id)
+  // external_reference is set on the Preference as "businessId:planSlug"
+  const extRef = payment.external_reference as string | undefined
   const preapprovalId = payment.preapproval_id as string | undefined
-  if (!preapprovalId) {
-    console.log('[mp-webhook] Payment is not a subscription payment, skipping:', paymentId)
+
+  // Need either external_reference or preapproval_id to identify the business
+  if (!extRef && !preapprovalId) {
+    console.log('[mp-webhook] Payment has no reference, skipping:', paymentId)
     return
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const preapproval = await mpPreApproval.get({ id: preapprovalId }) as any
-  const extRef = preapproval.external_reference as string | undefined
-
-  const biz = await findBusiness(preapprovalId, extRef, payment.payer?.email, serviceClient)
+  const biz = await findBusiness(preapprovalId ?? '', extRef, payment.payer?.email, serviceClient)
   if (!biz) {
-    console.warn('[mp-webhook] Business not found for payment:', paymentId, 'preapproval:', preapprovalId)
+    console.warn('[mp-webhook] Business not found for payment:', paymentId)
     return
   }
 
-  const planSlug = resolvePlanSlug(preapproval, extRef, biz.plan)
+  // Resolve plan: from external_reference (preferred) or current plan
+  const planSlug = resolvePlanFromExtRef(extRef, biz.plan)
 
   if (payment.status === 'approved') {
+    // next_billing_date = 30 days from now (for tracking renewal)
+    const nextBilling = new Date()
+    nextBilling.setDate(nextBilling.getDate() + 30)
+
     await serviceClient
       .from('businesses')
       .update({
         plan:                  planSlug,
         subscription_status:   'active',
-        mp_preapproval_id:     preapprovalId,
         mp_payer_email:        payment.payer?.email ?? null,
-        subscription_end_date: null,
+        subscription_end_date: nextBilling.toISOString(),
+        ...(preapprovalId ? { mp_preapproval_id: preapprovalId } : {}),
       })
       .eq('id', biz.id)
 
     await serviceClient.from('payment_events').insert({
       business_id:       biz.id,
-      mp_preapproval_id: preapprovalId,
+      mp_preapproval_id: preapprovalId ?? null,
       event_type:        'payment_success',
       plan_slug:         planSlug,
       amount_cop:        payment.transaction_amount ?? null,
@@ -102,7 +106,7 @@ async function handlePayment(
       raw_payload:       rawPayload as Json,
     })
 
-    console.log('[mp-webhook] Plan activated:', planSlug, 'for business:', biz.id)
+    console.log('[mp-webhook] Plan activated:', planSlug, 'business:', biz.id)
 
   } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
     await serviceClient
@@ -112,7 +116,7 @@ async function handlePayment(
 
     await serviceClient.from('payment_events').insert({
       business_id:       biz.id,
-      mp_preapproval_id: preapprovalId,
+      mp_preapproval_id: preapprovalId ?? null,
       event_type:        'payment_failed',
       plan_slug:         planSlug,
       amount_cop:        payment.transaction_amount ?? null,
@@ -236,6 +240,17 @@ async function findBusiness(
   return null
 }
 
+function resolvePlanFromExtRef(
+  extRef: string | undefined,
+  currentPlan: string,
+): 'free' | 'basic' | 'pro' | 'premium' {
+  if (extRef?.includes(':')) {
+    const slug = extRef.split(':')[1]
+    if (VALID_PAID_PLANS.includes(slug as PaidPlan)) return slug as PaidPlan
+  }
+  return currentPlan as 'free' | 'basic' | 'pro' | 'premium'
+}
+
 // Resolve plan slug from preapproval_plan_id > external_reference > fallback
 function resolvePlanSlug(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -246,9 +261,5 @@ function resolvePlanSlug(
   if (preapproval.preapproval_plan_id && SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]) {
     return SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]
   }
-  if (extRef?.includes(':')) {
-    const slug = extRef.split(':')[1]
-    if (VALID_PAID_PLANS.includes(slug as PaidPlan)) return slug as PaidPlan
-  }
-  return currentPlan as 'free' | 'basic' | 'pro' | 'premium'
+  return resolvePlanFromExtRef(extRef, currentPlan)
 }

@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 import { loginRateLimit } from '@/lib/rate-limit'
 import { headers } from 'next/headers'
 import { sendBusinessWelcome } from '@/lib/email/send-business-welcome'
-import { mpPreApproval, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
+import { mpPreference, getPlanPrice, getPlanName, type PlanSlug } from '@/lib/mercadopago'
 
 const PAID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -87,39 +87,42 @@ export async function registerAction(
     redirect('/dashboard')
   }
 
-  // 4b. Plan pago → crear PreApproval en MercadoPago y devolver URL de checkout
+  // 4b. Plan pago → crear Preference en MercadoPago y devolver URL de checkout
   try {
     const planSlug = plan as PlanSlug
     const price    = getPlanPrice(planSlug)
     const planName = getPlanName(planSlug)
     const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
-    const startDate = new Date(Date.now() + 60_000).toISOString()
 
-    const response = await mpPreApproval.create({
+    const response = await mpPreference.create({
       body: {
-        reason:             `FideliTap Plan ${planName}`,
+        items: [
+          {
+            id:          planSlug,
+            title:       `FideliTap Plan ${planName}`,
+            quantity:    1,
+            unit_price:  price,
+            currency_id: 'COP',
+          },
+        ],
         external_reference: `${newBiz.id}:${planSlug}`,
-        back_url:           `${appUrl}/dashboard?subscription=success`,
-        auto_recurring: {
-          frequency:          1,
-          frequency_type:     'months',
-          transaction_amount: price,
-          currency_id:        'COP',
-          start_date:         startDate,
+        back_urls: {
+          success: `${appUrl}/dashboard?subscription=success`,
+          failure: `${appUrl}/register?plan=${planSlug}&error=payment`,
+          pending: `${appUrl}/dashboard?subscription=pending`,
         },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+        auto_return:      'approved',
+        notification_url: `${appUrl}/api/webhooks/mercadopago`,
+      },
     })
 
     if (!response.init_point) {
-      // Fallback: llevar al dashboard con plan gratis si MP falla
       redirect('/dashboard')
     }
 
     return { checkoutUrl: response.init_point }
   } catch (err) {
-    console.error('[register] MP preapproval error:', err)
-    // Si MP falla, el usuario ya existe con plan free — llevarlo al dashboard
+    console.error('[register] MP preference error:', err)
     redirect('/dashboard')
   }
 }

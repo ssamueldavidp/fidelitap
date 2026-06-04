@@ -108,11 +108,12 @@ export async function registerAction(
         external_reference: `${newBiz.id}:${planSlug}`,
         back_urls: {
           success: `${appUrl}/dashboard?subscription=success`,
-          failure: `${appUrl}/register?plan=${planSlug}&error=payment`,
+          failure: `${appUrl}/settings?tab=suscripcion&payment=failed`,
           pending: `${appUrl}/dashboard?subscription=pending`,
         },
-        auto_return:      'approved',
-        notification_url: `${appUrl}/api/webhooks/mercadopago`,
+        auto_return:          'approved',
+        statement_descriptor: 'FideliTap',
+        notification_url:     `${appUrl}/api/webhooks/mercadopago`,
       },
     })
 

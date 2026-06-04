@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
           failure: `${appUrl}/settings?tab=suscripcion&payment=failed`,
           pending: `${appUrl}/dashboard?subscription=pending`,
         },
-        auto_return:      'approved',
+        auto_return:        'approved',
+        statement_descriptor: 'FideliTap',
         notification_url: `${appUrl}/api/webhooks/mercadopago`,
       },
     })

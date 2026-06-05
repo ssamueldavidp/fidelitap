@@ -19,7 +19,7 @@ export default async function PosterPage() {
   const serviceClient = createServiceClient()
   const { data: cards } = await serviceClient
     .from('loyalty_cards')
-    .select('id, slug, stamps_required, poster_reward_text')
+    .select('id, name, slug, stamps_required, poster_reward_text')
     .eq('business_id', business.id)
     .is('deleted_at', null)
     .eq('is_active', true)
@@ -44,6 +44,7 @@ export default async function PosterPage() {
 
   const cardsTyped = cards as {
     id: string
+    name: string
     slug: string
     stamps_required: number
     poster_reward_text: string | null

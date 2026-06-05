@@ -30,7 +30,9 @@ export async function GET(
     .select(`
       id,
       slug,
+      name,
       stamps_required,
+      design_config,
       poster_reward_text,
       businesses ( id, owner_id, name, poster_bg_color, poster_bg_image_url )
     `)
@@ -44,7 +46,9 @@ export async function GET(
     id: string
     slug: string
     stamps_required: number
+    name: string
     poster_reward_text: string | null
+    design_config: Record<string, unknown> | null
     businesses: {
       id: string
       owner_id: string
@@ -67,6 +71,8 @@ export async function GET(
 
     const posterData = {
       businessName: biz.name,
+      cardName: card.name,
+      stampIcon: (card.design_config?.stamp_icon as string) ?? "⭐",
       rewardText: card.poster_reward_text ?? '',
       stampsRequired: card.stamps_required,
       qrDataUrl,

@@ -7,6 +7,7 @@ import { WalletPreview } from '@/components/cards/wallet-preview'
 import { createCardAction, updateCardAction } from '@/app/(dashboard)/cards/actions'
 import type { LoyaltyCard, CardDesignConfig } from '@/types/database'
 import type { CardStyle } from '@/components/cards/wallet-preview'
+import { resolveStorageUrl } from '@/lib/storage-url'
 
 const PALETTE = [
   '#1d4ed8', '#0f766e', '#7c3aed', '#dc2626',
@@ -46,9 +47,9 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
   const [bgMode,          setBgMode]        = useState<'light' | 'dark'>(existingDesign?.bg_mode ?? 'light')
   const [bgType,          setBgType]        = useState<'solid' | 'image'>(existingDesign?.bg_type === 'image' ? 'image' : 'solid')
   const [bgImageFile,     setBgImageFile]   = useState<File | null>(null)
-  const [bgImagePreview,  setBgImagePreview]= useState<string | null>(existingDesign?.bg_image_url ?? null)
+  const [bgImagePreview,  setBgImagePreview]= useState<string | null>(resolveStorageUrl(existingDesign?.bg_image_url) ?? null)
   const [logoFile,        setLogoFile]      = useState<File | null>(null)
-  const [logoPreview,     setLogoPreview]   = useState<string | null>(existingDesign?.logo_url ?? null)
+  const [logoPreview,     setLogoPreview]   = useState<string | null>(resolveStorageUrl(existingDesign?.logo_url) ?? null)
   const [error,           setError]         = useState<string | null>(null)
   const [isPending,       startTransition]  = useTransition()
   const bgInputRef   = useRef<HTMLInputElement>(null)

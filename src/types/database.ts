@@ -100,7 +100,10 @@ export type Database = {
           google_pass_url: string | null
           id: string
           is_complete: boolean
+          last_stamp_at: string | null
           loyalty_card_id: string
+          near_completion_notified_at: string | null
+          reengagement_sent_at: string | null
           status: string
           times_completed: number
           unique_code: string
@@ -116,7 +119,10 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          last_stamp_at?: string | null
           loyalty_card_id: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
           status?: string
           times_completed?: number
           unique_code: string
@@ -132,7 +138,10 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          last_stamp_at?: string | null
           loyalty_card_id?: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
           status?: string
           times_completed?: number
           unique_code?: string
@@ -231,6 +240,7 @@ export type Database = {
           is_active: boolean
           name: string
           poster_reward_text: string | null
+          push_notify_threshold: number
           slug: string
           stamps_required: number
           updated_at: string
@@ -245,6 +255,7 @@ export type Database = {
           is_active?: boolean
           name: string
           poster_reward_text?: string | null
+          push_notify_threshold?: number
           slug: string
           stamps_required: number
           updated_at?: string
@@ -259,6 +270,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           poster_reward_text?: string | null
+          push_notify_threshold?: number
           slug?: string
           stamps_required?: number
           updated_at?: string
@@ -316,6 +328,121 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_campaigns: {
+        Row: {
+          body: string
+          business_id: string
+          created_at: string
+          id: string
+          loyalty_card_id: string | null
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          body: string
+          business_id: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_campaigns_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          active: boolean
+          auth: string
+          business_id: string
+          created_at: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+        }
+        Insert: {
+          active?: boolean
+          auth: string
+          business_id: string
+          created_at?: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+        }
+        Update: {
+          active?: boolean
+          auth?: string
+          business_id?: string
+          created_at?: string
+          customer_card_id?: string
+          customer_id?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -562,7 +689,6 @@ export const Constants = {
   },
 } as const
 
-
 // Helpers para tablas individuales
 export type Business = Database['public']['Tables']['businesses']['Row']
 export type BusinessInsert = Database['public']['Tables']['businesses']['Insert']
@@ -584,6 +710,12 @@ export type DeviceRegistration = Database['public']['Tables']['device_registrati
 
 export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
+export type PushSubscription = Database['public']['Tables']['push_subscriptions']['Row']
+export type PushSubscriptionInsert = Database['public']['Tables']['push_subscriptions']['Insert']
+
+export type PushCampaign = Database['public']['Tables']['push_campaigns']['Row']
+export type PushCampaignInsert = Database['public']['Tables']['push_campaigns']['Insert']
+
 // Design config de tarjeta con tipos fuertes
 export interface CardDesignConfig {
   color: string
@@ -600,3 +732,4 @@ export interface CardDesignConfig {
 export type CardStyle = CardDesignConfig['style']
 
 export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'
+

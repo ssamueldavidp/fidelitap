@@ -24,7 +24,7 @@ export default async function CardActivationPage({
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name')
+    .select('name, plan')
     .eq('id', card.business_id)
     .single()
 
@@ -64,6 +64,7 @@ export default async function CardActivationPage({
           loyaltyCardId={card.id}
           businessId={card.business_id}
           shareUrl={shareUrl}
+          businessPlan={business?.plan ?? 'free'}
         />
       </div>
     </div>

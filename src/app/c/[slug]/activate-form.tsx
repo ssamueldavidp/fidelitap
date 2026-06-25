@@ -9,6 +9,7 @@ interface ActivateFormProps {
   loyaltyCardId: string
   businessId:   string
   shareUrl:     string
+  businessPlan: string
 }
 
 type CardResult = {
@@ -17,7 +18,7 @@ type CardResult = {
   alreadyHadCard:  boolean
 }
 
-export function ActivateForm({ loyaltyCardId, businessId, shareUrl }: ActivateFormProps) {
+export function ActivateForm({ loyaltyCardId, businessId, shareUrl, businessPlan }: ActivateFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error,     setError]        = useState<string | null>(null)
   const [result,    setResult]       = useState<CardResult | null>(null)
@@ -25,7 +26,7 @@ export function ActivateForm({ loyaltyCardId, businessId, shareUrl }: ActivateFo
   const [recoverPending, startRecoverTransition] = useTransition()
   const [recoverError,   setRecoverError]        = useState<string | null>(null)
 
-  if (result) return <SuccessScreen {...result} shareUrl={shareUrl} />
+  if (result) return <SuccessScreen {...result} shareUrl={shareUrl} businessPlan={businessPlan} />
 
   function handleActivate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

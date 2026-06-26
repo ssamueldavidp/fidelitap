@@ -5,7 +5,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
-import { sendPushToCustomerCard, isPushEligible } from '@/lib/push/send'
+import { sendPushToCustomerCard } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
 

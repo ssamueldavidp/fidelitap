@@ -24,7 +24,7 @@ export default async function CardActivationPage({
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, plan')
+    .select('name, plan, subscription_status')
     .eq('id', card.business_id)
     .single()
 
@@ -65,6 +65,7 @@ export default async function CardActivationPage({
           businessId={card.business_id}
           shareUrl={shareUrl}
           businessPlan={business?.plan ?? 'free'}
+          businessSubscriptionStatus={business?.subscription_status ?? 'canceled'}
         />
       </div>
     </div>

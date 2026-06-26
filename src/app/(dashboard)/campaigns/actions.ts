@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sendCampaignPush, isPushEligible } from '@/lib/push/send'
+import { sendCampaignPush } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 const campaignSchema = z.object({
   title: z.string().min(2, 'Mínimo 2 caracteres').max(60, 'Máximo 60 caracteres').trim(),

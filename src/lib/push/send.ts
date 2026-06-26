@@ -1,6 +1,7 @@
 import 'server-only'
 import webpush from 'web-push'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 type ServiceClient = ReturnType<typeof createServiceClient>
 
@@ -29,13 +30,6 @@ export interface StoredSubscription {
   endpoint: string
   p256dh: string
   auth: string
-}
-
-export function isPushEligible(
-  plan: string | null | undefined,
-  subscriptionStatus: string | null | undefined
-): boolean {
-  return (plan === 'pro' || plan === 'premium') && subscriptionStatus === 'active'
 }
 
 export function isPushConfigured(): boolean {

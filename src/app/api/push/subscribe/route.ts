@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isPushEligible } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 const subscribeSchema = z.object({
   customerCardId: z.string().uuid(),

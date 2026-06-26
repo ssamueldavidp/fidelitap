@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sendPushToCustomerCard, isPushEligible } from '@/lib/push/send'
+import { sendPushToCustomerCard } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-cron-secret')

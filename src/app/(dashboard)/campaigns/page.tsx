@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { isPushEligible } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 import { CampaignForm } from './campaign-form'
 import { CancelCampaignButton } from './cancel-campaign-button'
 

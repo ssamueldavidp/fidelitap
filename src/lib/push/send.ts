@@ -31,6 +31,13 @@ export interface StoredSubscription {
   auth: string
 }
 
+export function isPushEligible(
+  plan: string | null | undefined,
+  subscriptionStatus: string | null | undefined
+): boolean {
+  return (plan === 'pro' || plan === 'premium') && subscriptionStatus === 'active'
+}
+
 export function isPushConfigured(): boolean {
   return Boolean(vapidPublicKey && vapidPrivateKey)
 }
@@ -109,6 +116,14 @@ export async function sendCampaignPush(
   serviceClient: ServiceClient,
   params: { businessId: string; loyaltyCardId: string | null; title: string; body: string }
 ): Promise<number> {
+  const { data: business } = await serviceClient
+    .from('businesses')
+    .select('plan, subscription_status')
+    .eq('id', params.businessId)
+    .single()
+
+  if (!business || !isPushEligible(business.plan, business.subscription_status)) return 0
+
   const { data: subs } = await serviceClient
     .from('push_subscriptions')
     .select('id, endpoint, p256dh, auth, customer_card_id')

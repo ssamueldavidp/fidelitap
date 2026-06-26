@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sendCampaignPush } from '@/lib/push/send'
+import { sendCampaignPush, isPushEligible } from '@/lib/push/send'
 
 const campaignSchema = z.object({
   title: z.string().min(2, 'Mínimo 2 caracteres').max(60, 'Máximo 60 caracteres').trim(),
@@ -20,11 +20,11 @@ export async function createCampaignAction(formData: FormData): Promise<{ error:
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, plan, name')
+    .select('id, plan, name, subscription_status')
     .eq('owner_id', user.id)
     .single()
   if (!business) return { error: 'Negocio no encontrado' }
-  if (business.plan !== 'pro' && business.plan !== 'premium') {
+  if (!isPushEligible(business.plan, business.subscription_status)) {
     return { error: 'Las campañas push requieren plan Pro o Premium' }
   }
 

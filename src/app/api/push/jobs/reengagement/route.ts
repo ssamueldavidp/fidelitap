@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sendPushToCustomerCard } from '@/lib/push/send'
+import { sendPushToCustomerCard, isPushEligible } from '@/lib/push/send'
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-cron-secret')
@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
     } | null
     const biz = card?.businesses
     if (!card || !biz) continue
-    if (biz.plan !== 'pro' && biz.plan !== 'premium') continue
-    if (biz.subscription_status !== 'active') continue
+    if (!isPushEligible(biz.plan, biz.subscription_status)) continue
     if (cc.reengagement_sent_at && cc.last_stamp_at && cc.reengagement_sent_at >= cc.last_stamp_at) continue
 
     const remaining = card.stamps_required - cc.current_stamps

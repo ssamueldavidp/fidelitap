@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
+import { isPushEligible } from '@/lib/push/send'
 
 const subscribeSchema = z.object({
   customerCardId: z.string().uuid(),
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       id,
       customer_id,
       wallet_auth_token,
-      loyalty_cards ( business_id, businesses ( plan ) )
+      loyalty_cards ( business_id, businesses ( plan, subscription_status ) )
     `)
     .eq('id', customerCardId)
     .maybeSingle()
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   const card = cc.loyalty_cards as unknown as {
     business_id: string
-    businesses: { plan: string } | null
+    businesses: { plan: string; subscription_status: string } | null
   } | null
 
   if (!card) {
@@ -58,7 +59,8 @@ export async function POST(request: NextRequest) {
   }
 
   const plan = card.businesses?.plan
-  if (plan !== 'pro' && plan !== 'premium') {
+  const subscriptionStatus = card.businesses?.subscription_status
+  if (!isPushEligible(plan, subscriptionStatus)) {
     return NextResponse.json({ error: 'Notificaciones no disponibles en este plan' }, { status: 403 })
   }
 

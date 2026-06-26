@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
-import { sendPushToCustomerCard } from '@/lib/push/send'
+import { sendPushToCustomerCard, isPushEligible } from '@/lib/push/send'
 
 export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
 
@@ -34,7 +34,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, name, stamp_cooldown_seconds, plan')
+    .select('id, name, stamp_cooldown_seconds, plan, subscription_status')
     .eq('owner_id', user.id)
     .single()
   if (!business) return { error: 'Negocio no encontrado' }
@@ -130,7 +130,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     !isComplete &&
     remaining === card.push_notify_threshold &&
     !cc.near_completion_notified_at &&
-    (business.plan === 'pro' || business.plan === 'premium')
+    isPushEligible(business.plan, business.subscription_status)
 
   const { error: progressUpdateError } = await serviceClient
     .from('customer_cards')

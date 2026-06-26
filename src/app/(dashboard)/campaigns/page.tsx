@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isPushEligible } from '@/lib/push/send'
 import { CampaignForm } from './campaign-form'
 import { CancelCampaignButton } from './cancel-campaign-button'
 
@@ -10,12 +11,12 @@ export default async function CampaignsPage() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, plan')
+    .select('id, plan, subscription_status')
     .eq('owner_id', user.id)
     .single()
   if (!business) redirect('/onboarding')
 
-  if (business.plan !== 'pro' && business.plan !== 'premium') {
+  if (!isPushEligible(business.plan, business.subscription_status)) {
     return (
       <div className="p-8 max-w-lg">
         <h1 className="text-2xl font-black text-white mb-2">Campañas push</h1>

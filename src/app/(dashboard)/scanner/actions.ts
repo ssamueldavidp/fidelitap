@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
+import { sendPushToCustomerCard } from '@/lib/push/send'
 
 export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
 
@@ -33,7 +34,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, name, stamp_cooldown_seconds')
+    .select('id, name, stamp_cooldown_seconds, plan')
     .eq('owner_id', user.id)
     .single()
   if (!business) return { error: 'Negocio no encontrado' }
@@ -46,7 +47,8 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
       id,
       wallet_pass_serial,
       loyalty_card_id,
-      loyalty_cards ( id, stamps_required, business_id ),
+      near_completion_notified_at,
+      loyalty_cards ( id, stamps_required, business_id, push_notify_threshold ),
       customers ( name, email )
     `)
     .eq('unique_code', uniqueCode.trim())
@@ -58,7 +60,8 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     id: string
     wallet_pass_serial: string | null
     loyalty_card_id: string
-    loyalty_cards: { id: string; stamps_required: number; business_id: string } | null
+    near_completion_notified_at: string | null
+    loyalty_cards: { id: string; stamps_required: number; business_id: string; push_notify_threshold: number } | null
     customers: { name: string; email: string | null } | null
   }
 
@@ -122,6 +125,25 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     type: 'stamp',
   })
 
+  const remaining = card.stamps_required - currentStamps
+  const shouldNotifyProgress =
+    !isComplete &&
+    remaining === card.push_notify_threshold &&
+    !cc.near_completion_notified_at &&
+    (business.plan === 'pro' || business.plan === 'premium')
+
+  const { error: progressUpdateError } = await serviceClient
+    .from('customer_cards')
+    .update({
+      last_stamp_at: new Date().toISOString(),
+      ...(shouldNotifyProgress ? { near_completion_notified_at: new Date().toISOString() } : {}),
+    })
+    .eq('id', cc.id)
+
+  if (progressUpdateError) {
+    console.error('[scanner] failed to update last_stamp_at/near_completion_notified_at', progressUpdateError)
+  }
+
   let pushTokens: string[] = []
   if (cc.wallet_pass_serial) {
     const { data: registrations } = await serviceClient
@@ -143,6 +165,12 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
           businessName: business.name,
           appleWalletUrl: `${appUrl}/api/wallet/apple/${cc.id}`,
           googleWalletUrl: `${appUrl}/api/wallet/google/${cc.id}`,
+        })
+      : Promise.resolve(),
+    shouldNotifyProgress
+      ? sendPushToCustomerCard(serviceClient, cc.id, {
+          title: '¡Ya casi! 🎉',
+          body: `Te falta${remaining === 1 ? '' : 'n'} ${remaining} sello${remaining === 1 ? '' : 's'} para tu premio en ${business.name}`,
         })
       : Promise.resolve(),
   ])
@@ -206,6 +234,11 @@ export async function claimRewardAction(customerCardId: string): Promise<ClaimRe
     scan_token: crypto.randomUUID(),
     type: 'reward_claimed',
   })
+
+  await serviceClient
+    .from('customer_cards')
+    .update({ near_completion_notified_at: null })
+    .eq('id', customerCardId)
 
   return {
     timesCompleted: result.times_completed ?? 0,

@@ -41,6 +41,7 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
   const [name,            setName]          = useState(card?.name ?? '')
   const [benefit,         setBenefit]       = useState(card?.benefit_description ?? '')
   const [stampsRequired,  setStampsRequired]= useState(card?.stamps_required ?? 8)
+  const [pushThreshold,   setPushThreshold] = useState(card?.push_notify_threshold ?? 1)
   const [stampIcon,       setStampIcon]     = useState(existingDesign?.stamp_icon ?? '☕')
   const [color,           setColor]         = useState(existingDesign?.color ?? '#1d4ed8')
   const [cardStyle,       setCardStyle]     = useState<CardStyle>(existingDesign?.style ?? 'clean')
@@ -90,6 +91,7 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
     fd.append('name',               name)
     fd.append('benefit_description',benefit)
     fd.append('stamps_required',    String(stampsRequired))
+    fd.append('push_notify_threshold', String(pushThreshold))
     fd.append('stamp_icon',         stampIcon)
     fd.append('bg_type',            bgType)
     fd.append('color',              color)
@@ -131,6 +133,15 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
                 className="w-full accent-[#00C896]"
               />
               <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>2</span><span>20</span></div>
+            </Field>
+            <Field label={`Avisar por push cuando falte${pushThreshold === 1 ? '' : 'n'}: ${pushThreshold} sello${pushThreshold === 1 ? '' : 's'}`}>
+              <input
+                type="range" min={1} max={5} value={pushThreshold}
+                onChange={e => setPushThreshold(Number(e.target.value))}
+                className="w-full accent-[#00C896]"
+              />
+              <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>1</span><span>5</span></div>
+              <p className="text-[10px] text-white/30 mt-1">Solo aplica si tu plan incluye notificaciones push (Pro/Premium).</p>
             </Field>
           </SidebarSection>
 

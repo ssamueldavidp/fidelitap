@@ -164,7 +164,7 @@ export function VerticalPosterTemplate(data: PosterData) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ fontSize: 20 }}>🏆</div>
           <div style={{ color: GOLD, fontSize: 13, fontWeight: 700, letterSpacing: 2 }}>
-            ACUMULA {data.stampsRequired} SELLOS Y GANA
+            {`ACUMULA ${data.stampsRequired} SELLOS Y GANA`}
           </div>
         </div>
         <div
@@ -326,7 +326,7 @@ export function HorizontalPosterTemplate(data: PosterData) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ fontSize: 16 }}>🏆</div>
             <div style={{ color: GOLD, fontSize: 12, fontWeight: 700, letterSpacing: 2 }}>
-              ACUMULA {data.stampsRequired} SELLOS Y GANA
+              {`ACUMULA ${data.stampsRequired} SELLOS Y GANA`}
             </div>
           </div>
           <div
@@ -338,6 +338,9 @@ export function HorizontalPosterTemplate(data: PosterData) {
               paddingBottom: 12,
               paddingLeft: 18,
               paddingRight: 18,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <div style={{ color: WHITE, fontSize: 18, fontWeight: 700, lineHeight: 1.3 }}>

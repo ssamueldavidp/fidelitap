@@ -35,7 +35,9 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
   const [rewardText,  setRewardText]  = useState(
     cards.find(c => c.id === defaultCardId)?.poster_reward_text ?? ''
   )
-  const [previewKey,     setPreviewKey]     = useState(Date.now())
+  // Stable initial value so server and client render the same query string on first paint;
+  // Date.now() is only used for later cache-busting refreshes (post-mount), never SSR.
+  const [previewKey,     setPreviewKey]     = useState(0)
   const [previewLoading, setPreviewLoading] = useState(true)
   const [saved,          setSaved]          = useState(false)
   const [saveError,      setSaveError]      = useState('')
@@ -226,6 +228,9 @@ export function PosterEditor({ cards, business, defaultCardId }: PosterEditorPro
             src={previewUrl}
             alt="Vista previa de la plantilla"
             className="w-full h-full object-contain"
+            // SSR can serve this <img> already loaded from cache before hydration attaches
+            // onLoad, so the event never fires — check `complete` as soon as the node mounts.
+            ref={(el) => { if (el?.complete) setPreviewLoading(false) }}
             onLoad={() => setPreviewLoading(false)}
             onError={() => setPreviewLoading(false)}
             style={{ display: previewLoading ? 'none' : 'block' }}

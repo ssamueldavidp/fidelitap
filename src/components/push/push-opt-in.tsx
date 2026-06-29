@@ -88,24 +88,47 @@ export function PushOptIn({ customerCardId, walletAuthToken }: PushOptInProps) {
 
   if (status === 'enabled') {
     return (
-      <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-[#00C896]">
+      <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-3 text-sm text-[#00C896]">
         <Bell size={14} />
         Notificaciones activadas
       </div>
     )
   }
 
-  if (status === 'denied' || status === 'unsupported') {
-    return null
+  if (status === 'denied') {
+    return (
+      <p className="flex items-center gap-2 text-[11px] text-muted-foreground px-1">
+        <BellOff size={12} />
+        Notificaciones desactivadas — puedes activarlas luego desde el navegador.
+      </p>
+    )
+  }
+
+  if (status === 'unsupported') {
+    return (
+      <p className="flex items-center gap-2 text-[11px] text-muted-foreground px-1">
+        <BellOff size={12} />
+        Tu navegador no admite notificaciones push.
+      </p>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <p className="flex items-center gap-2 text-[11px] text-destructive px-1">
+        <BellOff size={12} />
+        No se pudieron activar las notificaciones. Intenta de nuevo más tarde.
+      </p>
+    )
   }
 
   return (
-    <div className="flex flex-col gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5">
-      <div className="flex items-center gap-2 text-sm font-medium text-white">
+    <div className="flex flex-col gap-2 bg-card border border-border rounded-xl px-4 py-3.5">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
         <Bell size={14} className="text-[#00C896]" />
         Recibe un aviso cuando estés cerca de tu premio
       </div>
-      <p className="text-[11px] text-slate-500 leading-relaxed">
+      <p className="text-[11px] text-muted-foreground leading-relaxed">
         Te avisamos solo cuando te falte poco para completar tus sellos, o si el negocio tiene una promo. Nada más.
       </p>
       <div className="flex gap-2 mt-1">
@@ -120,7 +143,7 @@ export function PushOptIn({ customerCardId, walletAuthToken }: PushOptInProps) {
         <button
           type="button"
           onClick={handleDismiss}
-          className="flex items-center gap-1 px-3 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          className="flex items-center gap-1 px-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <BellOff size={12} />
           No, gracias

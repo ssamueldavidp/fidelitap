@@ -13,6 +13,9 @@ export function CancelCampaignButton({ campaignId }: CancelCampaignButtonProps) 
   const router = useRouter()
 
   function handleCancel() {
+    if (!window.confirm('¿Cancelar este envío programado? Esta acción no se puede deshacer.')) {
+      return
+    }
     startTransition(async () => {
       await cancelCampaignAction(campaignId)
       router.refresh()

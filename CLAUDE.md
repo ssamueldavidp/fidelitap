@@ -23,6 +23,14 @@ ngrok http 3000
 
 El ngrok URL debe coincidir con `NEXT_PUBLIC_APP_URL` en `.env.local`.
 
+### Smoke test end-to-end
+
+```bash
+pnpm test:e2e
+```
+
+Recorre con Playwright (Chromium headless) las páginas principales autenticado + público, y falla si hay errores de consola/página o si alguna ruta no carga. Requiere Supabase y `pnpm dev` corriendo, y una cuenta de prueba con plan Pro/Premium (`pagopro@correo.com` por defecto — configurable con `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD`/`E2E_TEST_CARD_SLUG`/`E2E_BASE_URL`). Capturas en `e2e/screenshots/` (no se commitean).
+
 ---
 
 ## Variables de entorno requeridas (.env.local)
@@ -40,7 +48,8 @@ Todas las credenciales están en `.env.local` y NUNCA se commitean. Variables cl
 | `RESEND_API_KEY` | Resend para emails |
 | `APPLE_PASS_*` | Certificados Apple Wallet |
 | `GOOGLE_SERVICE_ACCOUNT_*` | Credenciales Google Wallet |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | (pendiente) Web Push |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web Push (suscripciones, campañas, recordatorios) |
+| `CRON_SECRET` | Autoriza los endpoints de cron de push (`/api/push/campaigns/dispatch`, `/api/push/jobs/reengagement`) |
 
 ---
 
@@ -51,22 +60,22 @@ src/
 ├── app/
 │   ├── (auth)/           # login, register
 │   ├── (dashboard)/      # cards, customers, poster, scanner, settings
-│   ├── api/              # poster, subscriptions, wallet, webhooks
+│   ├── api/              # poster, subscriptions, wallet, webhooks, push
 │   ├── c/[slug]/         # página pública de activación de tarjeta
 │   └── wallet/           # landing wallet del cliente
 ├── components/
 │   ├── cards/            # card-editor, card-widget, wallet-preview
 │   ├── dashboard/        # sidebar, logout-button
-│   └── push/             # (pendiente) push permission UI
+│   └── push/             # push-opt-in.tsx — UI de suscripción Web Push
 ├── lib/
 │   ├── supabase/         # server.ts, admin.ts, service.ts (todos server-only)
 │   ├── mercadopago.ts    # server-only; mpPreference, isSandbox(), getCheckoutUrl()
 │   ├── storage-url.ts    # resolveStorageUrl() — reescribe localhost:54321 → ngrok
 │   ├── wallet/           # apple.ts, google.ts, apns.ts, hmac.ts
 │   ├── email/            # send-business-welcome, send-customer-welcome, send-card-complete
-│   ├── poster/           # template.tsx (satori JSX)
+│   ├── poster/           # template.tsx (satori JSX) + fonts/*.woff (Inter)
 │   ├── plan-limits.ts    # límites por plan
-│   └── push/             # (pendiente) vapid.ts, send.ts
+│   └── push/             # eligibility.ts, send.ts — envío Web Push server-only
 └── types/
     └── database.ts       # generado con `pnpm supabase gen types typescript --local`
                           # NUNCA editar a mano — regenerar tras cada migración
@@ -78,14 +87,14 @@ src/
 
 | Plan | Precio COP | maxCustomers | maxCards |
 |---|---|---|---|
-| free | 0 | 100 | 1 |
-| basic | 29.900 | 500 | 3 |
-| pro | 59.900 | 2.000 | 10 |
-| premium | 99.900 | ilimitado | ilimitado |
+| free | 0 | 20 | 1 |
+| basic | 49.900 | 500 | 3 |
+| pro | 99.900 | 2.000 | 10 |
+| premium | 179.900 | ilimitado | ilimitado |
 
-El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
+Fuente de verdad: `src/lib/plan-limits.ts` (límites) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
 
-**Funciones exclusivas Pro/Premium:** notificaciones Web Push (pendiente de implementar).
+**Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos).
 
 ---
 
@@ -130,7 +139,7 @@ Punto de entrada cuando el negocio sella una tarjeta. Al terminar dispara en par
 1. APNS push (actualización Apple Wallet pass)
 2. Google Wallet stamp update
 3. Email de completado (si `isComplete`)
-4. (Pendiente) Web Push notification al cliente
+4. Web Push notification al cliente si está cerca de su premio (umbral configurable por tarjeta, Pro/Premium)
 
 ### Tipos de base de datos
 **NUNCA** escribir `src/types/database.ts` a mano. Regenerar siempre con:
@@ -159,15 +168,8 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 - [x] Emails transaccionales (bienvenida negocio, bienvenida cliente, premio completado)
 - [x] Poster/plantilla editable — PNG y PDF descargable con satori
 - [x] Sección de suscripción en settings
-
-## Pendiente de implementar
-
-- [ ] **Web Push Notifications** (Pro/Premium)
-  - Trigger por sello: "¡Te faltan X sellos para tu premio!"
-  - Re-engagement: si no visita en N días
-  - Campañas del negocio: el negocio envía push manual (descuentos, mensajes personalizados)
-  - UI: suscripción en success-screen de activación + panel de campañas en dashboard
-  - Requiere: VAPID keys en .env.local, Service Worker en public/sw.js, tabla push_subscriptions en DB
+- [x] Web Push Notifications (Pro/Premium): opt-in en success-screen de activación, aviso de progreso de sellos, recordatorio de re-engagement a 14 días (cron), panel de campañas manuales en dashboard (envío inmediato/programado/cancelable)
+- [x] Páginas legales `/privacy` y `/terms` (borrador — requieren revisión legal antes de producción)
 
 ---
 
@@ -181,6 +183,8 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 - Flutter `FileOptions` requiere import explícito — no se resuelve transitivamente.
 - MercadoPago: NO pasar `payer_email` en Preference — causa "Both payer and collector must be real or test users" en sandbox.
 - MercadoPago sandbox: botón de pagar solo se habilita si el comprador está logueado como test user en MP.
+- `satori` (poster) exige `display: 'flex' | 'contents' | 'none'` explícito en cualquier `<div>` con más de un nodo hijo — incluido texto mixto con interpolación tipo `ACUMULA {n} SELLOS` (son 3 nodos de texto, no uno). Si falta, lanza "Expected `<div>` to have explicit display..." sin indicar cuál div. Usar un solo string interpolado (`` {`ACUMULA ${n} SELLOS`} ``) o declarar `display` explícito.
+- `<img>` con `onLoad`/`onError` en un componente SSR puede quedarse en estado "cargando" para siempre: el navegador puede terminar de cargar la imagen (parseando el HTML inicial) antes de que React hidrate y adjunte el listener, y el evento `load` no se reemite. Mitigación: usar `ref={(el) => el?.complete && setLoading(false)}` además de `onLoad`/`onError` (ver `poster-editor.tsx`).
 
 ---
 

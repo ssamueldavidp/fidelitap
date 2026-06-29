@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "node e2e/smoke.mjs"
   },
   "dependencies": {
     "@parse/node-apn": "^8.1.0",
@@ -51,6 +52,7 @@
     "autoprefixer": "^10.5.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.29",
+    "playwright": "^1.61.1",
     "postcss": "^8",
     "supabase": "^2.98.2",
     "tailwindcss": "^3.4.1",

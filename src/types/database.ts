@@ -1,3 +1,4 @@
+Connecting to db 5432
 export type Json =
   | string
   | number
@@ -40,6 +41,8 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          latitude: number | null
+          longitude: number | null
           mp_payer_email: string | null
           mp_preapproval_id: string | null
           name: string
@@ -58,6 +61,8 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name: string
@@ -76,6 +81,8 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name?: string
@@ -100,6 +107,7 @@ export type Database = {
           google_pass_url: string | null
           id: string
           is_complete: boolean
+          linked_auth_user_id: string | null
           loyalty_card_id: string
           status: string
           times_completed: number
@@ -116,6 +124,7 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          linked_auth_user_id?: string | null
           loyalty_card_id: string
           status?: string
           times_completed?: number
@@ -132,6 +141,7 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          linked_auth_user_id?: string | null
           loyalty_card_id?: string
           status?: string
           times_completed?: number
@@ -219,6 +229,66 @@ export type Database = {
           serial_number?: string
         }
         Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          fcm_token: string
+          id: string
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fcm_token: string
+          id?: string
+          platform: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fcm_token?: string
+          id?: string
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      geofence_notifications: {
+        Row: {
+          business_id: string
+          customer_card_id: string
+          id: string
+          sent_at: string
+        }
+        Insert: {
+          business_id: string
+          customer_card_id: string
+          id?: string
+          sent_at?: string
+        }
+        Update: {
+          business_id?: string
+          customer_card_id?: string
+          id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geofence_notifications_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofence_notifications_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       loyalty_cards: {
         Row: {
@@ -410,6 +480,17 @@ export type Database = {
     }
     Functions: {
       add_stamp: { Args: { p_card_id: string }; Returns: Json }
+      claim_customer_card: {
+        Args: { p_unique_code: string }
+        Returns: {
+          business_name: string
+          card_name: string
+          current_stamps: number
+          customer_card_id: string
+          stamps_required: number
+          status: string
+        }[]
+      }
       claim_reward: { Args: { p_card_id: string }; Returns: Json }
       get_business_metrics: { Args: { p_business_id: string }; Returns: Json }
       get_customers_list: {
@@ -562,41 +643,6 @@ export const Constants = {
   },
 } as const
 
-
-// Helpers para tablas individuales
-export type Business = Database['public']['Tables']['businesses']['Row']
-export type BusinessInsert = Database['public']['Tables']['businesses']['Insert']
-export type BusinessUpdate = Database['public']['Tables']['businesses']['Update']
-
-export type LoyaltyCard = Database['public']['Tables']['loyalty_cards']['Row']
-export type LoyaltyCardInsert = Database['public']['Tables']['loyalty_cards']['Insert']
-
-export type Customer = Database['public']['Tables']['customers']['Row']
-export type CustomerInsert = Database['public']['Tables']['customers']['Insert']
-
-export type CustomerCard = Database['public']['Tables']['customer_cards']['Row']
-export type CustomerCardInsert = Database['public']['Tables']['customer_cards']['Insert']
-
-export type StampEvent = Database['public']['Tables']['stamp_events']['Row']
-export type StampEventInsert = Database['public']['Tables']['stamp_events']['Insert']
-
-export type DeviceRegistration = Database['public']['Tables']['device_registrations']['Row']
-
-export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
-
-// Design config de tarjeta con tipos fuertes
-export interface CardDesignConfig {
-  color: string
-  bg_type: 'solid' | 'gradient' | 'image'
-  bg_value: string
-  bg_image_url: string | null
-  stamp_icon: string
-  font: 'default' | 'rounded' | 'mono'
-  style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
-  bg_mode: 'light' | 'dark'
-  logo_url: string | null
-}
-
-export type CardStyle = CardDesignConfig['style']
-
-export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'
+<claude-code-hint v="1" type="plugin" value="supabase@claude-plugins-official" />
+A new version of Supabase CLI is available: v2.108.0 (currently installed v2.98.2)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

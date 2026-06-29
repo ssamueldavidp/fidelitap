@@ -11,6 +11,7 @@ const cardFormSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres').max(50, 'Máximo 50 caracteres').trim(),
   benefit_description: z.string().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres').trim(),
   stamps_required: z.coerce.number().int().min(2, 'Mínimo 2 sellos').max(20, 'Máximo 20 sellos'),
+  push_notify_threshold: z.coerce.number().int().min(1).max(5).default(1),
   stamp_icon: z.string().min(1, 'Selecciona un ícono'),
   bg_type: z.enum(['solid', 'image']),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido'),
@@ -85,6 +86,7 @@ export async function createCardAction(
     name: formData.get('name'),
     benefit_description: formData.get('benefit_description'),
     stamps_required: formData.get('stamps_required'),
+    push_notify_threshold: formData.get('push_notify_threshold'),
     stamp_icon: formData.get('stamp_icon'),
     bg_type: formData.get('bg_type'),
     color: formData.get('color'),
@@ -93,7 +95,7 @@ export async function createCardAction(
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
+  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
 
   let bgImageUrl: string | null = null
   if (bg_type === 'image') {
@@ -130,6 +132,7 @@ export async function createCardAction(
     name,
     benefit_description,
     stamps_required,
+    push_notify_threshold,
     design_config,
     slug: generateSlug(name),
     is_active: true,
@@ -173,6 +176,7 @@ export async function updateCardAction(
     name: formData.get('name'),
     benefit_description: formData.get('benefit_description'),
     stamps_required: formData.get('stamps_required'),
+    push_notify_threshold: formData.get('push_notify_threshold'),
     stamp_icon: formData.get('stamp_icon'),
     bg_type: formData.get('bg_type'),
     color: formData.get('color'),
@@ -181,7 +185,7 @@ export async function updateCardAction(
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
+  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
   const existingConfig = card.design_config as Record<string, unknown>
 
   let bgImageUrl = bg_type === 'image'
@@ -219,7 +223,7 @@ export async function updateCardAction(
 
   const { error } = await supabase
     .from('loyalty_cards')
-    .update({ name, benefit_description, stamps_required, design_config })
+    .update({ name, benefit_description, stamps_required, push_notify_threshold, design_config })
     .eq('id', cardId)
 
   if (error) return { error: 'Error actualizando tarjeta.' }

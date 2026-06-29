@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import { PushOptIn } from '@/components/push/push-opt-in'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 interface SuccessScreenProps {
   customerCardId: string
   walletAuthToken: string
   alreadyHadCard: boolean
   shareUrl: string
+  businessPlan: string
+  businessSubscriptionStatus: string
 }
 
 export function SuccessScreen({
@@ -15,6 +19,8 @@ export function SuccessScreen({
   walletAuthToken,
   alreadyHadCard,
   shareUrl,
+  businessPlan,
+  businessSubscriptionStatus,
 }: SuccessScreenProps) {
   const appleUrl  = `/api/wallet/apple/${customerCardId}?token=${walletAuthToken}`
   const googleUrl = `/api/wallet/google/${customerCardId}?token=${walletAuthToken}`
@@ -65,6 +71,10 @@ export function SuccessScreen({
           Agregar a Google Wallet
         </a>
       </div>
+
+      {isPushEligible(businessPlan, businessSubscriptionStatus) && (
+        <PushOptIn customerCardId={customerCardId} walletAuthToken={walletAuthToken} />
+      )}
 
       {/* Large QR */}
       {qrDataUrl && (

@@ -1,3 +1,4 @@
+import 'server-only'
 import { PKPass } from 'passkit-generator'
 import { readFileSync } from 'fs'
 import { join } from 'path'

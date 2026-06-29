@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react'
 
 type SubscriptionData = {
@@ -59,6 +60,8 @@ function formatDate(iso: string) {
 }
 
 export function SubscriptionTab() {
+  const searchParams = useSearchParams()
+  const paymentFailed = searchParams.get('payment') === 'failed'
   const [data, setData]       = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
@@ -156,6 +159,17 @@ export function SubscriptionTab() {
           <p className="mt-2 text-sm text-green-400">{cancelMsg}</p>
         )}
       </div>
+
+      {/* Payment failed banner */}
+      {paymentFailed && (
+        <div className="flex items-start gap-3 bg-amber-950/50 border border-amber-700/50 rounded-2xl px-4 py-3">
+          <AlertTriangle size={16} className="text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-amber-300">Pago no completado</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">Puedes intentarlo de nuevo seleccionando tu plan a continuación.</p>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade options */}
       {upgradePlans.length > 0 && (

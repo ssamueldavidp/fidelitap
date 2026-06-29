@@ -1,7 +1,7 @@
 // src/components/cards/wallet-preview.tsx
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 export type CardStyle = 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
 
@@ -28,6 +28,15 @@ function hexToRgb(hex: string): string {
   const g = parseInt(clean.slice(2, 4), 16)
   const b = parseInt(clean.slice(4, 6), 16)
   return `${r},${g},${b}`
+}
+
+function LogoImage({ src, fallback, isSm }: { src: string; fallback: string; isSm: boolean }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return <span className={isSm ? 'text-xl' : 'text-3xl'}>{fallback}</span>
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" className="w-full h-full object-cover" onError={() => setFailed(true)} />
+  )
 }
 
 function QRPlaceholder({ size }: { size: number }) {
@@ -249,9 +258,7 @@ export function WalletPreview({
           style={{ background: vis.logoBg, border: vis.logoBorder }}
         >
           {logoUrl
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={logoUrl} alt="" className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ? <LogoImage src={logoUrl} fallback={stampIcon} isSm={isSm} />
             : <span className={isSm ? 'text-xl' : 'text-3xl'}>{stampIcon}</span>
           }
         </div>

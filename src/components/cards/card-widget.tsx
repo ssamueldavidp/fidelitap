@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { resolveStorageUrl } from '@/lib/storage-url'
 import { WalletPreview } from '@/components/cards/wallet-preview'
 import type { LoyaltyCard, CardDesignConfig } from '@/types/database'
 
@@ -33,8 +34,8 @@ export function CardWidget({ card, customerCount, redemptionCount, onClick, dimm
         cardStyle={design.style ?? 'clean'}
         bgMode={design.bg_mode ?? 'light'}
         bgType={design.bg_type === 'image' ? 'image' : 'solid'}
-        bgImageUrl={design.bg_image_url}
-        logoUrl={design.logo_url}
+        bgImageUrl={resolveStorageUrl(design.bg_image_url)}
+        logoUrl={resolveStorageUrl(design.logo_url) ?? undefined}
         filledStamps={3}
         size="sm"
       />

@@ -1,3 +1,4 @@
+import 'server-only'
 import { createSign } from 'crypto'
 
 const GOOGLE_WALLET_BASE_URL = 'https://walletobjects.googleapis.com/walletobjects/v1'
@@ -84,7 +85,7 @@ async function upsertLoyaltyClass(accessToken: string, data: LoyaltyPassData): P
 
   const loyaltyClass: Record<string, unknown> = {
     id: classId,
-    issuerName: 'FideliTap',
+    issuerName: data.businessName,
     programName: data.cardName,
     programLogo: {
       sourceUri: { uri: resolvedLogoUrl },

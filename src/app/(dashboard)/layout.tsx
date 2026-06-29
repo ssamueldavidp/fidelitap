@@ -5,6 +5,7 @@ import { PlanUsage } from '@/components/dashboard/plan-usage'
 import { SidebarNav } from '@/components/dashboard/sidebar-nav'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { MobileNav } from '@/components/dashboard/mobile-nav'
+import { LogoutButton } from '@/components/dashboard/logout-button'
 
 export default async function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default async function DashboardLayout({
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, name, plan')
+    .select('id, name, plan, subscription_status')
     .eq('owner_id', user.id)
     .single()
 
@@ -39,6 +40,12 @@ export default async function DashboardLayout({
         <div className="border-t border-border/30">
           <PlanUsage businessId={business.id} plan={business.plan} />
         </div>
+
+        {/* Desktop logout */}
+        <div className="border-t border-border/30 px-3 py-3">
+          <p className="text-[10px] text-muted-foreground/40 px-3 mb-1 truncate">{user.email}</p>
+          <LogoutButton />
+        </div>
       </aside>
 
       {/* Right panel */}
@@ -46,10 +53,11 @@ export default async function DashboardLayout({
         {/* Mobile nav (includes hamburger) */}
         <MobileNav
           businessName={business.name}
+          userEmail={user.email ?? ''}
           planContent={<PlanUsage businessId={business.id} plan={business.plan} />}
         />
         {/* Desktop top bar */}
-        <TopBar businessName={business.name} />
+        <TopBar businessName={business.name} userEmail={user.email ?? ''} />
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           {children}

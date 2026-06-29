@@ -7,6 +7,7 @@ import { WalletPreview } from '@/components/cards/wallet-preview'
 import { createCardAction, updateCardAction } from '@/app/(dashboard)/cards/actions'
 import type { LoyaltyCard, CardDesignConfig } from '@/types/database'
 import type { CardStyle } from '@/components/cards/wallet-preview'
+import { resolveStorageUrl } from '@/lib/storage-url'
 
 const PALETTE = [
   '#1d4ed8', '#0f766e', '#7c3aed', '#dc2626',
@@ -40,15 +41,16 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
   const [name,            setName]          = useState(card?.name ?? '')
   const [benefit,         setBenefit]       = useState(card?.benefit_description ?? '')
   const [stampsRequired,  setStampsRequired]= useState(card?.stamps_required ?? 8)
+  const [pushThreshold,   setPushThreshold] = useState(card?.push_notify_threshold ?? 1)
   const [stampIcon,       setStampIcon]     = useState(existingDesign?.stamp_icon ?? '☕')
   const [color,           setColor]         = useState(existingDesign?.color ?? '#1d4ed8')
   const [cardStyle,       setCardStyle]     = useState<CardStyle>(existingDesign?.style ?? 'clean')
   const [bgMode,          setBgMode]        = useState<'light' | 'dark'>(existingDesign?.bg_mode ?? 'light')
   const [bgType,          setBgType]        = useState<'solid' | 'image'>(existingDesign?.bg_type === 'image' ? 'image' : 'solid')
   const [bgImageFile,     setBgImageFile]   = useState<File | null>(null)
-  const [bgImagePreview,  setBgImagePreview]= useState<string | null>(existingDesign?.bg_image_url ?? null)
+  const [bgImagePreview,  setBgImagePreview]= useState<string | null>(resolveStorageUrl(existingDesign?.bg_image_url) ?? null)
   const [logoFile,        setLogoFile]      = useState<File | null>(null)
-  const [logoPreview,     setLogoPreview]   = useState<string | null>(existingDesign?.logo_url ?? null)
+  const [logoPreview,     setLogoPreview]   = useState<string | null>(resolveStorageUrl(existingDesign?.logo_url) ?? null)
   const [error,           setError]         = useState<string | null>(null)
   const [isPending,       startTransition]  = useTransition()
   const bgInputRef   = useRef<HTMLInputElement>(null)
@@ -89,6 +91,7 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
     fd.append('name',               name)
     fd.append('benefit_description',benefit)
     fd.append('stamps_required',    String(stampsRequired))
+    fd.append('push_notify_threshold', String(pushThreshold))
     fd.append('stamp_icon',         stampIcon)
     fd.append('bg_type',            bgType)
     fd.append('color',              color)
@@ -130,6 +133,15 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
                 className="w-full accent-[#00C896]"
               />
               <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>2</span><span>20</span></div>
+            </Field>
+            <Field label={`Avisar por push cuando falte${pushThreshold === 1 ? '' : 'n'}: ${pushThreshold} sello${pushThreshold === 1 ? '' : 's'}`}>
+              <input
+                type="range" min={1} max={5} value={pushThreshold}
+                onChange={e => setPushThreshold(Number(e.target.value))}
+                className="w-full accent-[#00C896]"
+              />
+              <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>1</span><span>5</span></div>
+              <p className="text-[10px] text-white/30 mt-1">Solo aplica si tu plan incluye notificaciones push (Pro/Premium).</p>
             </Field>
           </SidebarSection>
 

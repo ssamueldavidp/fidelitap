@@ -1,12 +1,15 @@
+import 'server-only'
 // src/lib/mercadopago.ts
 // Server-only MercadoPago client. Never import in 'use client' files.
-import { MercadoPagoConfig, PreApproval } from 'mercadopago'
+import { MercadoPagoConfig, PreApproval, Payment, Preference } from 'mercadopago'
 
 export const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN ?? '',
 })
 
 export const mpPreApproval = new PreApproval(mpClient)
+export const mpPayment = new Payment(mpClient)
+export const mpPreference = new Preference(mpClient)
 
 export type PlanSlug = 'basic' | 'pro' | 'premium'
 
@@ -81,4 +84,17 @@ export async function verifyMpSignature(
     .join('')
 
   return computed === v1
+}
+
+// Returns true when using TEST credentials (sandbox mode)
+export function isSandbox(): boolean {
+  return (process.env.MP_ACCESS_TOKEN ?? '').startsWith('TEST-')
+}
+
+// Pick sandbox_init_point in test mode, init_point in production
+export function getCheckoutUrl(response: { init_point?: string | null; sandbox_init_point?: string | null }): string | null {
+  if (isSandbox()) {
+    return response.sandbox_init_point ?? response.init_point ?? null
+  }
+  return response.init_point ?? null
 }

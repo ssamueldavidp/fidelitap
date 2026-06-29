@@ -6,355 +6,688 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       businesses: {
         Row: {
-          id: string
-          owner_id: string
-          name: string
+          avatar_url: string | null
+          created_at: string
           email: string
-          plan: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
-          mp_preapproval_id: string | null
+          id: string
           mp_payer_email: string | null
-          subscription_end_date: string | null
-          wompi_customer_id: string | null
-          stamp_cooldown_seconds: number
+          mp_preapproval_id: string | null
+          name: string
+          owner_id: string
+          plan: string
           poster_bg_color: string
           poster_bg_image_url: string | null
-          created_at: string
+          stamp_cooldown_seconds: number
+          subscription_end_date: string | null
+          subscription_status: string
           updated_at: string
+          wompi_customer_id: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
           id?: string
+          mp_payer_email?: string | null
+          mp_preapproval_id?: string | null
+          name: string
           owner_id: string
-          name: string
-          email: string
-          plan?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
-          mp_preapproval_id?: string | null
-          mp_payer_email?: string | null
-          subscription_end_date?: string | null
-          wompi_customer_id?: string | null
-          stamp_cooldown_seconds?: number
+          plan?: string
           poster_bg_color?: string
           poster_bg_image_url?: string | null
-          created_at?: string
+          stamp_cooldown_seconds?: number
+          subscription_end_date?: string | null
+          subscription_status?: string
           updated_at?: string
+          wompi_customer_id?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
           id?: string
+          mp_payer_email?: string | null
+          mp_preapproval_id?: string | null
+          name?: string
           owner_id?: string
-          name?: string
-          email?: string
-          plan?: 'free' | 'basic' | 'pro' | 'premium'
-          subscription_status?: 'active' | 'past_due' | 'canceled' | 'pending_cancel'
-          mp_preapproval_id?: string | null
-          mp_payer_email?: string | null
-          subscription_end_date?: string | null
-          wompi_customer_id?: string | null
-          stamp_cooldown_seconds?: number
+          plan?: string
           poster_bg_color?: string
           poster_bg_image_url?: string | null
-          created_at?: string
+          stamp_cooldown_seconds?: number
+          subscription_end_date?: string | null
+          subscription_status?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      loyalty_cards: {
-        Row: {
-          id: string
-          business_id: string
-          name: string
-          stamps_required: number
-          benefit_description: string
-          design_config: Json
-          is_active: boolean
-          slug: string
-          poster_reward_text: string | null
-          deleted_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          business_id: string
-          name: string
-          stamps_required: number
-          benefit_description: string
-          design_config?: Json
-          is_active?: boolean
-          slug?: string
-          poster_reward_text?: string | null
-          deleted_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          business_id?: string
-          name?: string
-          stamps_required?: number
-          benefit_description?: string
-          design_config?: Json
-          is_active?: boolean
-          slug?: string
-          poster_reward_text?: string | null
-          deleted_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      customers: {
-        Row: {
-          id: string
-          email: string
-          name: string
-          phone: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          name: string
-          phone?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          name?: string
-          phone?: string | null
-          created_at?: string
+          wompi_customer_id?: string | null
         }
         Relationships: []
       }
       customer_cards: {
         Row: {
-          id: string
-          customer_id: string
-          loyalty_card_id: string
-          unique_code: string
-          current_stamps: number
-          is_complete: boolean
-          times_completed: number
-          wallet_pass_serial: string | null
-          wallet_auth_token: string | null
           apple_pass_url: string | null
-          google_pass_url: string | null
           created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
+          current_stamps: number
           customer_id: string
-          loyalty_card_id: string
-          unique_code: string
-          current_stamps?: number
-          is_complete?: boolean
-          times_completed?: number
-          wallet_pass_serial?: string | null
-          wallet_auth_token?: string | null
-          apple_pass_url?: string | null
-          google_pass_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          customer_id?: string
-          loyalty_card_id?: string
-          unique_code?: string
-          current_stamps?: number
-          is_complete?: boolean
-          times_completed?: number
-          wallet_pass_serial?: string | null
-          wallet_auth_token?: string | null
-          apple_pass_url?: string | null
-          google_pass_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      stamp_events: {
-        Row: {
+          google_pass_url: string | null
           id: string
-          customer_card_id: string
-          business_id: string
-          stamped_by: string
-          scan_token: string
-          type: string
-          ip_address: string | null
-          device_fingerprint: string | null
-          created_at: string
+          is_complete: boolean
+          last_stamp_at: string | null
+          loyalty_card_id: string
+          near_completion_notified_at: string | null
+          reengagement_sent_at: string | null
+          status: string
+          times_completed: number
+          unique_code: string
+          updated_at: string
+          wallet_auth_token: string | null
+          wallet_pass_serial: string | null
         }
         Insert: {
-          id?: string
-          customer_card_id: string
-          business_id: string
-          stamped_by: string
-          scan_token: string
-          type?: string
-          ip_address?: string | null
-          device_fingerprint?: string | null
+          apple_pass_url?: string | null
           created_at?: string
+          current_stamps?: number
+          customer_id: string
+          google_pass_url?: string | null
+          id?: string
+          is_complete?: boolean
+          last_stamp_at?: string | null
+          loyalty_card_id: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
+          status?: string
+          times_completed?: number
+          unique_code: string
+          updated_at?: string
+          wallet_auth_token?: string | null
+          wallet_pass_serial?: string | null
         }
         Update: {
-          id?: string
-          customer_card_id?: string
-          business_id?: string
-          stamped_by?: string
-          scan_token?: string
-          type?: string
-          ip_address?: string | null
-          device_fingerprint?: string | null
+          apple_pass_url?: string | null
           created_at?: string
+          current_stamps?: number
+          customer_id?: string
+          google_pass_url?: string | null
+          id?: string
+          is_complete?: boolean
+          last_stamp_at?: string | null
+          loyalty_card_id?: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
+          status?: string
+          times_completed?: number
+          unique_code?: string
+          updated_at?: string
+          wallet_auth_token?: string | null
+          wallet_pass_serial?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_cards_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_cards_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          birthday: string | null
+          city: string | null
+          created_at: string
+          email: string
+          gender: string | null
+          id: string
+          marketing_consent: boolean
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          birthday?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          gender?: string | null
+          id?: string
+          marketing_consent?: boolean
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          birthday?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          gender?: string | null
+          id?: string
+          marketing_consent?: boolean
+          name?: string
+          phone?: string | null
         }
         Relationships: []
       }
       device_registrations: {
         Row: {
-          id: string
+          created_at: string | null
           device_library_identifier: string
-          push_token: string
+          id: string
           pass_type_identifier: string
+          push_token: string
           serial_number: string
-          created_at: string
         }
         Insert: {
-          id?: string
+          created_at?: string | null
           device_library_identifier: string
-          push_token: string
+          id?: string
           pass_type_identifier: string
+          push_token: string
           serial_number: string
-          created_at?: string
         }
         Update: {
-          id?: string
+          created_at?: string | null
           device_library_identifier?: string
-          push_token?: string
+          id?: string
           pass_type_identifier?: string
+          push_token?: string
           serial_number?: string
-          created_at?: string
         }
         Relationships: []
       }
-      subscription_plans: {
+      loyalty_cards: {
         Row: {
-          id: string
-          name: string
-          slug: string
-          price_cop: number
-          max_loyalty_cards: number | null
-          max_customers: number | null
-          features: Json
-          is_active: boolean
-        }
-        Insert: {
-          id?: string
-          name: string
-          slug: string
-          price_cop: number
-          max_loyalty_cards?: number | null
-          max_customers?: number | null
-          features?: Json
-          is_active?: boolean
-        }
-        Update: {
-          id?: string
-          name?: string
-          slug?: string
-          price_cop?: number
-          max_loyalty_cards?: number | null
-          max_customers?: number | null
-          features?: Json
-          is_active?: boolean
-        }
-        Relationships: []
-      }
-      payment_events: {
-        Row: {
-          id: string
+          benefit_description: string
           business_id: string
-          mp_preapproval_id: string | null
-          mp_payment_id: string | null
-          event_type: string
-          plan_slug: string | null
-          amount_cop: number | null
-          status: string | null
-          raw_payload: Json | null
           created_at: string
+          deleted_at: string | null
+          design_config: Json
+          id: string
+          is_active: boolean
+          name: string
+          poster_reward_text: string | null
+          push_notify_threshold: number
+          slug: string
+          stamps_required: number
+          updated_at: string
         }
         Insert: {
-          id?: string
+          benefit_description: string
           business_id: string
-          mp_preapproval_id?: string | null
-          mp_payment_id?: string | null
-          event_type: string
-          plan_slug?: string | null
-          amount_cop?: number | null
-          status?: string | null
-          raw_payload?: Json | null
           created_at?: string
+          deleted_at?: string | null
+          design_config?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          poster_reward_text?: string | null
+          push_notify_threshold?: number
+          slug: string
+          stamps_required: number
+          updated_at?: string
         }
         Update: {
-          id?: string
+          benefit_description?: string
           business_id?: string
-          mp_preapproval_id?: string | null
-          mp_payment_id?: string | null
-          event_type?: string
-          plan_slug?: string | null
-          amount_cop?: number | null
-          status?: string | null
-          raw_payload?: Json | null
           created_at?: string
+          deleted_at?: string | null
+          design_config?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          poster_reward_text?: string | null
+          push_notify_threshold?: number
+          slug?: string
+          stamps_required?: number
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'payment_events_business_id_fkey'
-            columns: ['business_id']
+            foreignKeyName: "loyalty_cards_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: 'businesses'
-            referencedColumns: ['id']
-          }
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
         ]
       }
+      payment_events: {
+        Row: {
+          amount_cop: number | null
+          business_id: string
+          created_at: string
+          event_type: string
+          id: string
+          mp_payment_id: string | null
+          mp_preapproval_id: string | null
+          plan_slug: string | null
+          raw_payload: Json | null
+          status: string | null
+        }
+        Insert: {
+          amount_cop?: number | null
+          business_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          mp_payment_id?: string | null
+          mp_preapproval_id?: string | null
+          plan_slug?: string | null
+          raw_payload?: Json | null
+          status?: string | null
+        }
+        Update: {
+          amount_cop?: number | null
+          business_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          mp_payment_id?: string | null
+          mp_preapproval_id?: string | null
+          plan_slug?: string | null
+          raw_payload?: Json | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_campaigns: {
+        Row: {
+          body: string
+          business_id: string
+          created_at: string
+          id: string
+          loyalty_card_id: string | null
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          body: string
+          business_id: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_campaigns_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          active: boolean
+          auth: string
+          business_id: string
+          created_at: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+        }
+        Insert: {
+          active?: boolean
+          auth: string
+          business_id: string
+          created_at?: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+        }
+        Update: {
+          active?: boolean
+          auth?: string
+          business_id?: string
+          created_at?: string
+          customer_card_id?: string
+          customer_id?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stamp_events: {
+        Row: {
+          business_id: string
+          created_at: string
+          customer_card_id: string
+          device_fingerprint: string | null
+          id: string
+          ip_address: unknown
+          scan_token: string
+          stamped_by: string
+          type: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          customer_card_id: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          scan_token: string
+          stamped_by: string
+          type?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          customer_card_id?: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: unknown
+          scan_token?: string
+          stamped_by?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stamp_events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stamp_events_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          features: Json
+          id: string
+          is_active: boolean
+          max_customers: number | null
+          max_loyalty_cards: number | null
+          name: string
+          price_cop: number
+          slug: string
+        }
+        Insert: {
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_customers?: number | null
+          max_loyalty_cards?: number | null
+          name: string
+          price_cop: number
+          slug: string
+        }
+        Update: {
+          features?: Json
+          id?: string
+          is_active?: boolean
+          max_customers?: number | null
+          max_loyalty_cards?: number | null
+          name?: string
+          price_cop?: number
+          slug?: string
+        }
+        Relationships: []
+      }
     }
-    Views: Record<string, never>
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      add_stamp: {
-        Args: { p_card_id: string }
-        Returns: { current_stamps: number; is_complete: boolean; times_completed: number }
-      }
-      claim_reward: {
-        Args: { p_card_id: string }
-        Returns: { times_completed: number; status: string }
-      }
-      get_business_metrics: {
-        Args: { p_business_id: string }
-        Returns: { activos: number; sellos_hoy: number; canjes_totales: number; retencion_pct: number }
-      }
+      add_stamp: { Args: { p_card_id: string }; Returns: Json }
+      claim_reward: { Args: { p_card_id: string }; Returns: Json }
+      get_business_metrics: { Args: { p_business_id: string }; Returns: Json }
       get_customers_list: {
-        Args: { p_business_id: string; p_q?: string; p_card_id?: string }
+        Args: { p_business_id: string; p_card_id?: string; p_q?: string }
         Returns: {
+          card_name: string
+          current_stamps: number
           customer_id: string
           customer_name: string
-          card_name: string
+          last_visit: string
           loyalty_card_id: string
-          current_stamps: number
           stamps_required: number
           times_completed: number
-          last_visit: string | null
         }[]
       }
+      unaccent: { Args: { "": string }; Returns: string }
     }
-    Enums: Record<string, never>
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
 
 // Helpers para tablas individuales
 export type Business = Database['public']['Tables']['businesses']['Row']
@@ -377,6 +710,12 @@ export type DeviceRegistration = Database['public']['Tables']['device_registrati
 
 export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
+export type PushSubscription = Database['public']['Tables']['push_subscriptions']['Row']
+export type PushSubscriptionInsert = Database['public']['Tables']['push_subscriptions']['Insert']
+
+export type PushCampaign = Database['public']['Tables']['push_campaigns']['Row']
+export type PushCampaignInsert = Database['public']['Tables']['push_campaigns']['Insert']
+
 // Design config de tarjeta con tipos fuertes
 export interface CardDesignConfig {
   color: string
@@ -385,7 +724,6 @@ export interface CardDesignConfig {
   bg_image_url: string | null
   stamp_icon: string
   font: 'default' | 'rounded' | 'mono'
-  // v2 fields
   style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
   bg_mode: 'light' | 'dark'
   logo_url: string | null
@@ -393,5 +731,5 @@ export interface CardDesignConfig {
 
 export type CardStyle = CardDesignConfig['style']
 
-// Plan slugs
 export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'
+

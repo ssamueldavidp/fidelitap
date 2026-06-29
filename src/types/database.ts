@@ -1,4 +1,3 @@
-Connecting to db 5432
 export type Json =
   | string
   | number
@@ -643,6 +642,45 @@ export const Constants = {
   },
 } as const
 
-<claude-code-hint v="1" type="plugin" value="supabase@claude-plugins-official" />
-A new version of Supabase CLI is available: v2.108.0 (currently installed v2.98.2)
-We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+
+// Helpers para tablas individuales
+export type Business = Database['public']['Tables']['businesses']['Row']
+export type BusinessInsert = Database['public']['Tables']['businesses']['Insert']
+export type BusinessUpdate = Database['public']['Tables']['businesses']['Update']
+
+export type LoyaltyCard = Database['public']['Tables']['loyalty_cards']['Row']
+export type LoyaltyCardInsert = Database['public']['Tables']['loyalty_cards']['Insert']
+
+export type Customer = Database['public']['Tables']['customers']['Row']
+export type CustomerInsert = Database['public']['Tables']['customers']['Insert']
+
+export type CustomerCard = Database['public']['Tables']['customer_cards']['Row']
+export type CustomerCardInsert = Database['public']['Tables']['customer_cards']['Insert']
+
+export type StampEvent = Database['public']['Tables']['stamp_events']['Row']
+export type StampEventInsert = Database['public']['Tables']['stamp_events']['Insert']
+
+export type DeviceRegistration = Database['public']['Tables']['device_registrations']['Row']
+
+export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
+
+// Design config de tarjeta con tipos fuertes
+export interface CardDesignConfig {
+  color: string
+  bg_type: 'solid' | 'gradient' | 'image'
+  bg_value: string
+  bg_image_url: string | null
+  stamp_icon: string
+  font: 'default' | 'rounded' | 'mono'
+  style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
+  bg_mode: 'light' | 'dark'
+  logo_url: string | null
+}
+
+export type CardStyle = CardDesignConfig['style']
+
+export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'
+
+// Helpers para tablas nuevas (mobile app)
+export type DeviceToken = Database['public']['Tables']['device_tokens']['Row']
+export type GeofenceNotification = Database['public']['Tables']['geofence_notifications']['Row']

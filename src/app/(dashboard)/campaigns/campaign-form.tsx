@@ -13,7 +13,7 @@ interface CampaignFormProps {
 }
 
 const input =
-  'w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00C896] transition-colors'
+  'w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-[#00C896] transition-colors'
 
 export function CampaignForm({ cards }: CampaignFormProps) {
   const [isPending, startTransition] = useTransition()
@@ -41,13 +41,13 @@ export function CampaignForm({ cards }: CampaignFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 bg-slate-900/50 border border-slate-800 rounded-xl p-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 bg-card/50 border border-border rounded-xl p-5">
       <div>
-        <label className="text-xs text-slate-400 mb-1.5 block font-medium">Título</label>
+        <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Título</label>
         <input name="title" required maxLength={60} placeholder="Ej: 20% de descuento este finde" className={input} />
       </div>
       <div>
-        <label className="text-xs text-slate-400 mb-1.5 block font-medium">Mensaje</label>
+        <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Mensaje</label>
         <textarea
           name="body"
           required
@@ -58,7 +58,7 @@ export function CampaignForm({ cards }: CampaignFormProps) {
         />
       </div>
       <div>
-        <label className="text-xs text-slate-400 mb-1.5 block font-medium">Tarjeta</label>
+        <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Tarjeta</label>
         <select name="loyaltyCardId" className={input}>
           <option value="">Todas las tarjetas</option>
           {cards.map((c) => (
@@ -69,7 +69,7 @@ export function CampaignForm({ cards }: CampaignFormProps) {
         </select>
       </div>
       <div>
-        <label className="text-xs text-slate-400 mb-1.5 block font-medium">Programar envío (opcional)</label>
+        <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Programar envío (opcional)</label>
         <input name="scheduledAt" type="datetime-local" className={input} />
       </div>
       {error && <p className="text-xs text-red-400 bg-red-950/50 border border-red-800 rounded-lg px-3 py-2">{error}</p>}

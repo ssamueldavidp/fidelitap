@@ -19,20 +19,20 @@ export default function OnboardingPage() {
   const [state, formAction] = useFormState(onboardingAction, null)
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <div className="text-2xl font-black mb-2">
             fideli<span className="text-[#00C896]">tap</span>
           </div>
-          <h1 className="text-xl font-black text-white mb-2">¿Cómo se llama tu negocio?</h1>
-          <p className="text-slate-500 text-sm">Este nombre aparecerá en tus tarjetas de fidelización.</p>
+          <h1 className="text-xl font-black text-foreground mb-2">¿Cómo se llama tu negocio?</h1>
+          <p className="text-muted-foreground text-sm">Este nombre aparecerá en tus tarjetas de fidelización.</p>
         </div>
 
-        <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800">
+        <div className="bg-card rounded-2xl p-8 border border-border">
           <form action={formAction} className="flex flex-col gap-4">
             <div>
-              <label htmlFor="businessName" className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+              <label htmlFor="businessName" className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
                 Nombre del negocio
               </label>
               <input
@@ -42,7 +42,7 @@ export default function OnboardingPage() {
                 autoFocus
                 required
                 placeholder="Café Luna, Studio Hair..."
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-[#00C896] transition-colors"
+                className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
               />
             </div>
 

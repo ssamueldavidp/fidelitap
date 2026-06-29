@@ -19,11 +19,11 @@ export default async function CampaignsPage() {
   if (!isPushEligible(business.plan, business.subscription_status)) {
     return (
       <div className="p-8 max-w-lg">
-        <h1 className="text-2xl font-black text-white mb-2">Campañas push</h1>
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-          <p className="text-slate-300 text-sm">
-            Las campañas push están disponibles en los planes <strong className="text-white">Pro</strong> y{' '}
-            <strong className="text-white">Premium</strong>.
+        <h1 className="text-2xl font-black text-foreground mb-2">Campañas push</h1>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <p className="text-muted-foreground text-sm">
+            Las campañas push están disponibles en los planes <strong className="text-foreground">Pro</strong> y{' '}
+            <strong className="text-foreground">Premium</strong>.
           </p>
           <a
             href="/settings?tab=suscripcion"
@@ -54,8 +54,8 @@ export default async function CampaignsPage() {
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-black text-white">Campañas push</h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <h1 className="text-2xl font-black text-foreground">Campañas push</h1>
+        <p className="text-muted-foreground text-sm mt-1">
           Envía promociones a los clientes que tienen tu tarjeta activa.
         </p>
       </div>
@@ -63,14 +63,14 @@ export default async function CampaignsPage() {
       <CampaignForm cards={cards ?? []} />
 
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Historial</p>
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Historial</p>
         {(!campaigns || campaigns.length === 0) && (
-          <p className="text-sm text-slate-600">Todavía no has enviado ninguna campaña.</p>
+          <p className="text-sm text-muted-foreground/60">Todavía no has enviado ninguna campaña.</p>
         )}
         {campaigns?.map((c) => (
-          <div key={c.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-1">
+          <div key={c.id} className="bg-card border border-border rounded-xl p-4 flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-white">{c.title}</p>
+              <p className="text-sm font-semibold text-foreground">{c.title}</p>
               <span
                 className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                   c.status === 'sent'
@@ -79,16 +79,16 @@ export default async function CampaignsPage() {
                     ? 'bg-amber-950 text-amber-400'
                     : c.status === 'failed'
                     ? 'bg-red-950 text-red-400'
-                    : 'bg-slate-800 text-slate-400'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {c.status}
               </span>
             </div>
-            <p className="text-xs text-slate-500">{c.body}</p>
+            <p className="text-xs text-muted-foreground">{c.body}</p>
             <div className="flex items-center justify-between mt-1">
               {c.recipients_count !== null ? (
-                <p className="text-[11px] text-slate-600">{c.recipients_count} destinatarios</p>
+                <p className="text-[11px] text-muted-foreground/60">{c.recipients_count} destinatarios</p>
               ) : (
                 <span />
               )}

@@ -32,7 +32,7 @@ export default async function CardActivationPage({
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'}/c/${params.slug}`
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
@@ -40,7 +40,7 @@ export default async function CardActivationPage({
             {business?.name}
           </p>
           <h1 className="text-2xl font-black">{card.name}</h1>
-          <p className="text-slate-400 text-sm mt-1">{card.benefit_description}</p>
+          <p className="text-muted-foreground text-sm mt-1">{card.benefit_description}</p>
         </div>
 
         {/* Card Preview */}

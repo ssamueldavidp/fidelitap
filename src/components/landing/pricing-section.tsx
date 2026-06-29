@@ -38,7 +38,7 @@ const PAID_PLANS: PaidPlan[] = [
     ctaStyle: 'outline',
     highlight: false,
     features: [
-      { text: '1 tarjeta de fidelización', included: true },
+      { text: 'Hasta 3 tarjetas de fidelización', included: true },
       { text: 'Hasta 500 clientes activos', included: true },
       { text: 'Apple & Google Wallet', included: true },
       { text: 'Escaneo QR ilimitado', included: true },

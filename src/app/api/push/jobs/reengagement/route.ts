@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendPushToCustomerCard } from '@/lib/push/send'
 import { isPushEligible } from '@/lib/push/eligibility'
 
 export async function POST(request: NextRequest) {
-  const secret = request.headers.get('x-cron-secret')
-  if (!secret || secret !== process.env.CRON_SECRET) {
+  const secret = request.headers.get('x-cron-secret') ?? ''
+  const expected = process.env.CRON_SECRET ?? ''
+  if (
+    !secret ||
+    !expected ||
+    secret.length !== expected.length ||
+    !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))
+  ) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

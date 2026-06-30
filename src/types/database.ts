@@ -36,10 +36,13 @@ export type Database = {
     Tables: {
       businesses: {
         Row: {
+          address: string | null
           avatar_url: string | null
           created_at: string
           email: string
           id: string
+          latitude: number | null
+          longitude: number | null
           mp_payer_email: string | null
           mp_preapproval_id: string | null
           name: string
@@ -54,10 +57,13 @@ export type Database = {
           wompi_customer_id: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name: string
@@ -72,10 +78,13 @@ export type Database = {
           wompi_customer_id?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name?: string

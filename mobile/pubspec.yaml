@@ -36,12 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   supabase_flutter: ^2.8.0
-  mobile_scanner: ^6.0.0
+  mobile_scanner: ^7.0.0
   geolocator: ^13.0.1
   geofence_service: ^6.0.0+1
-  firebase_core: ^3.8.0
-  firebase_messaging: ^15.1.6
-  flutter_local_notifications: ^18.0.1
+  # firebase_core, firebase_messaging, flutter_local_notifications:
+  # Add after completing Task 5.1 (create Firebase project, download google-services.json).
+  # Run: flutter pub add firebase_core firebase_messaging flutter_local_notifications
+  # See docs/superpowers/specs/2026-06-29-mobile-app-design.md for setup steps.
   go_router: ^14.6.2
   http: ^1.2.2
   shared_preferences: ^2.3.3

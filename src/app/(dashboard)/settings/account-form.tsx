@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState, useEffect } from 'react'
+import { useActionState, useState } from 'react'
 import { saveAccountAction } from './actions'
 import { MapPin, Building2, Check, AlertCircle, Loader2 } from 'lucide-react'
 

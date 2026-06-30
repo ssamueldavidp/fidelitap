@@ -109,6 +109,7 @@ export type Database = {
           google_pass_url: string | null
           id: string
           is_complete: boolean
+          linked_auth_user_id: string | null
           loyalty_card_id: string
           status: string
           times_completed: number
@@ -125,6 +126,7 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          linked_auth_user_id?: string | null
           loyalty_card_id: string
           status?: string
           times_completed?: number
@@ -141,6 +143,7 @@ export type Database = {
           google_pass_url?: string | null
           id?: string
           is_complete?: boolean
+          linked_auth_user_id?: string | null
           loyalty_card_id?: string
           status?: string
           times_completed?: number
@@ -199,6 +202,33 @@ export type Database = {
           marketing_consent?: boolean
           name?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          fcm_token: string
+          id: string
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fcm_token: string
+          id?: string
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fcm_token?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

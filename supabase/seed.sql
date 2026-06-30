@@ -4,10 +4,6 @@
 
 do $$
 declare
-  uid_free     uuid;
-  uid_basic    uuid;
-  uid_pro      uuid;
-  uid_premium  uuid;
   biz_free     uuid := gen_random_uuid();
   biz_basic    uuid := gen_random_uuid();
   biz_pro      uuid := gen_random_uuid();
@@ -21,15 +17,54 @@ declare
   cust3        uuid := gen_random_uuid();
 begin
 
-  -- ── Auth users ───────────────────────────────────────────────────────────
-  -- Password hash for "Demo1234!" using GoTrue's bcrypt (generated locally)
-  -- In local dev, easier to create via Auth Admin API after db reset.
-  -- These are placeholder inserts; the Admin API route handles real password hashing.
-  -- Instead, we create the businesses and cards only — owners can sign up via /register.
+  -- ── Auth users (password: Demo1234!) ─────────────────────────────────────
+  -- GoTrue scans all token/change fields as string (not *string) — must be '' not NULL
+  insert into auth.users (
+    id, instance_id, email, encrypted_password, email_confirmed_at,
+    created_at, updated_at, raw_app_meta_data, raw_user_meta_data,
+    aud, role,
+    confirmation_token, recovery_token,
+    email_change, email_change_token_new, email_change_token_current,
+    phone_change, phone_change_token, reauthentication_token,
+    is_super_admin, is_sso_user, is_anonymous
+  ) values
+    ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000',
+     'owner-free@demo.co',    crypt('Demo1234!', gen_salt('bf')), now(), now(), now(),
+     '{"provider":"email","providers":["email"]}', '{}',
+     'authenticated', 'authenticated', '', '', '', '', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000',
+     'owner-basic@demo.co',   crypt('Demo1234!', gen_salt('bf')), now(), now(), now(),
+     '{"provider":"email","providers":["email"]}', '{}',
+     'authenticated', 'authenticated', '', '', '', '', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000',
+     'owner-pro@demo.co',     crypt('Demo1234!', gen_salt('bf')), now(), now(), now(),
+     '{"provider":"email","providers":["email"]}', '{}',
+     'authenticated', 'authenticated', '', '', '', '', '', '', '', '', false, false, false),
+    ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000',
+     'owner-premium@demo.co', crypt('Demo1234!', gen_salt('bf')), now(), now(), now(),
+     '{"provider":"email","providers":["email"]}', '{}',
+     'authenticated', 'authenticated', '', '', '', '', '', '', '', '', false, false, false)
+  on conflict (id) do nothing;
+
+  -- Also insert into auth.identities so GoTrue recognises the email/password pair
+  insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id, created_at, updated_at, last_sign_in_at
+  ) values
+    (gen_random_uuid(), '00000000-0000-0000-0000-000000000001',
+     '{"sub":"00000000-0000-0000-0000-000000000001","email":"owner-free@demo.co"}',
+     'email', 'owner-free@demo.co', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-0000-0000-000000000002',
+     '{"sub":"00000000-0000-0000-0000-000000000002","email":"owner-basic@demo.co"}',
+     'email', 'owner-basic@demo.co', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-0000-0000-000000000003',
+     '{"sub":"00000000-0000-0000-0000-000000000003","email":"owner-pro@demo.co"}',
+     'email', 'owner-pro@demo.co', now(), now(), now()),
+    (gen_random_uuid(), '00000000-0000-0000-0000-000000000004',
+     '{"sub":"00000000-0000-0000-0000-000000000004","email":"owner-premium@demo.co"}',
+     'email', 'owner-premium@demo.co', now(), now(), now())
+  on conflict (provider, provider_id) do nothing;
 
   -- ── Plan: FREE ───────────────────────────────────────────────────────────
-  -- Sign up at /register with email owner-free@demo.co to get biz row.
-  -- For auto-seeding, we insert directly with a known UUID.
 
   insert into public.businesses (id, owner_id, name, email, plan, subscription_status,
     stamp_cooldown_seconds, poster_bg_color)
@@ -95,20 +130,5 @@ begin
 
 end $$;
 
--- ── Hint ──────────────────────────────────────────────────────────────────
--- To create real auth users with password "Demo1234!" for each business,
--- run after supabase start:
---
---   for PLAN in free basic pro premium; do
---     curl -s -X POST "http://127.0.0.1:54321/auth/v1/admin/users" \
---       -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" \
---       -H "Content-Type: application/json" \
---       -d "{\"email\":\"owner-${PLAN}@demo.co\",\"password\":\"Demo1234!\",\"email_confirm\":true,
---            \"id\":\"00000000-0000-0000-0000-00000000000${PLAN:0:1}\"}"
---   done
---
--- The UUIDs match the owner_id values in the seed above:
---   free    → 00000000-0000-0000-0000-000000000001
---   basic   → 00000000-0000-0000-0000-000000000002
---   pro     → 00000000-0000-0000-0000-000000000003
---   premium → 00000000-0000-0000-0000-000000000004
+-- Auth users are created directly in the seed above.
+-- Login: owner-free@demo.co / Demo1234! (same password for all 4 plans)

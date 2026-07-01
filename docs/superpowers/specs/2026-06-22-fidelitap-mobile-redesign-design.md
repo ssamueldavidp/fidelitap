@@ -17,19 +17,18 @@ El estilo visual y UX se inspira en [loyalzclub.com](https://loyalzclub.com): on
 
 | Pregunta | Decisión |
 |---|---|
-| Tecnología | React Native + Expo |
+| Tecnología | **Capacitor** (ya inicializado en el repo: `android/`, `ios/`, `capacitor.config.ts`) |
 | Plataformas | iOS y Android en paralelo |
-| Audiencia | Una sola app, dos roles (Cliente y Negocio) |
-| Rol por cuenta | Determinado por tipo de cuenta al iniciar sesión |
-| Paridad negocio | 100% nativo (todas las pantallas en React Native) |
-| Auth cliente | OTP por email vía Supabase Auth Magic Link |
+| Modelo UI | WebView que envuelve el Next.js existente — toda la UI del negocio es gratis |
+| Audiencia | Una sola app, dos roles (Cliente y Negocio) — determinado por tipo de cuenta |
+| Auth cliente | OTP por email vía Supabase Auth Magic Link (nuevo, web feature en Next.js) |
 | Activación QR | Deep link a la app; fallback a web `/c/[slug]` si no está instalada |
-| Wallet UX | Botón destacado post-activación, no automático |
-| Push delivery | Expo Push API → APNs (iOS) + FCM (Android) |
+| Wallet UX | Botón destacado post-activación, no automático (ya existe en web) |
+| Push delivery | `@capacitor/push-notifications` (cliente) + Firebase Admin SDK (servidor) → APNs/FCM |
 | Push gate | Exclusivo Plan Pro y Premium |
-| Geo-push | Client-side geofencing via `expo-location` (sin tracking al servidor) |
-| Panel web | Se mantiene sin cambios para negocios que prefieran web |
-| Mecánicas | Solo sellos/estampas en esta versión (no se expande a cashback, gift card, etc.) |
+| Geo-push | Client-side geofencing via `@capacitor-community/background-geolocation` (sin tracking al servidor) |
+| Panel web | Se mantiene — es el mismo código que usa la app (WebView) |
+| Mecánicas | Solo sellos/estampas en esta versión |
 
 ---
 

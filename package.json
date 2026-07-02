@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor/cli": "^7.6.7",
     "@capacitor/core": "^7.6.7",
+    "@capacitor/push-notifications": "^7.0.6",
     "@parse/node-apn": "^8.1.0",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-separator": "^1.1.8",

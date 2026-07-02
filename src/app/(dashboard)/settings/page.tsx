@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsForm } from './settings-form'
 import { SubscriptionTab } from '@/components/dashboard/subscription-tab'
+import { LocationForm } from '@/components/dashboard/location-form'
 
 type Tab = 'cuenta' | 'suscripcion' | 'scanner'
 
@@ -14,11 +15,12 @@ export default async function SettingsPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: business } = await (supabase as any)
     .from('businesses')
-    .select('id, name, plan, stamp_cooldown_seconds')
+    .select('id, name, plan, stamp_cooldown_seconds, lat, lng, geo_radius_m')
     .eq('owner_id', user.id)
-    .single()
+    .single() as { data: Record<string, any> | null }
 
   const params = await searchParams
   const activeTab: Tab =
@@ -78,6 +80,18 @@ export default async function SettingsPage({
               >
                 Gestionar →
               </a>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xs font-bold text-muted-foreground mb-4 uppercase tracking-wider">
+              Ubicación del negocio
+            </h2>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <LocationForm
+                initialLat={(business as any)?.lat ?? null}
+                initialLng={(business as any)?.lng ?? null}
+                initialRadius={(business as any)?.geo_radius_m ?? 200}
+              />
             </div>
           </div>
         </section>

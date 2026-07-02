@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FideliTap</string>
+    <string name="title_activity_main">FideliTap</string>
+    <string name="package_name">co.fidelitap.app</string>
+    <string name="custom_url_scheme">co.fidelitap.app</string>
+</resources>

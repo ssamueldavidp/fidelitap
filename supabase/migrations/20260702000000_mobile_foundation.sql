@@ -2,15 +2,17 @@
 create table public.device_tokens (
   id           uuid primary key default gen_random_uuid(),
   customer_id  uuid not null references public.customers(id) on delete cascade,
-  expo_token   text not null,
-  platform     text not null check (platform in ('ios', 'android')),
+  expo_token   text not null check (char_length(expo_token) <= 1000),
+  platform     text not null,
+  constraint device_tokens_platform_check check (platform in ('ios', 'android')),
   created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
   unique (customer_id, expo_token)
 );
 
 -- Vincular sesión OTP móvil con fila de cliente
 alter table public.customers
-  add column if not exists auth_user_id uuid references auth.users(id);
+  add column if not exists auth_user_id uuid references auth.users(id) on delete set null;
 
 create unique index if not exists customers_auth_user_id_key
   on public.customers(auth_user_id)
@@ -27,9 +29,3 @@ create policy "customers manage own device tokens"
       select id from public.customers where auth_user_id = auth.uid()
     )
   );
-
--- RLS: service role puede insertar tokens (desde la API /api/push/device-token)
-create policy "service role insert device tokens"
-  on public.device_tokens
-  for insert
-  with check (true);

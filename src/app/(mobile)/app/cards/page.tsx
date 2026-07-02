@@ -4,7 +4,8 @@ import Link from 'next/link';
 
 export default async function CardsPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) console.error('[mobile/cards auth]', authError.message);
   if (!user) redirect('/app/login');
 
   const { data: customer } = await supabase
@@ -38,15 +39,27 @@ export default async function CardsPage() {
     .eq('customer_id', customer.id)
     .order('created_at', { ascending: false });
 
+  const validCards = (cards ?? []).filter(card => card.loyalty_cards != null);
+
   return (
     <div className="flex flex-col px-4 py-8 gap-4">
-      <h1 className="text-xl font-bold px-2">Hola, {(customer as any).name?.split(' ')[0]} 👋</h1>
+      <h1 className="text-xl font-bold px-2">Hola, {customer.name?.split(' ')[0]} 👋</h1>
       <h2 className="text-sm text-gray-500 px-2">Tus tarjetas de fidelización</h2>
 
-      {(cards ?? []).map(card => {
+      {validCards.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <p className="text-gray-400 text-center text-sm">
+            Aún no tienes tarjetas activas. Escanea el QR de un negocio para empezar.
+          </p>
+        </div>
+      )}
+
+      {validCards.map(card => {
         const lc = card.loyalty_cards as any;
         const business = lc?.businesses as any;
-        const pct = Math.round((card.current_stamps / lc.stamps_required) * 100);
+        const pct = lc.stamps_required > 0
+          ? Math.round((card.current_stamps / lc.stamps_required) * 100)
+          : 0;
 
         return (
           <Link key={card.id} href={`/app/cards/${card.id}`}>

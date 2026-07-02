@@ -1,116 +1,62 @@
 import 'server-only'
-import webpush from 'web-push'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPushEligible } from '@/lib/push/eligibility'
+import { sendPushToTokens, type PushPayload } from '@/lib/push/firebase'
 
 type ServiceClient = ReturnType<typeof createServiceClient>
 
-const vapidPublicKey  = process.env.VAPID_PUBLIC_KEY ?? ''
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY ?? ''
-const vapidSubject    = process.env.VAPID_SUBJECT ?? 'mailto:soporte@fidelitap.co'
+export type { PushPayload }
 
-let configured = false
-function ensureConfigured() {
-  if (configured) return
-  if (!vapidPublicKey || !vapidPrivateKey) {
-    throw new Error('VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY no configuradas')
-  }
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey)
-  configured = true
-}
+// Re-export for callers that previously imported isPushEligible from this file
+export { isPushEligible }
 
-export interface PushPayload {
-  title: string
-  body: string
-  url?: string
-}
-
-export interface StoredSubscription {
-  id: string
-  endpoint: string
-  p256dh: string
-  auth: string
-}
-
-export function isPushConfigured(): boolean {
-  return Boolean(vapidPublicKey && vapidPrivateKey)
-}
-
-async function sendOne(
-  sub: StoredSubscription,
-  payload: PushPayload
-): Promise<{ ok: true } | { ok: false; expired: boolean }> {
-  ensureConfigured()
-  try {
-    await webpush.sendNotification(
-      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-      JSON.stringify(payload)
-    )
-    return { ok: true }
-  } catch (err) {
-    const statusCode = (err as { statusCode?: number }).statusCode
-    const expired = statusCode === 404 || statusCode === 410
-    if (!expired) {
-      console.error('[push] sendNotification failed', { endpoint: sub.endpoint, statusCode }, err)
-    }
-    return { ok: false, expired }
-  }
-}
-
-/** Sends to an explicit list of subscriptions. Marks expired ones inactive. Returns count sent. */
-export async function sendPushToSubscriptions(
-  serviceClient: ServiceClient,
-  subscriptions: StoredSubscription[],
-  payload: PushPayload
-): Promise<number> {
-  if (!isPushConfigured() || subscriptions.length === 0) return 0
-
-  let sentCount = 0
-  await Promise.all(
-    subscriptions.map(async (sub) => {
-      const result = await sendOne(sub, payload)
-      if (result.ok) {
-        sentCount++
-        await serviceClient
-          .from('push_subscriptions')
-          .update({ last_used_at: new Date().toISOString() })
-          .eq('id', sub.id)
-      } else if (result.expired) {
-        await serviceClient
-          .from('push_subscriptions')
-          .update({ active: false })
-          .eq('id', sub.id)
-      }
-    })
-  )
-  return sentCount
-}
-
-/** Sends to every active subscription belonging to one customer_card. Returns count sent. */
+/**
+ * Sends a push notification to all FCM tokens registered for a given customer_card.
+ * Looks up the customer_id from customer_cards, then fetches tokens from device_tokens.
+ * Returns count sent.
+ */
 export async function sendPushToCustomerCard(
-  serviceClient: ServiceClient,
+  _serviceClient: ServiceClient,
   customerCardId: string,
   payload: PushPayload
 ): Promise<number> {
-  const { data: subs } = await serviceClient
-    .from('push_subscriptions')
-    .select('id, endpoint, p256dh, auth')
-    .eq('customer_card_id', customerCardId)
-    .eq('active', true)
+  const service = createServiceClient()
 
-  if (!subs || subs.length === 0) return 0
-  return sendPushToSubscriptions(serviceClient, subs, payload)
+  // Resolve customer_id from customer_cards
+  const { data: cc } = await service
+    .from('customer_cards')
+    .select('customer_id')
+    .eq('id', customerCardId)
+    .maybeSingle()
+
+  if (!cc?.customer_id) return 0
+
+  // Fetch all FCM tokens for this customer
+  const { data: tokenRows } = await (service as any)
+    .from('device_tokens')
+    .select('expo_token')
+    .eq('customer_id', cc.customer_id)
+
+  if (!tokenRows || tokenRows.length === 0) return 0
+
+  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
+  return sendPushToTokens(tokens, payload)
 }
 
 /**
- * Sends a campaign to every active subscription of a business, optionally filtered
- * to customers of one specific loyalty card. Returns count sent.
+ * Sends a campaign push to every customer with active cards for a business,
+ * optionally filtered to one specific loyalty card.
+ * Checks plan eligibility (Pro/Premium) before sending.
+ * Returns count sent.
  */
 export async function sendCampaignPush(
-  serviceClient: ServiceClient,
+  _serviceClient: ServiceClient,
   params: { businessId: string; loyaltyCardId: string | null; title: string; body: string }
 ): Promise<number> {
-  const { data: business } = await serviceClient
+  const service = createServiceClient()
+
+  // Check plan eligibility
+  const { data: business } = await service
     .from('businesses')
     .select('plan, subscription_status')
     .eq('id', params.businessId)
@@ -118,22 +64,82 @@ export async function sendCampaignPush(
 
   if (!business || !isPushEligible(business.plan, business.subscription_status)) return 0
 
-  const { data: subs } = await serviceClient
-    .from('push_subscriptions')
-    .select('id, endpoint, p256dh, auth, customer_card_id')
-    .eq('business_id', params.businessId)
-    .eq('active', true)
-
-  let filtered = subs ?? []
+  // Get customer_ids with active cards for this business
+  let cardQuery = service
+    .from('customer_cards')
+    .select('customer_id, loyalty_cards!inner(business_id)')
+    .eq('loyalty_cards.business_id' as any, params.businessId)
 
   if (params.loyaltyCardId) {
-    const { data: matchingCards } = await serviceClient
-      .from('customer_cards')
-      .select('id')
-      .eq('loyalty_card_id', params.loyaltyCardId)
-    const matchingIds = new Set((matchingCards ?? []).map((c) => c.id))
-    filtered = filtered.filter((s) => matchingIds.has(s.customer_card_id))
+    cardQuery = cardQuery.eq('loyalty_card_id', params.loyaltyCardId) as typeof cardQuery
   }
 
-  return sendPushToSubscriptions(serviceClient, filtered, { title: params.title, body: params.body })
+  const { data: cardRows } = await cardQuery
+
+  if (!cardRows || cardRows.length === 0) return 0
+
+  const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
+
+  // Fetch FCM tokens for all these customers
+  const { data: tokenRows } = await (service as any)
+    .from('device_tokens')
+    .select('expo_token')
+    .in('customer_id', customerIds)
+
+  if (!tokenRows || tokenRows.length === 0) return 0
+
+  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
+  return sendPushToTokens(tokens, { title: params.title, body: params.body })
+}
+
+/**
+ * Sends a push notification to a customer by their customer ID.
+ * Convenience wrapper used when you already have the customer_id.
+ */
+export async function sendPushToCustomer(
+  customerId: string,
+  payload: PushPayload
+): Promise<void> {
+  const service = createServiceClient()
+
+  const { data: tokenRows } = await (service as any)
+    .from('device_tokens')
+    .select('expo_token')
+    .eq('customer_id', customerId)
+
+  if (!tokenRows || tokenRows.length === 0) return
+
+  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
+  await sendPushToTokens(tokens, payload)
+}
+
+/**
+ * Sends a push to all customers of a business who have FCM tokens registered.
+ * Does NOT check plan eligibility — caller is responsible.
+ * Returns count sent.
+ */
+export async function sendPushToBusinessCustomers(
+  businessId: string,
+  payload: PushPayload
+): Promise<number> {
+  const service = createServiceClient()
+
+  const { data: cardRows } = await service
+    .from('customer_cards')
+    .select('customer_id, loyalty_cards!inner(business_id)')
+    .eq('loyalty_cards.business_id' as any, businessId)
+
+  if (!cardRows || cardRows.length === 0) return 0
+
+  const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
+
+  const { data: tokenRows } = await (service as any)
+    .from('device_tokens')
+    .select('expo_token')
+    .in('customer_id', customerIds)
+
+  if (!tokenRows || tokenRows.length === 0) return 0
+
+  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
+  return sendPushToTokens(tokens, payload)
 }

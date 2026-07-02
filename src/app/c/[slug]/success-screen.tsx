@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import { Capacitor } from '@capacitor/core'
 import { PushOptIn } from '@/components/push/push-opt-in'
 import { isPushEligible } from '@/lib/push/eligibility'
 
@@ -71,6 +72,15 @@ export function SuccessScreen({
           Agregar a Google Wallet
         </a>
       </div>
+
+      {Capacitor.isNativePlatform() && (
+        <a
+          href="/app/cards"
+          className="flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold text-sm rounded-xl py-3 hover:opacity-90 transition-opacity"
+        >
+          Ver mis tarjetas →
+        </a>
+      )}
 
       {isPushEligible(businessPlan, businessSubscriptionStatus) && (
         <PushOptIn customerCardId={customerCardId} walletAuthToken={walletAuthToken} />

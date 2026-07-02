@@ -47,5 +47,16 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>FideliTap usa la cámara para escanear el código QR de las tarjetas de fidelización al sellar una visita.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>co.fidelitap.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fidelitap</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

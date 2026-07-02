@@ -1,6 +1,8 @@
 PODS:
   - Capacitor (7.6.7):
     - CapacitorCordova
+  - CapacitorApp (7.1.2):
+    - Capacitor
   - CapacitorCordova (7.6.7)
   - CapacitorGeolocation (7.1.8):
     - Capacitor
@@ -13,6 +15,7 @@ PODS:
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/.pnpm/@capacitor+ios@7.6.7_@capacitor+core@7.6.7/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.6.7/node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/.pnpm/@capacitor+ios@7.6.7_@capacitor+core@7.6.7/node_modules/@capacitor/ios`)"
   - "CapacitorGeolocation (from `../../node_modules/.pnpm/@capacitor+geolocation@7.1.8_@capacitor+core@7.6.7/node_modules/@capacitor/geolocation`)"
   - "CapacitorLocalNotifications (from `../../node_modules/.pnpm/@capacitor+local-notifications@7.0.6_@capacitor+core@7.6.7/node_modules/@capacitor/local-notifications`)"
@@ -25,6 +28,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../node_modules/.pnpm/@capacitor+ios@7.6.7_@capacitor+core@7.6.7/node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.6.7/node_modules/@capacitor/app"
   CapacitorCordova:
     :path: "../../node_modules/.pnpm/@capacitor+ios@7.6.7_@capacitor+core@7.6.7/node_modules/@capacitor/ios"
   CapacitorGeolocation:
@@ -36,12 +41,13 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Capacitor: 8ef25ba872436d2c5ac2a4791f7255529bdcd93b
+  CapacitorApp: f01a913211780e0718dae9750442c3e23f96e106
   CapacitorCordova: 139e2ed3d91c54b5aeae7941135c9f9aefc6da1d
   CapacitorGeolocation: ab54d708e2fcf99a7bafe0219eaa6f7a932f001a
   CapacitorLocalNotifications: 2e3f5b717ec9cd2bd64d93c99a9470941e1c80be
   CapacitorPushNotifications: b8e30637549ce91468b8c4dddbef2657be831f4c
   IONGeolocationLib: 20f9d0248a0b5264511fb57a37e25dd2badf797a
 
-PODFILE CHECKSUM: 60da197a771bbee4ed12d8c54d9625da48c12289
+PODFILE CHECKSUM: 853e66097a22efb2ea0e2f7cd8c5223f1662636b
 
 COCOAPODS: 1.16.2

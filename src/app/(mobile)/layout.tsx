@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { checkProximityAndNotify } from '@/lib/capacitor/geofence';
 
 async function registerPushToken() {
   if (!Capacitor.isNativePlatform()) return;
@@ -33,6 +34,10 @@ async function registerPushToken() {
 export default function MobileLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     registerPushToken();
+  }, []);
+
+  useEffect(() => {
+    checkProximityAndNotify();
   }, []);
 
   return <main className="min-h-screen bg-gray-50 flex flex-col">{children}</main>;

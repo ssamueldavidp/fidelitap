@@ -49,7 +49,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
       wallet_pass_serial,
       loyalty_card_id,
       near_completion_notified_at,
-      loyalty_cards ( id, stamps_required, business_id, push_notify_threshold ),
+      loyalty_cards ( id, stamps_required, benefit_description, business_id, push_notify_threshold ),
       customers ( name, email )
     `)
     .eq('unique_code', uniqueCode.trim())
@@ -62,7 +62,7 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
     wallet_pass_serial: string | null
     loyalty_card_id: string
     near_completion_notified_at: string | null
-    loyalty_cards: { id: string; stamps_required: number; business_id: string; push_notify_threshold: number } | null
+    loyalty_cards: { id: string; stamps_required: number; benefit_description: string | null; business_id: string; push_notify_threshold: number } | null
     customers: { name: string; email: string | null } | null
   }
 
@@ -170,8 +170,14 @@ export async function addStampAction(uniqueCode: string): Promise<StampResult> {
       : Promise.resolve(),
     shouldNotifyProgress
       ? sendPushToCustomerCard(serviceClient, cc.id, {
-          title: '¡Ya casi! 🎉',
-          body: `Te falta${remaining === 1 ? '' : 'n'} ${remaining} sello${remaining === 1 ? '' : 's'} para tu premio en ${business.name}`,
+          title: `⭐ Sellos en ${business.name}`,
+          body: `Llevas ${currentStamps} de ${card.stamps_required} sellos. ¡Ya casi tienes tu premio!`,
+        })
+      : Promise.resolve(),
+    isComplete && isPushEligible(business.plan, business.subscription_status)
+      ? sendPushToCustomerCard(serviceClient, cc.id, {
+          title: '🎉 ¡Premio listo!',
+          body: `Completaste tu tarjeta en ${business.name}. Muéstrala en caja para reclamar${card.benefit_description ? ': ' + card.benefit_description : ' tu premio'}.`,
         })
       : Promise.resolve(),
   ])

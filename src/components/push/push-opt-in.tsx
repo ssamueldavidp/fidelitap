@@ -1,3 +1,4 @@
+// DEPRECATED: Web Push VAPID opt-in — replaced by native FCM via @capacitor/push-notifications
 'use client'
 
 import { useEffect, useState } from 'react'

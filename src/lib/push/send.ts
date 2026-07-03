@@ -32,6 +32,7 @@ export async function sendPushToCustomerCard(
   if (!cc?.customer_id) return 0
 
   // Fetch all FCM tokens for this customer
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: tokenRows } = await (service as any)
     .from('device_tokens')
     .select('expo_token')
@@ -68,6 +69,7 @@ export async function sendCampaignPush(
   let cardQuery = service
     .from('customer_cards')
     .select('customer_id, loyalty_cards!inner(business_id)')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .eq('loyalty_cards.business_id' as any, params.businessId)
 
   if (params.loyaltyCardId) {
@@ -81,6 +83,7 @@ export async function sendCampaignPush(
   const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
 
   // Fetch FCM tokens for all these customers
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: tokenRows } = await (service as any)
     .from('device_tokens')
     .select('expo_token')
@@ -102,6 +105,7 @@ export async function sendPushToCustomer(
 ): Promise<void> {
   const service = createServiceClient()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: tokenRows } = await (service as any)
     .from('device_tokens')
     .select('expo_token')
@@ -127,12 +131,14 @@ export async function sendPushToBusinessCustomers(
   const { data: cardRows } = await service
     .from('customer_cards')
     .select('customer_id, loyalty_cards!inner(business_id)')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .eq('loyalty_cards.business_id' as any, businessId)
 
   if (!cardRows || cardRows.length === 0) return 0
 
   const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: tokenRows } = await (service as any)
     .from('device_tokens')
     .select('expo_token')

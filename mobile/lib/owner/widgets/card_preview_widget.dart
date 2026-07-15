@@ -3,7 +3,7 @@ import '../../data/mobile_api_client.dart';
 
 Color _hexColor(String hex) {
   final h = hex.replaceAll('#', '');
-  return Color(int.parse('FF$h', radix: 16));
+  return Color(int.tryParse('FF$h', radix: 16) ?? 0xFF00C896);
 }
 
 class CardPreviewWidget extends StatelessWidget {
@@ -36,13 +36,21 @@ class CardPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (stampsRequired < 1) return const SizedBox.shrink();
+
     final accentColor = _hexColor(color);
-    final bgColor = _hexColor(bgValue);
+    final bgColor = bgType == 'solid' ? _hexColor(bgValue) : const Color(0xFF0F172A);
     final sampleStamps = (stampsRequired * 0.6).ceil().clamp(1, stampsRequired);
 
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
+        image: bgType == 'image' && bgImageUrl != null
+            ? DecorationImage(
+                image: NetworkImage(bgImageUrl!),
+                fit: BoxFit.cover,
+              )
+            : null,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

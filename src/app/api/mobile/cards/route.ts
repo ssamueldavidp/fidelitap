@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     .eq('business_id', business.id)
     .is('deleted_at', null)
     .order('created_at', { ascending: true })
+    .order('sort_order', { referencedTable: 'card_rewards', ascending: true })
 
   if (error) return NextResponse.json({ error: 'Error al cargar tarjetas' }, { status: 500 })
 
@@ -34,8 +35,7 @@ export async function GET(req: NextRequest) {
 
   const cards = (data ?? []).map((c: RawCard) => {
     const cfg = (c.design_config as Record<string, string | boolean | null> | null) ?? {}
-    const rewards = ((c.card_rewards as RawReward[] | null) ?? [])
-      .sort((a, b) => a.sort_order - b.sort_order)
+    const rewards = (c.card_rewards as RawReward[] | null) ?? []
     return {
       id: c.id,
       name: c.name,

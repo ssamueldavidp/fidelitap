@@ -36,13 +36,13 @@ export type Database = {
     Tables: {
       businesses: {
         Row: {
-          address: string | null
           avatar_url: string | null
           created_at: string
           email: string
+          geo_radius_m: number
           id: string
-          latitude: number | null
-          longitude: number | null
+          lat: number | null
+          lng: number | null
           mp_payer_email: string | null
           mp_preapproval_id: string | null
           name: string
@@ -57,13 +57,13 @@ export type Database = {
           wompi_customer_id: string | null
         }
         Insert: {
-          address?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
+          geo_radius_m?: number
           id?: string
-          latitude?: number | null
-          longitude?: number | null
+          lat?: number | null
+          lng?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name: string
@@ -78,13 +78,13 @@ export type Database = {
           wompi_customer_id?: string | null
         }
         Update: {
-          address?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
+          geo_radius_m?: number
           id?: string
-          latitude?: number | null
-          longitude?: number | null
+          lat?: number | null
+          lng?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name?: string
@@ -97,165 +97,6 @@ export type Database = {
           subscription_status?: string
           updated_at?: string
           wompi_customer_id?: string | null
-        }
-        Relationships: []
-      }
-      customer_cards: {
-        Row: {
-          apple_pass_url: string | null
-          created_at: string
-          current_stamps: number
-          customer_id: string
-          google_pass_url: string | null
-          id: string
-          is_complete: boolean
-          linked_auth_user_id: string | null
-          loyalty_card_id: string
-          status: string
-          times_completed: number
-          unique_code: string
-          updated_at: string
-          wallet_auth_token: string | null
-          wallet_pass_serial: string | null
-        }
-        Insert: {
-          apple_pass_url?: string | null
-          created_at?: string
-          current_stamps?: number
-          customer_id: string
-          google_pass_url?: string | null
-          id?: string
-          is_complete?: boolean
-          linked_auth_user_id?: string | null
-          loyalty_card_id: string
-          status?: string
-          times_completed?: number
-          unique_code: string
-          updated_at?: string
-          wallet_auth_token?: string | null
-          wallet_pass_serial?: string | null
-        }
-        Update: {
-          apple_pass_url?: string | null
-          created_at?: string
-          current_stamps?: number
-          customer_id?: string
-          google_pass_url?: string | null
-          id?: string
-          is_complete?: boolean
-          linked_auth_user_id?: string | null
-          loyalty_card_id?: string
-          status?: string
-          times_completed?: number
-          unique_code?: string
-          updated_at?: string
-          wallet_auth_token?: string | null
-          wallet_pass_serial?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "customer_cards_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "customer_cards_loyalty_card_id_fkey"
-            columns: ["loyalty_card_id"]
-            isOneToOne: false
-            referencedRelation: "loyalty_cards"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      customers: {
-        Row: {
-          birthday: string | null
-          city: string | null
-          created_at: string
-          email: string
-          gender: string | null
-          id: string
-          marketing_consent: boolean
-          name: string
-          phone: string | null
-        }
-        Insert: {
-          birthday?: string | null
-          city?: string | null
-          created_at?: string
-          email: string
-          gender?: string | null
-          id?: string
-          marketing_consent?: boolean
-          name: string
-          phone?: string | null
-        }
-        Update: {
-          birthday?: string | null
-          city?: string | null
-          created_at?: string
-          email?: string
-          gender?: string | null
-          id?: string
-          marketing_consent?: boolean
-          name?: string
-          phone?: string | null
-        }
-        Relationships: []
-      }
-      device_tokens: {
-        Row: {
-          created_at: string
-          fcm_token: string
-          id: string
-          platform: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          fcm_token: string
-          id?: string
-          platform: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          fcm_token?: string
-          id?: string
-          platform?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      device_registrations: {
-        Row: {
-          created_at: string | null
-          device_library_identifier: string
-          id: string
-          pass_type_identifier: string
-          push_token: string
-          serial_number: string
-        }
-        Insert: {
-          created_at?: string | null
-          device_library_identifier: string
-          id?: string
-          pass_type_identifier: string
-          push_token: string
-          serial_number: string
-        }
-        Update: {
-          created_at?: string | null
-          device_library_identifier?: string
-          id?: string
-          pass_type_identifier?: string
-          push_token?: string
-          serial_number?: string
         }
         Relationships: []
       }
@@ -297,6 +138,182 @@ export type Database = {
           },
         ]
       }
+      customer_cards: {
+        Row: {
+          apple_pass_url: string | null
+          created_at: string
+          current_stamps: number
+          customer_id: string
+          google_pass_url: string | null
+          id: string
+          is_complete: boolean
+          last_stamp_at: string | null
+          loyalty_card_id: string
+          near_completion_notified_at: string | null
+          reengagement_sent_at: string | null
+          status: string
+          times_completed: number
+          unique_code: string
+          updated_at: string
+          wallet_auth_token: string | null
+          wallet_pass_serial: string | null
+        }
+        Insert: {
+          apple_pass_url?: string | null
+          created_at?: string
+          current_stamps?: number
+          customer_id: string
+          google_pass_url?: string | null
+          id?: string
+          is_complete?: boolean
+          last_stamp_at?: string | null
+          loyalty_card_id: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
+          status?: string
+          times_completed?: number
+          unique_code: string
+          updated_at?: string
+          wallet_auth_token?: string | null
+          wallet_pass_serial?: string | null
+        }
+        Update: {
+          apple_pass_url?: string | null
+          created_at?: string
+          current_stamps?: number
+          customer_id?: string
+          google_pass_url?: string | null
+          id?: string
+          is_complete?: boolean
+          last_stamp_at?: string | null
+          loyalty_card_id?: string
+          near_completion_notified_at?: string | null
+          reengagement_sent_at?: string | null
+          status?: string
+          times_completed?: number
+          unique_code?: string
+          updated_at?: string
+          wallet_auth_token?: string | null
+          wallet_pass_serial?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_cards_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_cards_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          auth_user_id: string | null
+          birthday: string | null
+          city: string | null
+          created_at: string
+          email: string
+          gender: string | null
+          id: string
+          marketing_consent: boolean
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          auth_user_id?: string | null
+          birthday?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          gender?: string | null
+          id?: string
+          marketing_consent?: boolean
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          auth_user_id?: string | null
+          birthday?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          gender?: string | null
+          id?: string
+          marketing_consent?: boolean
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      device_registrations: {
+        Row: {
+          created_at: string | null
+          device_library_identifier: string
+          id: string
+          pass_type_identifier: string
+          push_token: string
+          serial_number: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_library_identifier: string
+          id?: string
+          pass_type_identifier: string
+          push_token: string
+          serial_number: string
+        }
+        Update: {
+          created_at?: string | null
+          device_library_identifier?: string
+          id?: string
+          pass_type_identifier?: string
+          push_token?: string
+          serial_number?: string
+        }
+        Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          customer_id: string
+          expo_token: string
+          id: string
+          platform: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          expo_token: string
+          id?: string
+          platform: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          expo_token?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_tokens_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_cards: {
         Row: {
           benefit_description: string
@@ -311,6 +328,7 @@ export type Database = {
           max_uses_per_customer: number | null
           name: string
           poster_reward_text: string | null
+          push_notify_threshold: number
           slug: string
           stamps_required: number
           updated_at: string
@@ -328,6 +346,7 @@ export type Database = {
           max_uses_per_customer?: number | null
           name: string
           poster_reward_text?: string | null
+          push_notify_threshold?: number
           slug: string
           stamps_required: number
           updated_at?: string
@@ -345,6 +364,7 @@ export type Database = {
           max_uses_per_customer?: number | null
           name?: string
           poster_reward_text?: string | null
+          push_notify_threshold?: number
           slug?: string
           stamps_required?: number
           updated_at?: string
@@ -402,6 +422,121 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_campaigns: {
+        Row: {
+          body: string
+          business_id: string
+          created_at: string
+          id: string
+          loyalty_card_id: string | null
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          body: string
+          business_id: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string | null
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_campaigns_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          active: boolean
+          auth: string
+          business_id: string
+          created_at: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+        }
+        Insert: {
+          active?: boolean
+          auth: string
+          business_id: string
+          created_at?: string
+          customer_card_id: string
+          customer_id: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+        }
+        Update: {
+          active?: boolean
+          auth?: string
+          business_id?: string
+          created_at?: string
+          customer_card_id?: string
+          customer_id?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -648,41 +783,3 @@ export const Constants = {
   },
 } as const
 
-
-// Helpers para tablas individuales
-export type Business = Database['public']['Tables']['businesses']['Row']
-export type BusinessInsert = Database['public']['Tables']['businesses']['Insert']
-export type BusinessUpdate = Database['public']['Tables']['businesses']['Update']
-
-export type LoyaltyCard = Database['public']['Tables']['loyalty_cards']['Row']
-export type LoyaltyCardInsert = Database['public']['Tables']['loyalty_cards']['Insert']
-
-export type Customer = Database['public']['Tables']['customers']['Row']
-export type CustomerInsert = Database['public']['Tables']['customers']['Insert']
-
-export type CustomerCard = Database['public']['Tables']['customer_cards']['Row']
-export type CustomerCardInsert = Database['public']['Tables']['customer_cards']['Insert']
-
-export type StampEvent = Database['public']['Tables']['stamp_events']['Row']
-export type StampEventInsert = Database['public']['Tables']['stamp_events']['Insert']
-
-export type DeviceRegistration = Database['public']['Tables']['device_registrations']['Row']
-
-export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
-
-// Design config de tarjeta con tipos fuertes
-export interface CardDesignConfig {
-  color: string
-  bg_type: 'solid' | 'gradient' | 'image'
-  bg_value: string
-  bg_image_url: string | null
-  stamp_icon: string
-  font: 'default' | 'rounded' | 'mono'
-  style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
-  bg_mode: 'light' | 'dark'
-  logo_url: string | null
-}
-
-export type CardStyle = CardDesignConfig['style']
-
-export type PlanSlug = 'free' | 'basic' | 'pro' | 'premium'

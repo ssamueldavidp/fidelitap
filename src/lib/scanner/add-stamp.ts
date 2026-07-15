@@ -35,7 +35,7 @@ export async function addStampForBusiness(
       id,
       wallet_pass_serial,
       loyalty_card_id,
-      loyalty_cards ( id, stamps_required, business_id ),
+      loyalty_cards ( id, stamps_required, business_id, businesses ( plan ) ),
       customers ( name, email )
     `)
     .eq('unique_code', uniqueCode.trim())
@@ -47,7 +47,12 @@ export async function addStampForBusiness(
     id: string
     wallet_pass_serial: string | null
     loyalty_card_id: string
-    loyalty_cards: { id: string; stamps_required: number; business_id: string } | null
+    loyalty_cards: {
+      id: string
+      stamps_required: number
+      business_id: string
+      businesses: { plan: string } | null
+    } | null
     customers: { name: string; email: string | null } | null
   }
 
@@ -102,6 +107,16 @@ export async function addStampForBusiness(
   const timesCompleted = result.times_completed
   const status = (result.status ?? 'active') as CardStatus
 
+  // Fetch next reward label for multi-level cards
+  const { data: cardRewards } = await serviceClient
+    .from('card_rewards')
+    .select('stamps_required, reward_label')
+    .eq('loyalty_card_id', card.id)
+    .order('stamps_required', { ascending: true })
+
+  const nextReward = (cardRewards ?? []).find((r) => r.stamps_required > currentStamps)
+  const nextRewardLabel = nextReward?.reward_label
+
   // Record stamp event with type='stamp'
   await serviceClient.from('stamp_events').insert({
     customer_card_id: cc.id,
@@ -120,11 +135,14 @@ export async function addStampForBusiness(
     pushTokens = registrations?.map((r) => r.push_token) ?? []
   }
 
+  const skipWalletUpdate = card.businesses?.plan === 'free'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
   const customerEmail = cc.customers?.email
   void Promise.allSettled([
-    pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
-    updateGoogleWalletStamps(cc.id, card.id, currentStamps),
+    !skipWalletUpdate && pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
+    !skipWalletUpdate
+      ? updateGoogleWalletStamps(cc.id, card.id, currentStamps, nextRewardLabel)
+      : Promise.resolve(),
     isComplete && customerEmail
       ? sendCardComplete({
           to: customerEmail,

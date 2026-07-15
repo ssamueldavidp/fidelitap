@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
+import { generateSlug } from '@/lib/slug'
+import { getPlanLimits } from '@/lib/plan-limits'
 
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req)
@@ -65,21 +67,39 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
   const body = await req.json()
-  const { name, stamps_required, benefit_description, stamp_icon = '⭐', color = '#00C896' } = body
+  const {
+    name,
+    stamps_required,
+    benefit_description,
+    stamp_icon = '⭐',
+    color = '#00C896',
+    bg_type = 'solid',
+    bg_value = '#0f172a',
+    bg_image_url = null,
+    font = 'default',
+    logo_url = null,
+    expires_at = null,
+    max_uses_per_customer = null,
+    multi_rewards = false,
+    rewards = [],
+  } = body
 
   if (!name?.trim()) return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 })
-  if (!stamps_required || stamps_required < 2 || stamps_required > 50)
-    return NextResponse.json({ error: 'Sellos: entre 2 y 50' }, { status: 400 })
+  const stampsNum = Number(stamps_required)
+  if (!stampsNum || stampsNum < 2 || stampsNum > 20)
+    return NextResponse.json({ error: 'Sellos: entre 2 y 20' }, { status: 400 })
   if (!benefit_description?.trim())
     return NextResponse.json({ error: 'Premio requerido' }, { status: 400 })
+  if (typeof color === 'string' && !/^#[0-9A-Fa-f]{6}$/.test(color))
+    return NextResponse.json({ error: 'Color inválido' }, { status: 400 })
 
   const serviceClient = createServiceClient()
-  const { data: business } = await serviceClient
+  const { data: business, error: bizError } = await serviceClient
     .from('businesses')
     .select('id, plan')
     .eq('owner_id', user.id)
     .single()
-  if (!business) return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 })
+  if (bizError || !business) return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 })
 
   const { count } = await serviceClient
     .from('loyalty_cards')
@@ -87,26 +107,23 @@ export async function POST(req: NextRequest) {
     .eq('business_id', business.id)
     .is('deleted_at', null)
 
-  const limits: Record<string, number | null> = { free: 1, basic: 3, pro: 10, premium: null }
-  const maxCards = limits[business.plan] ?? null
+  const { maxCards } = getPlanLimits(business.plan)
   if (maxCards !== null && (count ?? 0) >= maxCards)
     return NextResponse.json(
       { error: `Tu plan ${business.plan} permite máximo ${maxCards} tarjeta(s)` },
       { status: 403 }
     )
 
-  const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Date.now().toString(36)}`
+  const slug = generateSlug(name.trim())
 
   const design_config = {
     color,
-    bg_type: 'solid',
-    bg_value: '#0f172a',
-    bg_image_url: null,
+    bg_type,
+    bg_value,
+    bg_image_url,
     stamp_icon,
-    font: 'default',
-    style: 'clean',
-    bg_mode: 'dark',
-    logo_url: null,
+    font,
+    multi_rewards,
   }
 
   const { data, error } = await serviceClient
@@ -114,14 +131,43 @@ export async function POST(req: NextRequest) {
     .insert({
       business_id: business.id,
       name: name.trim(),
-      stamps_required: Number(stamps_required),
+      stamps_required: stampsNum,
       benefit_description: benefit_description.trim(),
       design_config,
       slug,
+      logo_url: logo_url ?? null,
+      expires_at: expires_at ?? null,
+      max_uses_per_customer: max_uses_per_customer ? Number(max_uses_per_customer) : null,
     })
-    .select('id, name, stamps_required, benefit_description, is_active')
+    .select('id, name, stamps_required, benefit_description, is_active, slug, logo_url, expires_at, max_uses_per_customer')
     .single()
 
-  if (error) return NextResponse.json({ error: 'Error al crear tarjeta' }, { status: 500 })
-  return NextResponse.json({ ...data, stamp_icon, color }, { status: 201 })
+  if (error) {
+    console.error('[POST /api/mobile/cards]', error)
+    return NextResponse.json({ error: 'Error al crear tarjeta' }, { status: 500 })
+  }
+
+  // Insert rewards if multi_rewards and rewards array provided
+  if (multi_rewards && Array.isArray(rewards) && rewards.length > 0) {
+    const rewardRows = rewards.map((r: { stamps_required: number; reward_label: string; color?: string }, i: number) => ({
+      loyalty_card_id: data.id,
+      stamps_required: Number(r.stamps_required),
+      reward_label: String(r.reward_label),
+      color: r.color ?? '#00C896',
+      sort_order: i,
+    }))
+    await serviceClient.from('card_rewards').insert(rewardRows)
+  }
+
+  return NextResponse.json({
+    ...data,
+    stamp_icon,
+    color,
+    bg_type,
+    bg_value,
+    bg_image_url: bg_image_url ?? null,
+    font,
+    multi_rewards,
+    rewards: multi_rewards ? rewards : [],
+  }, { status: 201 })
 }

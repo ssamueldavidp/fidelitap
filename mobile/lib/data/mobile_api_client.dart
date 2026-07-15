@@ -30,6 +30,7 @@ class CardRewardModel {
       );
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'stamps_required': stampsRequired,
         'reward_label': rewardLabel,
         'color': color,
@@ -213,7 +214,12 @@ class MobileApiClient {
   }
 
   Future<String> uploadLogo(List<int> bytes, String mimeType) async {
-    final ext = mimeType.contains('png') ? 'png' : mimeType.contains('webp') ? 'webp' : 'jpg';
+    final mimeSubtype = mimeType.contains('png')
+        ? 'png'
+        : mimeType.contains('webp')
+            ? 'webp'
+            : 'jpeg';  // ← 'jpeg', not 'jpg'
+    final ext = mimeSubtype == 'jpeg' ? 'jpg' : mimeSubtype;  // filename uses .jpg
     final req = http.MultipartRequest(
       'POST',
       Uri.parse('$_base/api/mobile/upload/logo'),
@@ -224,7 +230,7 @@ class MobileApiClient {
       'file',
       bytes,
       filename: 'logo.$ext',
-      contentType: MediaType('image', ext),
+      contentType: MediaType('image', mimeSubtype),  // ← use mimeSubtype here
     ));
     final streamed = await req.send();
     final body = await streamed.stream.bytesToString();

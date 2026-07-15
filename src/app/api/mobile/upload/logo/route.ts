@@ -14,7 +14,12 @@ export async function POST(req: NextRequest) {
     .single()
   if (bizError || !business) return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 })
 
-  const formData = await req.formData()
+  let formData: FormData
+  try {
+    formData = await req.formData()
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo de solicitud inválido (multipart requerido)' }, { status: 400 })
+  }
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 })
 
@@ -24,6 +29,27 @@ export async function POST(req: NextRequest) {
 
   if (file.size > 2 * 1024 * 1024)
     return NextResponse.json({ error: 'Máximo 2 MB' }, { status: 400 })
+
+  const headerBytes = new Uint8Array(await file.slice(0, 12).arrayBuffer())
+
+  const isJpeg = headerBytes[0] === 0xff && headerBytes[1] === 0xd8 && headerBytes[2] === 0xff
+  const isPng =
+    headerBytes[0] === 0x89 &&
+    headerBytes[1] === 0x50 &&
+    headerBytes[2] === 0x4e &&
+    headerBytes[3] === 0x47
+  const isWebp =
+    headerBytes[0] === 0x52 &&
+    headerBytes[1] === 0x49 &&
+    headerBytes[2] === 0x46 &&
+    headerBytes[3] === 0x46 &&
+    headerBytes[8] === 0x57 &&
+    headerBytes[9] === 0x45 &&
+    headerBytes[10] === 0x42 &&
+    headerBytes[11] === 0x50
+
+  if (!isJpeg && !isPng && !isWebp)
+    return NextResponse.json({ error: 'El archivo no es una imagen válida (JPEG, PNG o WebP)' }, { status: 400 })
 
   const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
   const path = `${business.id}/logo.${ext}`

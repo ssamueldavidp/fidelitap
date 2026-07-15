@@ -259,6 +259,44 @@ export type Database = {
         }
         Relationships: []
       }
+      card_rewards: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          loyalty_card_id: string
+          reward_label: string
+          sort_order: number
+          stamps_required: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id: string
+          reward_label: string
+          sort_order?: number
+          stamps_required: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string
+          reward_label?: string
+          sort_order?: number
+          stamps_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_rewards_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_cards: {
         Row: {
           benefit_description: string
@@ -266,8 +304,11 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           design_config: Json
+          expires_at: string | null
           id: string
           is_active: boolean
+          logo_url: string | null
+          max_uses_per_customer: number | null
           name: string
           poster_reward_text: string | null
           slug: string
@@ -280,8 +321,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           design_config?: Json
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          max_uses_per_customer?: number | null
           name: string
           poster_reward_text?: string | null
           slug: string
@@ -294,8 +338,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           design_config?: Json
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          max_uses_per_customer?: number | null
           name?: string
           poster_reward_text?: string | null
           slug?: string

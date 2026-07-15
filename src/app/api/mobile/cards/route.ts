@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: 'Error al cargar tarjetas' }, { status: 500 })
 
   type RawReward = { id: string; stamps_required: number; reward_label: string; color: string; sort_order: number }
-  type RawCard = typeof data extends (infer T)[] ? T : never
+  type RawCard = NonNullable<typeof data>[number]
 
   const cards = (data ?? []).map((c: RawCard) => {
     const cfg = (c.design_config as Record<string, string | boolean | null> | null) ?? {}

@@ -93,6 +93,17 @@ export async function POST(req: NextRequest) {
   if (typeof color === 'string' && !/^#[0-9A-Fa-f]{6}$/.test(color))
     return NextResponse.json({ error: 'Color inválido' }, { status: 400 })
 
+  if (multi_rewards && Array.isArray(rewards)) {
+    if (rewards.length > 20)
+      return NextResponse.json({ error: 'Máximo 20 niveles de premio' }, { status: 400 })
+    for (const r of rewards) {
+      if (!Number.isInteger(Number(r.stamps_required)) || Number(r.stamps_required) < 1)
+        return NextResponse.json({ error: 'stamps_required en reward debe ser ≥ 1' }, { status: 400 })
+      if (!String(r.reward_label ?? '').trim())
+        return NextResponse.json({ error: 'reward_label requerido en cada nivel' }, { status: 400 })
+    }
+  }
+
   const serviceClient = createServiceClient()
   const { data: business, error: bizError } = await serviceClient
     .from('businesses')
@@ -147,16 +158,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al crear tarjeta' }, { status: 500 })
   }
 
-  // Insert rewards if multi_rewards and rewards array provided
+  let persistedRewards: { id: string; stamps_required: number; reward_label: string; color: string; sort_order: number }[] = []
   if (multi_rewards && Array.isArray(rewards) && rewards.length > 0) {
     const rewardRows = rewards.map((r: { stamps_required: number; reward_label: string; color?: string }, i: number) => ({
       loyalty_card_id: data.id,
       stamps_required: Number(r.stamps_required),
-      reward_label: String(r.reward_label),
+      reward_label: String(r.reward_label).trim(),
       color: r.color ?? '#00C896',
       sort_order: i,
     }))
-    await serviceClient.from('card_rewards').insert(rewardRows)
+    const { data: insertedRewards, error: rewardError } = await serviceClient
+      .from('card_rewards')
+      .insert(rewardRows)
+      .select('id, stamps_required, reward_label, color, sort_order')
+    if (rewardError) {
+      console.error('[POST /api/mobile/cards] reward insert', rewardError)
+      return NextResponse.json({ error: 'Tarjeta creada pero los premios no se guardaron' }, { status: 500 })
+    }
+    persistedRewards = insertedRewards ?? []
   }
 
   return NextResponse.json({
@@ -168,6 +187,6 @@ export async function POST(req: NextRequest) {
     bg_image_url: bg_image_url ?? null,
     font,
     multi_rewards,
-    rewards: multi_rewards ? rewards : [],
+    rewards: persistedRewards,
   }, { status: 201 })
 }

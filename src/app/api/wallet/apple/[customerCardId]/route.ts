@@ -73,6 +73,16 @@ export async function GET(
 
   const businessName = card.businesses?.name ?? 'FideliTap'
 
+  // Fetch next reward label for multi-level rewards
+  const { data: rewards } = await supabase
+    .from('card_rewards')
+    .select('stamps_required, reward_label')
+    .eq('loyalty_card_id', card.id)
+    .order('stamps_required', { ascending: true })
+
+  const nextReward = (rewards ?? []).find((r) => r.stamps_required > cc.current_stamps)
+  const nextRewardLabel = nextReward?.reward_label ?? null
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.app'
 
   if (!process.env.APPLE_PASS_TYPE_ID || !process.env.APPLE_TEAM_ID) {
@@ -97,6 +107,7 @@ export async function GET(
         const url = (card.design_config as Record<string, unknown>)?.logo_url as string | null
         return url?.startsWith('https') ? url : null
       })(),
+      nextRewardLabel,
     })
 
     return new NextResponse(Uint8Array.from(passBuffer), {

@@ -89,7 +89,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .from('loyalty_cards')
     .update(update)
     .eq('id', params.id)
-    .select('id, name, stamps_required, benefit_description, is_active, design_config, logo_url, expires_at, max_uses_per_customer')
+    .select('id, name, stamps_required, benefit_description, is_active, slug, design_config, logo_url, expires_at, max_uses_per_customer')
     .single()
 
   if (error) {
@@ -97,9 +97,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'Error al actualizar' }, { status: 500 })
   }
 
-  // Upsert rewards: delete-then-insert (only when rewards array explicitly sent)
+  // Upsert rewards: delete-then-insert with best-effort rollback
   let persistedRewards: { id: string; stamps_required: number; reward_label: string; color: string; sort_order: number }[] = []
   if (Array.isArray(rewards)) {
+    // Save existing rewards before deleting (for rollback)
+    const { data: existingRewards } = await owned.serviceClient
+      .from('card_rewards')
+      .select('stamps_required, reward_label, color, sort_order')
+      .eq('loyalty_card_id', params.id)
+      .order('sort_order', { ascending: true })
+
     const { error: delError } = await owned.serviceClient
       .from('card_rewards')
       .delete()
@@ -108,6 +115,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       console.error('[PATCH /api/mobile/cards/[id]] reward delete', delError)
       return NextResponse.json({ error: 'Error al actualizar premios' }, { status: 500 })
     }
+
     if (rewards.length > 0) {
       const rows = rewards.map((r: { stamps_required: number; reward_label: string; color?: string }, i: number) => ({
         loyalty_card_id: params.id,
@@ -122,6 +130,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         .select('id, stamps_required, reward_label, color, sort_order')
       if (insError) {
         console.error('[PATCH /api/mobile/cards/[id]] reward insert', insError)
+        // Best-effort rollback: restore previous rewards
+        if (existingRewards && existingRewards.length > 0) {
+          await owned.serviceClient.from('card_rewards').insert(
+            existingRewards.map((r) => ({ ...r, loyalty_card_id: params.id }))
+          )
+        }
         return NextResponse.json({ error: 'Error al guardar premios' }, { status: 500 })
       }
       persistedRewards = inserted ?? []
@@ -138,7 +152,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     bg_image_url: (cfg?.bg_image_url as string | null) ?? null,
     font: (cfg?.font as string) ?? 'default',
     multi_rewards: (cfg?.multi_rewards as boolean) ?? false,
-    rewards: persistedRewards,
+    ...(Array.isArray(rewards) ? { rewards: persistedRewards } : {}),
   })
 }
 

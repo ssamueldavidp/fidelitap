@@ -39,7 +39,10 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
+          geo_radius_m: number
           id: string
+          lat: number | null
+          lng: number | null
           mp_payer_email: string | null
           mp_preapproval_id: string | null
           name: string
@@ -57,7 +60,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
+          geo_radius_m?: number
           id?: string
+          lat?: number | null
+          lng?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name: string
@@ -75,7 +81,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          geo_radius_m?: number
           id?: string
+          lat?: number | null
+          lng?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name?: string
@@ -90,6 +99,44 @@ export type Database = {
           wompi_customer_id?: string | null
         }
         Relationships: []
+      }
+      card_rewards: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          loyalty_card_id: string
+          reward_label: string
+          sort_order: number
+          stamps_required: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id: string
+          reward_label: string
+          sort_order?: number
+          stamps_required: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          loyalty_card_id?: string
+          reward_label?: string
+          sort_order?: number
+          stamps_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_rewards_loyalty_card_id_fkey"
+            columns: ["loyalty_card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_cards: {
         Row: {
@@ -168,6 +215,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          auth_user_id: string | null
           birthday: string | null
           city: string | null
           created_at: string
@@ -179,6 +227,7 @@ export type Database = {
           phone: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           birthday?: string | null
           city?: string | null
           created_at?: string
@@ -190,6 +239,7 @@ export type Database = {
           phone?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           birthday?: string | null
           city?: string | null
           created_at?: string
@@ -229,6 +279,41 @@ export type Database = {
         }
         Relationships: []
       }
+      device_tokens: {
+        Row: {
+          created_at: string
+          customer_id: string
+          expo_token: string
+          id: string
+          platform: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          expo_token: string
+          id?: string
+          platform: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          expo_token?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_tokens_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_cards: {
         Row: {
           benefit_description: string
@@ -236,8 +321,11 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           design_config: Json
+          expires_at: string | null
           id: string
           is_active: boolean
+          logo_url: string | null
+          max_uses_per_customer: number | null
           name: string
           poster_reward_text: string | null
           push_notify_threshold: number
@@ -251,8 +339,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           design_config?: Json
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          max_uses_per_customer?: number | null
           name: string
           poster_reward_text?: string | null
           push_notify_threshold?: number
@@ -266,8 +357,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           design_config?: Json
+          expires_at?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          max_uses_per_customer?: number | null
           name?: string
           poster_reward_text?: string | null
           push_notify_threshold?: number

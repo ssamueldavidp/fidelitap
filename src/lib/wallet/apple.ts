@@ -17,6 +17,7 @@ interface ApplePassData {
   appUrl: string
   color?: string | null
   logoUrl?: string | null
+  nextRewardLabel?: string | null
 }
 
 function hexToRgb(hex: string): string {
@@ -106,9 +107,9 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
       ],
       auxiliaryFields: [
         {
-          key: 'business',
-          label: 'Negocio',
-          value: data.organizationName,
+          key: 'next_reward',
+          label: 'Próximo premio',
+          value: data.nextRewardLabel ?? data.benefitDescription,
         },
       ],
       backFields: [

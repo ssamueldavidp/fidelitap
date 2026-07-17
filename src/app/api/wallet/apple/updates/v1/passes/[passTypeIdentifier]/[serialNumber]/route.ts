@@ -61,6 +61,16 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
 
   if (!cc.wallet_auth_token) return new NextResponse(null, { status: 500 })
 
+  // Fetch next reward label for multi-level rewards
+  const { data: rewards } = await supabase
+    .from('card_rewards')
+    .select('stamps_required, reward_label')
+    .eq('loyalty_card_id', card.id)
+    .order('stamps_required', { ascending: true })
+
+  const nextReward = (rewards ?? []).find((r) => r.stamps_required > cc.current_stamps)
+  const nextRewardLabel = nextReward?.reward_label ?? null
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.app'
 
   if (!process.env.APPLE_PASS_TYPE_ID || !process.env.APPLE_TEAM_ID) {
@@ -80,6 +90,7 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
       benefitDescription: card.benefit_description,
       uniqueCode: cc.unique_code,
       appUrl,
+      nextRewardLabel,
     })
 
     return new NextResponse(Uint8Array.from(passBuffer), {

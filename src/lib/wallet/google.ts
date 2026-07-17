@@ -237,7 +237,8 @@ export async function getGoogleWalletSaveUrl(data: LoyaltyPassData): Promise<str
 export async function updateGoogleWalletStamps(
   customerCardId: string,
   _loyaltyCardId: string, // reserved — objectId is sufficient for PATCH
-  newStampCount: number
+  newStampCount: number,
+  nextRewardLabel?: string
 ): Promise<void> {
   if (!process.env.GOOGLE_WALLET_ISSUER_ID) return
 
@@ -253,7 +254,7 @@ export async function updateGoogleWalletStamps(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      loyaltyPoints: { label: 'Sellos', balance: { int: newStampCount } },
+      loyaltyPoints: { label: nextRewardLabel ?? 'Sellos', balance: { int: newStampCount } },
     }),
   })
 

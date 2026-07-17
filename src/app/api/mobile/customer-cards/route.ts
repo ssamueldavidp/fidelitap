@@ -17,8 +17,10 @@ export async function GET(req: NextRequest) {
         name,
         benefit_description,
         stamps_required,
+        expires_at,
         design_config,
-        businesses ( name, latitude, longitude, plan )
+        businesses ( name, latitude, longitude, plan ),
+        card_rewards ( stamps_required, reward_label, color, sort_order )
       )
     `)
     .eq('linked_auth_user_id', user.id)

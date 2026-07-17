@@ -8,6 +8,7 @@ import {
   Users,
   ScanLine,
   Image,
+  Megaphone,
   Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { href: '/customers', label: 'Clientes', icon: Users },
   { href: '/scanner', label: 'Escanear', icon: ScanLine },
   { href: '/poster', label: 'Plantilla', icon: Image },
+  { href: '/campaigns', label: 'Campañas', icon: Megaphone },
   { href: '/settings', label: 'Ajustes', icon: Settings },
 ]
 

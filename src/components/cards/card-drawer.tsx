@@ -81,11 +81,11 @@ export function CardDrawer({
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-80 bg-slate-900 border-l border-slate-800 flex flex-col overflow-y-auto">
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-80 bg-card border-l border-border flex flex-col overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-          <h2 className="font-black text-white text-sm truncate">{card.name}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors text-lg leading-none">✕</button>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="font-black text-foreground text-sm truncate">{card.name}</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none">✕</button>
         </div>
 
         <div className="flex-1 flex flex-col gap-4 p-5">
@@ -109,13 +109,13 @@ export function CardDrawer({
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-800 rounded-xl p-3">
-              <p className="text-2xl font-black text-white">{customerCount}</p>
-              <p className="text-xs text-slate-400">Clientes</p>
+            <div className="bg-muted rounded-xl p-3">
+              <p className="text-2xl font-black text-foreground">{customerCount}</p>
+              <p className="text-xs text-muted-foreground">Clientes</p>
             </div>
-            <div className="bg-slate-800 rounded-xl p-3">
-              <p className="text-2xl font-black text-white">{redemptionCount}</p>
-              <p className="text-xs text-slate-400">Canjes</p>
+            <div className="bg-muted rounded-xl p-3">
+              <p className="text-2xl font-black text-foreground">{redemptionCount}</p>
+              <p className="text-xs text-muted-foreground">Canjes</p>
             </div>
           </div>
 
@@ -134,12 +134,12 @@ export function CardDrawer({
           </Link>
 
           {/* Toggle active */}
-          <div className="flex items-center justify-between bg-slate-800 rounded-xl px-4 py-3">
-            <span className="text-sm text-slate-300">Tarjeta activa</span>
+          <div className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
+            <span className="text-sm text-foreground">Tarjeta activa</span>
             <button
               onClick={handleToggle}
               disabled={isPending}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-50 ${isActive ? 'bg-[#00C896]' : 'bg-slate-600'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-50 ${isActive ? 'bg-[#00C896]' : 'bg-muted-foreground/30'}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}
@@ -149,24 +149,24 @@ export function CardDrawer({
 
           {/* Large QR for scanning */}
           {qrDataUrl && (
-            <div className="flex flex-col items-center gap-3 bg-slate-800 rounded-2xl p-5">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider self-start">QR de activación</p>
+            <div className="flex flex-col items-center gap-3 bg-muted rounded-2xl p-5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider self-start">QR de activación</p>
               <div className="bg-white rounded-2xl p-3 shadow-lg">
                 <img src={qrDataUrl} alt="QR de activación" className="w-44 h-44" />
               </div>
-              <p className="text-[10px] text-slate-500 text-center leading-relaxed">
+              <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed">
                 Muestra este QR a tus clientes para que activen su tarjeta
               </p>
             </div>
           )}
 
           {/* Share link */}
-          <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-3">
-            <p className="text-xs text-slate-400">Enlace para clientes</p>
+          <div className="bg-muted rounded-xl p-4 flex flex-col gap-3">
+            <p className="text-xs text-muted-foreground">Enlace para clientes</p>
             <p className="text-xs text-[#00C896] break-all">{shareUrl}</p>
             <button
               onClick={handleCopyLink}
-              className="w-full text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg py-1.5 transition-colors"
+              className="w-full text-xs font-semibold text-foreground/80 hover:text-foreground border border-border hover:border-muted-foreground rounded-lg py-1.5 transition-colors"
             >
               {copied ? '✓ Copiado' : 'Copiar enlace'}
             </button>
@@ -176,13 +176,13 @@ export function CardDrawer({
           {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="text-xs text-red-400 hover:text-red-300 transition-colors py-2 border-t border-slate-800"
+              className="text-xs text-red-400 hover:text-red-300 transition-colors py-2 border-t border-border"
             >
               🗑 Eliminar tarjeta
             </button>
           ) : (
             <div className="border border-red-900 bg-red-950/30 rounded-xl p-4">
-              <p className="text-xs text-slate-300 mb-3 leading-relaxed">
+              <p className="text-xs text-foreground/80 mb-3 leading-relaxed">
                 {customerCount > 0
                   ? `Esta tarjeta tiene ${customerCount} clientes con sellos. Sus datos se conservarán. ¿Confirmar?`
                   : '¿Eliminar esta tarjeta? Esta acción no se puede deshacer.'}
@@ -190,7 +190,7 @@ export function CardDrawer({
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 text-xs border border-slate-700 rounded-lg py-1.5 text-slate-400 hover:text-white transition-colors"
+                  className="flex-1 text-xs border border-border rounded-lg py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cancelar
                 </button>

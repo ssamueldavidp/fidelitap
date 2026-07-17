@@ -65,7 +65,7 @@ export default async function CustomersPage({
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-black text-white mb-6">Clientes</h1>
+      <h1 className="text-2xl font-black text-foreground mb-6">Clientes</h1>
 
       {/* Search + filter */}
       <form className="flex gap-3 mb-6 flex-wrap">
@@ -73,12 +73,12 @@ export default async function CustomersPage({
           name="q"
           defaultValue={searchParams.q}
           placeholder="Buscar por nombre..."
-          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[#00C896] w-56"
+          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] w-56"
         />
         <select
           name="card"
           defaultValue={searchParams.card ?? ''}
-          className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00C896]"
+          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[#00C896]"
         >
           <option value="">Todas las tarjetas</option>
           {loyaltyCards.map((c) => (
@@ -94,7 +94,7 @@ export default async function CustomersPage({
           Buscar
         </button>
         {(searchParams.q || searchParams.card) && (
-          <Link href="/customers" className="text-slate-400 text-sm underline self-center">
+          <Link href="/customers" className="text-muted-foreground text-sm underline self-center">
             Limpiar
           </Link>
         )}
@@ -102,12 +102,12 @@ export default async function CustomersPage({
 
       {/* Table */}
       {customers.length === 0 ? (
-        <p className="text-slate-500 text-sm">No hay clientes aún.</p>
+        <p className="text-muted-foreground text-sm">No hay clientes aún.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-slate-500 border-b border-slate-800">
+              <tr className="text-muted-foreground border-b border-border">
                 <th className="text-left py-3 pr-6 font-medium">Nombre</th>
                 <th className="text-left py-3 pr-6 font-medium">Tarjeta</th>
                 <th className="text-left py-3 pr-6 font-medium">Progreso</th>
@@ -119,34 +119,34 @@ export default async function CustomersPage({
               {customers.map((c) => (
                 <tr
                   key={`${c.customer_id}-${c.loyalty_card_id}`}
-                  className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+                  className="border-b border-border/50 hover:bg-muted/30 transition-colors"
                 >
                   <td className="py-3 pr-6">
                     <Link
                       href={`/customers/${c.customer_id}`}
-                      className="text-white font-medium hover:text-[#00C896] transition-colors"
+                      className="text-foreground font-medium hover:text-[#00C896] transition-colors"
                     >
                       {c.customer_name}
                     </Link>
                   </td>
-                  <td className="py-3 pr-6 text-slate-400">{c.card_name}</td>
+                  <td className="py-3 pr-6 text-muted-foreground">{c.card_name}</td>
                   <td className="py-3 pr-6">
                     <span className="tracking-tight">
                       {Array.from({ length: c.stamps_required }).map((_, i) => (
                         <span
                           key={i}
-                          className={i < c.current_stamps ? 'text-[#00C896]' : 'text-slate-700'}
+                          className={i < c.current_stamps ? 'text-[#00C896]' : 'text-muted-foreground/30'}
                         >
                           ●
                         </span>
                       ))}
                     </span>
-                    <span className="text-slate-500 text-xs ml-2">
+                    <span className="text-muted-foreground text-xs ml-2">
                       {c.current_stamps}/{c.stamps_required}
                     </span>
                   </td>
-                  <td className="py-3 pr-6 text-slate-400">{relativeTime(c.last_visit)}</td>
-                  <td className="py-3 text-slate-400">{c.times_completed}</td>
+                  <td className="py-3 pr-6 text-muted-foreground">{relativeTime(c.last_visit)}</td>
+                  <td className="py-3 text-muted-foreground">{c.times_completed}</td>
                 </tr>
               ))}
             </tbody>

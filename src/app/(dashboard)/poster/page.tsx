@@ -28,8 +28,8 @@ export default async function PosterPage() {
   if (!cards || cards.length === 0) {
     return (
       <div className="p-8 max-w-lg">
-        <h1 className="text-2xl font-black text-white mb-1">Plantilla / Cartel</h1>
-        <p className="text-slate-500 text-sm">
+        <h1 className="text-2xl font-black text-foreground mb-1">Plantilla / Cartel</h1>
+        <p className="text-muted-foreground text-sm">
           Primero crea una tarjeta de sellos para poder generar tu cartel.
         </p>
       </div>
@@ -52,8 +52,8 @@ export default async function PosterPage() {
 
   return (
     <div className="p-8 max-w-lg">
-      <h1 className="text-2xl font-black text-white mb-1">Plantilla / Cartel</h1>
-      <p className="text-slate-500 text-sm mb-8">
+      <h1 className="text-2xl font-black text-foreground mb-1">Plantilla / Cartel</h1>
+      <p className="text-muted-foreground text-sm mb-8">
         Personaliza y descarga el cartel para imprimir en tu negocio.
       </p>
 

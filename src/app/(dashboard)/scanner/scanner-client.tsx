@@ -44,6 +44,7 @@ export function ScannerClient() {
   const [isPending, startTransition] = useTransition()
   const [claimDone, setClaimDone] = useState(false)
   const [isClaiming, startClaimTransition] = useTransition()
+  const [claimErrorMsg, setClaimErrorMsg] = useState('')
 
   const scannerRef = useRef<import('html5-qrcode').Html5Qrcode | null>(null)
   const processedRef = useRef(false)
@@ -116,6 +117,7 @@ export function ScannerClient() {
   function handleReset() {
     setSuccessData(null)
     setClaimDone(false)
+    setClaimErrorMsg('')
     setManualCode('')
     processedRef.current = false
     setCameraState('idle')
@@ -123,9 +125,12 @@ export function ScannerClient() {
 
   function handleClaim() {
     if (!successData) return
+    setClaimErrorMsg('')
     startClaimTransition(async () => {
       const res: ClaimResult = await claimRewardAction(successData.customerCardId)
-      if (!('error' in res)) {
+      if ('error' in res) {
+        setClaimErrorMsg(res.error)
+      } else {
         setClaimDone(true)
       }
     })
@@ -158,6 +163,10 @@ export function ScannerClient() {
             >
               {isClaiming ? 'Registrando...' : 'Reclamar premio'}
             </button>
+
+            {claimErrorMsg && (
+              <p className="relative z-10 text-sm text-destructive text-center">{claimErrorMsg}</p>
+            )}
 
             <button
               type="button"

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { generateApplePass } from '@/lib/wallet/apple'
 
@@ -55,8 +56,13 @@ export async function GET(
   }
 
   const cc = ccRaw as CustomerCardRow | null
+  const storedToken = cc?.wallet_auth_token ?? ''
 
-  if (!cc || cc.wallet_auth_token !== token) {
+  if (
+    !cc ||
+    storedToken.length !== token.length ||
+    !timingSafeEqual(Buffer.from(storedToken), Buffer.from(token))
+  ) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

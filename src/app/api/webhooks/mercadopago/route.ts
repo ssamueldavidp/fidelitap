@@ -81,6 +81,19 @@ async function handlePayment(
   const planSlug = resolvePlanFromExtRef(extRef, biz.plan)
 
   if (payment.status === 'approved') {
+    // MercadoPago retries webhook deliveries — guard against re-processing the same payment twice
+    const { data: existingEvent } = await serviceClient
+      .from('payment_events')
+      .select('id')
+      .eq('mp_payment_id', paymentId)
+      .eq('status', 'approved')
+      .maybeSingle()
+
+    if (existingEvent) {
+      console.log('[mp-webhook] Payment already processed, skipping:', paymentId)
+      return
+    }
+
     // next_billing_date = 30 days from now (for tracking renewal)
     const nextBilling = new Date()
     nextBilling.setDate(nextBilling.getDate() + 30)
@@ -98,6 +111,7 @@ async function handlePayment(
 
     await serviceClient.from('payment_events').insert({
       business_id:       biz.id,
+      mp_payment_id:     paymentId,
       mp_preapproval_id: preapprovalId ?? null,
       event_type:        'payment_success',
       plan_slug:         planSlug,

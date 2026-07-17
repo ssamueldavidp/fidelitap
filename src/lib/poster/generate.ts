@@ -8,10 +8,10 @@ import { VerticalPosterTemplate, HorizontalPosterTemplate, PosterData } from './
 
 // Font buffers — read once at module load
 const interRegular = fs.readFileSync(
-  path.join(process.cwd(), 'src/lib/poster/fonts/Inter-Regular.ttf')
+  path.join(process.cwd(), 'src/lib/poster/fonts/Inter-Regular.woff')
 )
 const interBold = fs.readFileSync(
-  path.join(process.cwd(), 'src/lib/poster/fonts/Inter-Bold.ttf')
+  path.join(process.cwd(), 'src/lib/poster/fonts/Inter-Bold.woff')
 )
 
 const FONTS = [

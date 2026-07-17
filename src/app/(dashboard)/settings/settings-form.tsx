@@ -35,11 +35,11 @@ export function SettingsForm({ cooldownSeconds }: { cooldownSeconds: number }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-sm">
       <div>
-        <label className="text-xs text-slate-400 mb-2 block">Cooldown entre sellos</label>
+        <label className="text-xs text-muted-foreground mb-2 block">Cooldown entre sellos</label>
         <select
           value={value}
           onChange={(e) => setValue(Number(e.target.value))}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00C896]"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[#00C896]"
         >
           {COOLDOWN_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -47,7 +47,7 @@ export function SettingsForm({ cooldownSeconds }: { cooldownSeconds: number }) {
             </option>
           ))}
         </select>
-        <p className="text-xs text-slate-600 mt-1">
+        <p className="text-xs text-muted-foreground/60 mt-1">
           Tiempo mínimo entre dos sellos para el mismo cliente.
         </p>
       </div>

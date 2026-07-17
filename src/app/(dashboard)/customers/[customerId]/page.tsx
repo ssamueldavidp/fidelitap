@@ -73,12 +73,12 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="p-8 max-w-2xl">
-      <Link href="/customers" className="text-slate-400 text-sm hover:text-white mb-6 inline-block">
+      <Link href="/customers" className="text-muted-foreground text-sm hover:text-foreground mb-6 inline-block">
         ← Volver a clientes
       </Link>
 
-      <h1 className="text-2xl font-black text-white mb-1">{customer.name}</h1>
-      {customer.email && <p className="text-slate-500 text-sm mb-6">{customer.email}</p>}
+      <h1 className="text-2xl font-black text-foreground mb-1">{customer.name}</h1>
+      {customer.email && <p className="text-muted-foreground text-sm mb-6">{customer.email}</p>}
 
       {/* Card summaries */}
       <div className="flex flex-col gap-3 mb-8">
@@ -86,24 +86,24 @@ export default async function CustomerDetailPage({
           const lc = cardLookup.get(cc.loyalty_card_id)
           if (!lc) return null
           return (
-            <div key={cc.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <p className="text-xs text-slate-500 mb-1">{lc.name}</p>
+            <div key={cc.id} className="bg-card border border-border rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-1">{lc.name}</p>
               <div className="flex items-center gap-3">
                 <span className="tracking-tight">
                   {Array.from({ length: lc.stamps_required }).map((_, i) => (
                     <span
                       key={i}
-                      className={i < cc.current_stamps ? 'text-[#00C896]' : 'text-slate-700'}
+                      className={i < cc.current_stamps ? 'text-[#00C896]' : 'text-muted-foreground/30'}
                     >
                       ●
                     </span>
                   ))}
                 </span>
-                <span className="text-slate-400 text-sm">
+                <span className="text-muted-foreground text-sm">
                   {cc.current_stamps}/{lc.stamps_required}
                 </span>
-                <span className="text-slate-600 text-xs">·</span>
-                <span className="text-slate-400 text-xs">{cc.times_completed} completadas</span>
+                <span className="text-muted-foreground/60 text-xs">·</span>
+                <span className="text-muted-foreground text-xs">{cc.times_completed} completadas</span>
               </div>
             </div>
           )
@@ -111,29 +111,29 @@ export default async function CustomerDetailPage({
       </div>
 
       {/* Stamp history */}
-      <h2 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">
+      <h2 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">
         Historial de sellos
       </h2>
       {!stampEvents || stampEvents.length === 0 ? (
-        <p className="text-slate-600 text-sm">Sin sellos registrados.</p>
+        <p className="text-muted-foreground/60 text-sm">Sin sellos registrados.</p>
       ) : (
         <div className="flex flex-col">
           {stampEvents.map((se) => {
             const d = new Date(se.created_at)
             return (
-              <div key={se.id} className="flex items-center gap-4 py-3 border-b border-slate-800/50">
+              <div key={se.id} className="flex items-center gap-4 py-3 border-b border-border/50">
                 <div className="w-2 h-2 rounded-full bg-[#00C896] shrink-0" />
-                <span className="text-white text-sm">
+                <span className="text-foreground text-sm">
                   {d.toLocaleDateString('es-CO', {
                     day: '2-digit',
                     month: 'short',
                     year: 'numeric',
                   })}
                 </span>
-                <span className="text-slate-500 text-sm">
+                <span className="text-muted-foreground text-sm">
                   {d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <span className="text-slate-600 text-xs ml-auto">Cajero</span>
+                <span className="text-muted-foreground/60 text-xs ml-auto">Cajero</span>
               </div>
             )
           })}

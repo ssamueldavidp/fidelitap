@@ -139,6 +139,13 @@ class BusinessSettings {
   final double? latitude;
   final double? longitude;
   final int stampCooldownSeconds;
+  final String plan;
+  final bool geofenceEnabled;
+  final int geofenceRadiusM;
+  final String geofenceMessage;
+  final int geofenceCooldownH;
+  final int quietHoursStart;
+  final int quietHoursEnd;
 
   const BusinessSettings({
     required this.name,
@@ -146,6 +153,13 @@ class BusinessSettings {
     this.latitude,
     this.longitude,
     required this.stampCooldownSeconds,
+    required this.plan,
+    required this.geofenceEnabled,
+    required this.geofenceRadiusM,
+    required this.geofenceMessage,
+    required this.geofenceCooldownH,
+    required this.quietHoursStart,
+    required this.quietHoursEnd,
   });
 
   factory BusinessSettings.fromJson(Map<String, dynamic> j) => BusinessSettings(
@@ -154,6 +168,13 @@ class BusinessSettings {
         latitude: (j['latitude'] as num?)?.toDouble(),
         longitude: (j['longitude'] as num?)?.toDouble(),
         stampCooldownSeconds: j['stamp_cooldown_seconds'] as int? ?? 0,
+        plan: j['plan'] as String? ?? 'free',
+        geofenceEnabled: j['geofence_enabled'] as bool? ?? false,
+        geofenceRadiusM: j['geofence_radius_m'] as int? ?? 300,
+        geofenceMessage: j['geofence_message'] as String? ?? '',
+        geofenceCooldownH: j['geofence_cooldown_h'] as int? ?? 24,
+        quietHoursStart: j['quiet_hours_start'] as int? ?? 22,
+        quietHoursEnd: j['quiet_hours_end'] as int? ?? 6,
       );
 }
 

@@ -6,6 +6,7 @@ import { SettingsForm } from './settings-form'
 import { AccountForm } from './account-form'
 import { SubscriptionTab } from '@/components/dashboard/subscription-tab'
 import { LocationForm } from '@/components/dashboard/location-form'
+import { GeofenceForm } from './geofence-form'
 import { getPlanLimits, getUsageState, getUsagePct } from '@/lib/plan-limits'
 
 type Tab = 'cuenta' | 'suscripcion' | 'uso' | 'scanner'
@@ -22,7 +23,7 @@ export default async function SettingsPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: business } = await (supabase as any)
     .from('businesses')
-    .select('id, name, plan, stamp_cooldown_seconds, lat, lng, geo_radius_m, address, latitude, longitude')
+    .select('id, name, plan, stamp_cooldown_seconds, lat, lng, geo_radius_m, address, latitude, longitude, timezone, geofence_enabled, geofence_radius_m, geofence_message, geofence_cooldown_h, quiet_hours_start, quiet_hours_end')
     .eq('owner_id', user.id)
     .single() as { data: Record<string, any> | null }
 
@@ -123,6 +124,23 @@ export default async function SettingsPage({
                 initialLat={(business as any)?.lat ?? null}
                 initialLng={(business as any)?.lng ?? null}
                 initialRadius={(business as any)?.geo_radius_m ?? 200}
+              />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xs font-bold text-muted-foreground mb-4 uppercase tracking-wider">
+              Geofencing — Push automático
+            </h2>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <GeofenceForm
+                plan={business?.plan ?? 'free'}
+                enabled={business?.geofence_enabled ?? false}
+                radiusM={business?.geofence_radius_m ?? 300}
+                message={business?.geofence_message ?? null}
+                cooldownH={business?.geofence_cooldown_h ?? 24}
+                quietStart={business?.quiet_hours_start ?? 22}
+                quietEnd={business?.quiet_hours_end ?? 6}
+                timezone={business?.timezone ?? 'America/Bogota'}
               />
             </div>
           </div>

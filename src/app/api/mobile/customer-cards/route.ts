@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         stamps_required,
         expires_at,
         design_config,
-        businesses ( name, latitude, longitude, plan ),
+        businesses ( id, name, latitude, longitude, plan, geofence_enabled, geofence_radius_m ),
         card_rewards ( stamps_required, reward_label, color, sort_order )
       )
     `)

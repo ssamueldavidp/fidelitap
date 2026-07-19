@@ -27,7 +27,6 @@ export async function verifyOtpAction(email: string, token: string) {
   if (userId) {
     await supabase
       .from('customers')
-      // @ts-expect-error — auth_user_id added in migration A1; regenerate types to remove this
       .update({ auth_user_id: userId })
       .eq('email', email)
       .is('auth_user_id', null);

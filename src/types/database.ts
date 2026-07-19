@@ -40,6 +40,10 @@ export type Database = {
           created_at: string
           email: string
           geo_radius_m: number
+          geofence_cooldown_h: number
+          geofence_enabled: boolean
+          geofence_message: string | null
+          geofence_radius_m: number
           id: string
           lat: number | null
           lng: number | null
@@ -50,9 +54,12 @@ export type Database = {
           plan: string
           poster_bg_color: string
           poster_bg_image_url: string | null
+          quiet_hours_end: number
+          quiet_hours_start: number
           stamp_cooldown_seconds: number
           subscription_end_date: string | null
           subscription_status: string
+          timezone: string
           updated_at: string
           wompi_customer_id: string | null
         }
@@ -61,6 +68,10 @@ export type Database = {
           created_at?: string
           email: string
           geo_radius_m?: number
+          geofence_cooldown_h?: number
+          geofence_enabled?: boolean
+          geofence_message?: string | null
+          geofence_radius_m?: number
           id?: string
           lat?: number | null
           lng?: number | null
@@ -71,9 +82,12 @@ export type Database = {
           plan?: string
           poster_bg_color?: string
           poster_bg_image_url?: string | null
+          quiet_hours_end?: number
+          quiet_hours_start?: number
           stamp_cooldown_seconds?: number
           subscription_end_date?: string | null
           subscription_status?: string
+          timezone?: string
           updated_at?: string
           wompi_customer_id?: string | null
         }
@@ -82,6 +96,10 @@ export type Database = {
           created_at?: string
           email?: string
           geo_radius_m?: number
+          geofence_cooldown_h?: number
+          geofence_enabled?: boolean
+          geofence_message?: string | null
+          geofence_radius_m?: number
           id?: string
           lat?: number | null
           lng?: number | null
@@ -92,9 +110,12 @@ export type Database = {
           plan?: string
           poster_bg_color?: string
           poster_bg_image_url?: string | null
+          quiet_hours_end?: number
+          quiet_hours_start?: number
           stamp_cooldown_seconds?: number
           subscription_end_date?: string | null
           subscription_status?: string
+          timezone?: string
           updated_at?: string
           wompi_customer_id?: string | null
         }
@@ -148,6 +169,7 @@ export type Database = {
           id: string
           is_complete: boolean
           last_stamp_at: string | null
+          linked_auth_user_id: string | null
           loyalty_card_id: string
           near_completion_notified_at: string | null
           reengagement_sent_at: string | null
@@ -167,6 +189,7 @@ export type Database = {
           id?: string
           is_complete?: boolean
           last_stamp_at?: string | null
+          linked_auth_user_id?: string | null
           loyalty_card_id: string
           near_completion_notified_at?: string | null
           reengagement_sent_at?: string | null
@@ -186,6 +209,7 @@ export type Database = {
           id?: string
           is_complete?: boolean
           last_stamp_at?: string | null
+          linked_auth_user_id?: string | null
           loyalty_card_id?: string
           near_completion_notified_at?: string | null
           reengagement_sent_at?: string | null
@@ -282,34 +306,62 @@ export type Database = {
       device_tokens: {
         Row: {
           created_at: string
-          customer_id: string
-          expo_token: string
+          fcm_token: string
           id: string
           platform: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          customer_id: string
-          expo_token: string
+          fcm_token: string
           id?: string
           platform: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          customer_id?: string
-          expo_token?: string
+          fcm_token?: string
           id?: string
           platform?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      geofence_notifications: {
+        Row: {
+          business_id: string
+          customer_card_id: string
+          id: string
+          sent_at: string
+        }
+        Insert: {
+          business_id: string
+          customer_card_id: string
+          id?: string
+          sent_at?: string
+        }
+        Update: {
+          business_id?: string
+          customer_card_id?: string
+          id?: string
+          sent_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "device_tokens_customer_id_fkey"
-            columns: ["customer_id"]
+            foreignKeyName: "geofence_notifications_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "customers"
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofence_notifications_customer_card_id_fkey"
+            columns: ["customer_card_id"]
+            isOneToOne: false
+            referencedRelation: "customer_cards"
             referencedColumns: ["id"]
           },
         ]
@@ -782,6 +834,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // Helpers para tablas individuales
 export type Business = Database['public']['Tables']['businesses']['Row']

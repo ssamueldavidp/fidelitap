@@ -1,8 +1,21 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState, useFormStatus } from 'react-dom'
 import { saveGeofenceAction } from './actions'
 import { Lock, Radio } from 'lucide-react'
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="self-start bg-primary text-primary-foreground text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
+    >
+      {pending ? 'Guardando…' : 'Guardar geofencing'}
+    </button>
+  )
+}
 
 interface Props {
   plan: string
@@ -38,7 +51,7 @@ const COOLDOWNS = [
 const initial = { error: undefined, success: false }
 
 export function GeofenceForm({ plan, enabled, radiusM, message, cooldownH, quietStart, quietEnd, timezone }: Props) {
-  const [state, formAction, isPending] = useActionState(saveGeofenceAction, initial)
+  const [state, formAction] = useFormState(saveGeofenceAction, initial)
   const isPro = ['pro', 'premium'].includes(plan)
 
   if (!isPro) {
@@ -157,13 +170,7 @@ export function GeofenceForm({ plan, enabled, radiusM, message, cooldownH, quiet
         <p className="text-sm text-green-400 bg-green-400/10 px-4 py-2 rounded-xl">Geofencing guardado.</p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start bg-primary text-primary-foreground text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
-      >
-        {isPending ? 'Guardando…' : 'Guardar geofencing'}
-      </button>
+      <SubmitButton />
     </form>
   )
 }

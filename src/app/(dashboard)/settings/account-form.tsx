@@ -1,8 +1,23 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
+import { useFormState, useFormStatus } from 'react-dom'
 import { saveAccountAction } from './actions'
 import { MapPin, Building2, Check, AlertCircle, Loader2 } from 'lucide-react'
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex items-center justify-center gap-2 bg-primary text-black font-bold rounded-xl py-2.5 text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
+    >
+      {pending ? <Loader2 size={14} className="animate-spin" /> : null}
+      {pending ? 'Guardando...' : 'Guardar cambios'}
+    </button>
+  )
+}
 
 interface AccountFormProps {
   name: string
@@ -14,7 +29,7 @@ interface AccountFormProps {
 const initial = { error: undefined, success: false }
 
 export function AccountForm({ name, address, latitude, longitude }: AccountFormProps) {
-  const [state, formAction, isPending] = useActionState(saveAccountAction, initial)
+  const [state, formAction] = useFormState(saveAccountAction, initial)
   const [lat, setLat] = useState(latitude?.toString() ?? '')
   const [lng, setLng] = useState(longitude?.toString() ?? '')
   const [detecting, setDetecting] = useState(false)
@@ -129,14 +144,7 @@ export function AccountForm({ name, address, latitude, longitude }: AccountFormP
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="flex items-center justify-center gap-2 bg-primary text-black font-bold rounded-xl py-2.5 text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
-      >
-        {isPending ? <Loader2 size={14} className="animate-spin" /> : null}
-        {isPending ? 'Guardando...' : 'Guardar cambios'}
-      </button>
+      <SubmitButton />
     </form>
   )
 }

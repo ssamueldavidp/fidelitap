@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "fidelitap-placeholder",
-    "storage_bucket": "fidelitap-placeholder.appspot.com"
+    "project_number": "826681619260",
+    "project_id": "fidelitap-prod",
+    "storage_bucket": "fidelitap-prod.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:826681619260:android:d696354b0de2230a1ba439",
         "android_client_info": {
           "package_name": "co.fidelitap.fidelitapMobile"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REPLACE_WITH_REAL_API_KEY"
+          "current_key": "AIzaSyBKQAujaMJgnQ6Aij_2UAm84CfHgqjOE0I"
         }
       ],
       "services": {

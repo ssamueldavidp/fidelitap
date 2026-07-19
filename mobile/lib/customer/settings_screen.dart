@@ -24,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _loading = true);
     final prefs = await SharedPreferences.getInstance();
     final disabledList = prefs.getStringList('disabled_geofences') ?? [];
-    final businesses = await GeofenceRepository().fetchProPlusBusinessesWithLocation();
+    final businesses = await GeofenceRepository().fetchEligibleBusinesses();
     setState(() {
       _businesses = businesses;
       _disabled = disabledList.toSet();

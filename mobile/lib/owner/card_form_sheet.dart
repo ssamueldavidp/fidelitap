@@ -446,7 +446,7 @@ class _CardFormSheetState extends State<CardFormSheet>
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: const Color(0xFF00C896),
+              activeThumbColor: const Color(0xFF00C896),
             ),
           ],
         ),

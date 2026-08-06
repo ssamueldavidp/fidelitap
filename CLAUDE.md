@@ -48,6 +48,7 @@ Todas las credenciales están en `.env.local` y NUNCA se commitean. Variables cl
 | `RESEND_API_KEY` | Resend para emails |
 | `APPLE_PASS_*` | Certificados Apple Wallet |
 | `GOOGLE_SERVICE_ACCOUNT_*` | Credenciales Google Wallet |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Service account Firebase Admin para envío FCM (geofencing + push móvil) |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web Push (suscripciones, campañas, recordatorios) |
 | `CRON_SECRET` | Autoriza los endpoints de cron de push (`/api/push/campaigns/dispatch`, `/api/push/jobs/reengagement`) |
 
@@ -170,6 +171,15 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 - [x] Sección de suscripción en settings
 - [x] Web Push Notifications (Pro/Premium): opt-in en success-screen de activación, aviso de progreso de sellos, recordatorio de re-engagement a 14 días (cron), panel de campañas manuales en dashboard (envío inmediato/programado/cancelable)
 - [x] Páginas legales `/privacy` y `/terms` (borrador — requieren revisión legal antes de producción)
+- [x] **App móvil Flutter** — dueño y cliente en una sola app
+  - Auth Supabase anónimo (cliente) + email/password (dueño)
+  - Dueño: dashboard, crear/editar tarjetas con logo upload, multi-nivel de premios, scanner QR
+  - Cliente: lista de tarjetas con progreso de sellos (multi-nivel), botón Agregar a Wallet
+  - Tarjetas avanzadas: `card_rewards` (multi-nivel), `logo_url`, `expires_at`, `max_uses_per_customer`, preview en vivo
+  - Push FCM (Firebase): registro de token, notificaciones locales
+  - Geofencing (Pro+): notificación FCM cuando el cliente entra al radio del negocio; dueño configura radio, mensaje y horario silencioso desde la app
+  - Wallet live updates (Basic+): APNs push silencioso + Google Wallet PATCH en cada sello; gate de plan (free no recibe updates)
+  - APK debug disponible: `mobile/build/app/outputs/flutter-apk/app-debug.apk`
 
 ---
 

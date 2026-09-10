@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
+import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
 
 const schema = z.object({
   name:            z.string().min(2, 'Mínimo 2 caracteres').max(80).trim(),
@@ -93,7 +94,37 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
     }
   }
 
-  // 3. Create new card
+  // 3. Enforce maxCustomers plan limit — count distinct customers already
+  // linked to any of this business's cards (mirrors plan-usage.tsx's query)
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('plan')
+    .eq('id', business_id)
+    .single()
+
+  if (business) {
+    const { data: bizCards } = await supabase
+      .from('loyalty_cards')
+      .select('id')
+      .eq('business_id', business_id)
+      .is('deleted_at', null)
+
+    const bizCardIds = (bizCards ?? []).map((c) => c.id)
+    const { data: customerRows } = bizCardIds.length > 0
+      ? await supabase
+          .from('customer_cards')
+          .select('customer_id')
+          .in('loyalty_card_id', bizCardIds)
+      : { data: [] }
+
+    const customerCount = new Set((customerRows ?? []).map((r) => r.customer_id)).size
+    const limits = getPlanLimits(business.plan)
+    if (isAtLimit(customerCount, limits.maxCustomers)) {
+      return { error: 'Este negocio alcanzó el límite de clientes de su plan. Contáctalo directamente para más información.' }
+    }
+  }
+
+  // 4. Create new card
   const newId      = crypto.randomUUID()
   const unique_code = generateUniqueCode(newId, business_id)
 

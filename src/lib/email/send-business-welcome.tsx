@@ -1,5 +1,5 @@
 import { render } from '@react-email/render'
-import { resend, FROM } from './client'
+import { getResend, FROM } from './client'
 import { BusinessWelcomeEmail } from './templates/business-welcome'
 
 export async function sendBusinessWelcome(params: {
@@ -11,7 +11,7 @@ export async function sendBusinessWelcome(params: {
     const html = await render(
       <BusinessWelcomeEmail businessName={params.businessName} appUrl={appUrl} />
     )
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM,
       to: params.to,
       subject: `Bienvenido a FideliTap, ${params.businessName}`,

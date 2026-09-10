@@ -1,4 +1,8 @@
 -- Tabla para tokens de dispositivo (reemplaza push_subscriptions VAPID)
+-- Reemplaza la tabla creada en 20260629120000_mobile_app_foundation.sql (esquema fcm_token/user_id)
+-- con el modelo expo_token/customer_id de esta iteración.
+drop table if exists public.device_tokens cascade;
+
 create table public.device_tokens (
   id           uuid primary key default gen_random_uuid(),
   customer_id  uuid not null references public.customers(id) on delete cascade,

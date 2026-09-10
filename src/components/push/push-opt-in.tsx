@@ -1,4 +1,5 @@
-// DEPRECATED: Web Push VAPID opt-in — replaced by native FCM via @capacitor/push-notifications
+// Web Push (VAPID) opt-in for the public /c/[slug] activation flow.
+// The Flutter app (mobile/) uses its own native FCM push, unrelated to this.
 'use client'
 
 import { useEffect, useState } from 'react'

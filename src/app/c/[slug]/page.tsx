@@ -29,7 +29,6 @@ export default async function CardActivationPage({
     .single()
 
   const design = card.design_config as unknown as CardDesignConfig
-  const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'}/c/${params.slug}`
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4 py-12">
@@ -63,7 +62,6 @@ export default async function CardActivationPage({
         <ActivateForm
           loyaltyCardId={card.id}
           businessId={card.business_id}
-          shareUrl={shareUrl}
           businessPlan={business?.plan ?? 'free'}
           businessSubscriptionStatus={business?.subscription_status ?? 'canceled'}
         />

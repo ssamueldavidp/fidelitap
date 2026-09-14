@@ -8,7 +8,6 @@ import { SuccessScreen } from './success-screen'
 interface ActivateFormProps {
   loyaltyCardId: string
   businessId:   string
-  shareUrl:     string
   businessPlan: string
   businessSubscriptionStatus: string
 }
@@ -17,9 +16,10 @@ type CardResult = {
   customerCardId:  string
   walletAuthToken: string
   alreadyHadCard:  boolean
+  uniqueCode:      string
 }
 
-export function ActivateForm({ loyaltyCardId, businessId, shareUrl, businessPlan, businessSubscriptionStatus }: ActivateFormProps) {
+export function ActivateForm({ loyaltyCardId, businessId, businessPlan, businessSubscriptionStatus }: ActivateFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error,     setError]        = useState<string | null>(null)
   const [result,    setResult]       = useState<CardResult | null>(null)
@@ -27,7 +27,7 @@ export function ActivateForm({ loyaltyCardId, businessId, shareUrl, businessPlan
   const [recoverPending, startRecoverTransition] = useTransition()
   const [recoverError,   setRecoverError]        = useState<string | null>(null)
 
-  if (result) return <SuccessScreen {...result} shareUrl={shareUrl} businessPlan={businessPlan} businessSubscriptionStatus={businessSubscriptionStatus} />
+  if (result) return <SuccessScreen {...result} businessPlan={businessPlan} businessSubscriptionStatus={businessSubscriptionStatus} />
 
   function handleActivate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()

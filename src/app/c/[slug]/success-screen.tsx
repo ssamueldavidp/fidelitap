@@ -9,7 +9,7 @@ interface SuccessScreenProps {
   customerCardId: string
   walletAuthToken: string
   alreadyHadCard: boolean
-  shareUrl: string
+  uniqueCode: string
   businessPlan: string
   businessSubscriptionStatus: string
 }
@@ -18,7 +18,7 @@ export function SuccessScreen({
   customerCardId,
   walletAuthToken,
   alreadyHadCard,
-  shareUrl,
+  uniqueCode,
   businessPlan,
   businessSubscriptionStatus,
 }: SuccessScreenProps) {
@@ -27,12 +27,16 @@ export function SuccessScreen({
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
 
   useEffect(() => {
-    QRCode.toDataURL(shareUrl, {
+    // Must match what the scanner passes to addStampAction — the card's
+    // unique_code, not a URL. (Was encoding the business's public /c/[slug]
+    // activation link, which the scanner's exact unique_code lookup would
+    // never match — every "scan this at the register" attempt would fail.)
+    QRCode.toDataURL(uniqueCode, {
       width: 240,
       margin: 2,
       color: { dark: '#111827', light: '#ffffff' },
     }).then(setQrDataUrl)
-  }, [shareUrl])
+  }, [uniqueCode])
 
   return (
     <div className="flex flex-col gap-5 text-center">

@@ -23,7 +23,7 @@ const recoverSchema = z.object({
 
 export type ActivateResult =
   | { error: string }
-  | { customerCardId: string; walletAuthToken: string; alreadyHadCard: boolean }
+  | { customerCardId: string; walletAuthToken: string; alreadyHadCard: boolean; uniqueCode: string }
 
 export async function activateCardAction(formData: FormData): Promise<ActivateResult> {
   const parsed = schema.safeParse({
@@ -81,7 +81,7 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
   // 2. Check existing card (anti-fraud + recovery)
   const { data: existing } = await supabase
     .from('customer_cards')
-    .select('id, wallet_auth_token')
+    .select('id, wallet_auth_token, unique_code')
     .eq('customer_id', customer.id)
     .eq('loyalty_card_id', loyalty_card_id)
     .maybeSingle()
@@ -91,6 +91,7 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
       customerCardId:  existing.id,
       walletAuthToken: existing.wallet_auth_token!,
       alreadyHadCard:  true,
+      uniqueCode:      existing.unique_code,
     }
   }
 
@@ -138,7 +139,7 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
       wallet_pass_serial: crypto.randomUUID(),
       wallet_auth_token:  crypto.randomUUID(),
     })
-    .select('id, wallet_auth_token')
+    .select('id, wallet_auth_token, unique_code')
     .single()
 
   if (cardErr || !newCard) return { error: 'Error al activar la tarjeta. Intenta de nuevo.' }
@@ -158,6 +159,7 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
     customerCardId:  newCard.id,
     walletAuthToken: newCard.wallet_auth_token!,
     alreadyHadCard:  false,
+    uniqueCode:      newCard.unique_code,
   }
 }
 
@@ -184,7 +186,7 @@ export async function recoverCardAction(formData: FormData): Promise<ActivateRes
 
   const { data: card } = await supabase
     .from('customer_cards')
-    .select('id, wallet_auth_token')
+    .select('id, wallet_auth_token, unique_code')
     .eq('customer_id', customer.id)
     .eq('loyalty_card_id', loyalty_card_id)
     .maybeSingle()
@@ -197,5 +199,6 @@ export async function recoverCardAction(formData: FormData): Promise<ActivateRes
     customerCardId:  card.id,
     walletAuthToken: card.wallet_auth_token!,
     alreadyHadCard:  true,
+    uniqueCode:      card.unique_code,
   }
 }

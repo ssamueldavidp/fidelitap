@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/supabase_client.dart';
 import '../core/auth_error.dart';
+import 'activate_card_screen.dart';
+
+/// A business's activation QR encodes {APP_URL}/c/{slug} (see
+/// src/components/cards/card-drawer.tsx). A customer's own card QR encodes
+/// their raw unique_code (a long hex string, no slashes). Scanning either
+/// one should work from this same screen — this tells them apart.
+String? _extractBusinessSlug(String scanned) {
+  final match = RegExp(r'/c/([^/?#]+)').firstMatch(scanned);
+  return match?.group(1);
+}
 
 class ClaimCardScreen extends StatefulWidget {
   const ClaimCardScreen({super.key});
@@ -18,6 +28,19 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
 
   Future<void> _claim(String code) async {
     if (code.trim().isEmpty) return;
+
+    final slug = _extractBusinessSlug(code.trim());
+    if (slug != null) {
+      setState(() { _cameraActive = false; });
+      if (mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ActivateCardScreen(slug: slug)),
+        );
+      }
+      if (mounted) setState(() => _cameraActive = true);
+      return;
+    }
+
     setState(() { _loading = true; _error = null; _cameraActive = false; });
     try {
       if (supabase.auth.currentUser == null) {
@@ -51,8 +74,11 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          const Text('Escanea el código QR de tu tarjeta',
+          const Text('Escanea el QR del negocio o de tu tarjeta',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          const Text('Nuevo cliente: escanea el QR del negocio para activar tu tarjeta.\nYa tienes tarjeta: escanea o ingresa tu código.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
           const SizedBox(height: 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(16),

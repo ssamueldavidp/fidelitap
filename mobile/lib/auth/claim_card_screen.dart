@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/supabase_client.dart';
+import '../core/auth_error.dart';
 
 class ClaimCardScreen extends StatefulWidget {
   const ClaimCardScreen({super.key});
@@ -35,7 +36,7 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
       setState(() {
         _error = e.toString().contains('No autenticado')
             ? 'Error de sesión, intenta de nuevo'
-            : 'No se pudo vincular la tarjeta';
+            : friendlyAuthError(e);
         _cameraActive = true;
       });
     } finally {

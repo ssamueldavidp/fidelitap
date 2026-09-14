@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/supabase_client.dart';
+import '../core/auth_error.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (mounted) Navigator.of(context).pushReplacementNamed('/');
     } on Exception catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _error = friendlyAuthError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

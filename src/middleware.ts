@@ -41,6 +41,26 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
+
+  // Dev-only CORS for the Flutter mobile app's web preview (flutter build web
+  // served from a different localhost port has no native-app exemption from
+  // browser CORS). Never applies in production or to non-localhost origins.
+  if (process.env.NODE_ENV !== 'production' && pathname.startsWith('/api/mobile/')) {
+    const origin = request.headers.get('origin')
+    const isLocalOrigin = origin && /^https?:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2)(:\d+)?$/.test(origin)
+    if (request.method === 'OPTIONS') {
+      const preflight = new NextResponse(null, { status: 204 })
+      if (isLocalOrigin) {
+        preflight.headers.set('Access-Control-Allow-Origin', origin)
+        preflight.headers.set('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
+        preflight.headers.set('Access-Control-Allow-Headers', 'Authorization,Content-Type')
+      }
+      return preflight
+    }
+    if (isLocalOrigin) {
+      supabaseResponse.headers.set('Access-Control-Allow-Origin', origin)
+    }
+  }
   const isProtected = PROTECTED_BUSINESS_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
   // Redirigir a login si intenta acceder a ruta protegida sin sesión

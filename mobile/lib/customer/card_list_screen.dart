@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
 import '../core/supabase_client.dart';
 import '../core/notification_service.dart';
-import 'widgets/loyalty_card_widget.dart';
+import '../shared/wallet_preview_card.dart';
 
 class CardListScreen extends StatefulWidget {
   const CardListScreen({super.key});
@@ -217,40 +217,62 @@ class _CardListScreenState extends State<CardListScreen> {
                                 lc['design_config'] as Map<String, dynamic>? ?? {};
                             final currentStamps = card['current_stamps'] as int? ?? 0;
 
-                            Color cardColor;
-                            try {
-                              final hex =
-                                  (design['color'] as String? ?? '#00C896')
-                                      .replaceFirst('#', '');
-                              cardColor =
-                                  Color(int.parse('FF$hex', radix: 16));
-                            } catch (_) {
-                              cardColor = const Color(0xFF00C896);
-                            }
-
+                            final cardColor = hexToColor(design['color'] as String? ?? '#00C896');
                             final isWalletLoading = _walletLoading.contains(cardId);
+                            final status = card['status'] as String? ?? 'active';
+                            final isComplete = status == 'ready_to_claim' || status == 'claimed';
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                LoyaltyCardWidget(
-                                  businessName:
-                                      biz['name'] as String? ?? '',
-                                  cardName: lc['name'] as String? ?? '',
-                                  benefitDescription:
-                                      lc['benefit_description'] as String? ??
-                                          '',
-                                  currentStamps: currentStamps,
-                                  stampsRequired:
-                                      lc['stamps_required'] as int? ?? 1,
-                                  stampIcon:
-                                      design['stamp_icon'] as String? ?? '⭐',
-                                  color: cardColor,
-                                  bgMode:
-                                      design['bg_mode'] as String? ?? 'dark',
-                                  status:
-                                      card['status'] as String? ?? 'active',
+                                Stack(
+                                  children: [
+                                    Container(
+                                      decoration: isComplete
+                                          ? BoxDecoration(
+                                              borderRadius: BorderRadius.circular(22),
+                                              border: Border.all(color: const Color(0xFFFBBF24), width: 2),
+                                            )
+                                          : null,
+                                      padding: isComplete ? const EdgeInsets.all(2) : EdgeInsets.zero,
+                                      child: WalletPreviewCard(
+                                        businessName: biz['name'] as String? ?? '',
+                                        name: lc['name'] as String? ?? '',
+                                        benefitDescription:
+                                            lc['benefit_description'] as String? ?? '',
+                                        stampsRequired: lc['stamps_required'] as int? ?? 1,
+                                        stampIcon: design['stamp_icon'] as String? ?? '⭐',
+                                        color: cardColor,
+                                        cardStyle: cardStyleFromString(design['style'] as String?),
+                                        bgMode: design['bg_mode'] as String? ?? 'light',
+                                        bgType: design['bg_type'] as String? ?? 'solid',
+                                        bgImageUrl: design['bg_image_url'] as String?,
+                                        logoUrl: design['logo_url'] as String?,
+                                        filledStamps: currentStamps,
+                                      ),
+                                    ),
+                                    if (isComplete)
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFBBF24),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Text('¡PREMIO!',
+                                              style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w800)),
+                                        ),
+                                      ),
+                                  ],
                                 ),
+                                if (status == 'ready_to_claim')
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Text('¡Ve al negocio a reclamar tu premio! 🎉',
+                                        style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 13, fontWeight: FontWeight.w600)),
+                                  ),
                                 _buildRewardProgress(lc, design, currentStamps),
                                 const SizedBox(height: 10),
                                 _WalletButton(

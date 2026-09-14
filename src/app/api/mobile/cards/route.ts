@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await serviceClient
     .from('loyalty_cards')
     .select(`
-      id, name, stamps_required, benefit_description,
+      id, name, stamps_required, benefit_description, push_notify_threshold,
       design_config, is_active, slug, logo_url, expires_at, max_uses_per_customer,
       card_rewards (
         id, stamps_required, reward_label, color, sort_order
@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
       name: c.name,
       stamps_required: c.stamps_required,
       benefit_description: c.benefit_description,
+      push_notify_threshold: c.push_notify_threshold ?? 1,
       is_active: c.is_active,
       slug: c.slug,
       logo_url: c.logo_url ?? null,
@@ -50,6 +51,8 @@ export async function GET(req: NextRequest) {
       max_uses_per_customer: c.max_uses_per_customer ?? null,
       stamp_icon: (cfg.stamp_icon as string) ?? '⭐',
       color: (cfg.color as string) ?? '#00C896',
+      style: (cfg.style as string) ?? 'clean',
+      bg_mode: (cfg.bg_mode as string) ?? 'light',
       bg_type: (cfg.bg_type as string) ?? 'solid',
       bg_value: (cfg.bg_value as string) ?? '#0f172a',
       bg_image_url: (cfg.bg_image_url as string | null) ?? null,
@@ -71,8 +74,11 @@ export async function POST(req: NextRequest) {
     name,
     stamps_required,
     benefit_description,
+    push_notify_threshold = 1,
     stamp_icon = '⭐',
     color = '#00C896',
+    style = 'clean',
+    bg_mode = 'light',
     bg_type = 'solid',
     bg_value = '#0f172a',
     bg_image_url = null,
@@ -92,6 +98,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Premio requerido' }, { status: 400 })
   if (typeof color === 'string' && !/^#[0-9A-Fa-f]{6}$/.test(color))
     return NextResponse.json({ error: 'Color inválido' }, { status: 400 })
+  const pushThresholdNum = Number(push_notify_threshold)
+  if (!Number.isInteger(pushThresholdNum) || pushThresholdNum < 1 || pushThresholdNum > 5)
+    return NextResponse.json({ error: 'push_notify_threshold debe ser entre 1 y 5' }, { status: 400 })
+  if (!['clean', 'modern', 'luxury', 'editorial', 'minimal'].includes(style))
+    return NextResponse.json({ error: 'Estilo inválido' }, { status: 400 })
+  if (!['light', 'dark'].includes(bg_mode))
+    return NextResponse.json({ error: 'bg_mode inválido' }, { status: 400 })
 
   if (multi_rewards && Array.isArray(rewards)) {
     if (rewards.length > 20)
@@ -129,9 +142,12 @@ export async function POST(req: NextRequest) {
 
   const design_config = {
     color,
+    style,
+    bg_mode,
     bg_type,
     bg_value,
     bg_image_url,
+    logo_url,
     stamp_icon,
     font,
     multi_rewards,
@@ -144,13 +160,14 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       stamps_required: stampsNum,
       benefit_description: benefit_description.trim(),
+      push_notify_threshold: pushThresholdNum,
       design_config,
       slug,
       logo_url: logo_url ?? null,
       expires_at: expires_at ?? null,
       max_uses_per_customer: max_uses_per_customer ? Number(max_uses_per_customer) : null,
     })
-    .select('id, name, stamps_required, benefit_description, is_active, slug, logo_url, expires_at, max_uses_per_customer')
+    .select('id, name, stamps_required, benefit_description, push_notify_threshold, is_active, slug, logo_url, expires_at, max_uses_per_customer')
     .single()
 
   if (error) {
@@ -182,6 +199,8 @@ export async function POST(req: NextRequest) {
     ...data,
     stamp_icon,
     color,
+    style,
+    bg_mode,
     bg_type,
     bg_value,
     bg_image_url: bg_image_url ?? null,

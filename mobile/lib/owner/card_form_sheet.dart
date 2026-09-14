@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../data/mobile_api_client.dart';
-import 'widgets/card_preview_widget.dart';
+import '../shared/wallet_preview_card.dart';
 
-const _icons = ['⭐', '☕', '🍕', '🥖', '🍔', '🍦', '🎯', '💎', '🔥', '🌟', '🎁', '🏆',
-                 '🎵', '🏋️', '🐾', '🌸', '🍣', '🍜', '🧁', '🎮'];
+// Matches src/components/cards/card-editor.tsx's EMOJIS/PALETTE exactly, so
+// a card looks the same regardless of which client created it.
+const _icons = ['☕','🍕','🌮','🍔','🎂','✂️','🛍️','💈','🍦','🥐',
+                 '🍣','🎯','💪','📚','🌸','🎵','🍷','🧁','🏋️','🎨',
+                 '🐾','🧘','🚀','⭐','🍫','🥗','🎮','🏥','🐕','🌿'];
 
 const _accentColors = [
-  '#00C896', '#3B82F6', '#F59E0B', '#EF4444',
-  '#8B5CF6', '#EC4899', '#10B981', '#F97316',
+  '#1d4ed8', '#0f766e', '#7c3aed', '#dc2626',
+  '#d97706', '#16a34a', '#db2777', '#0ea5e9',
+  '#111827', '#f97316', '#be185d', '#059669',
+];
+
+const _styles = [
+  (value: CardStyle.clean, label: 'Clean', desc: 'Loyalz · Minimal'),
+  (value: CardStyle.modern, label: 'Modern', desc: 'Apple · Revolut'),
+  (value: CardStyle.luxury, label: 'Luxury', desc: 'Amex · VIP'),
+  (value: CardStyle.editorial, label: 'Editorial', desc: 'Boarding pass'),
+  (value: CardStyle.minimal, label: 'Minimal', desc: 'Notion · Linear'),
 ];
 
 class CardFormSheet extends StatefulWidget {
@@ -24,18 +36,23 @@ class _CardFormSheetState extends State<CardFormSheet>
     with SingleTickerProviderStateMixin {
   final _name = TextEditingController();
   final _benefit = TextEditingController();
+  final _hexInput = TextEditingController();
 
   int _stamps = 8;
   String _icon = '⭐';
   String _color = '#00C896';
+  CardStyle _style = CardStyle.clean;
+  String _bgMode = 'light';
+  int _pushThreshold = 1;
   String _bgType = 'solid';
-  String _bgValue = '#0f172a';
+  String? _bgImageUrl;
   String? _logoUrl;
   bool _multiRewards = false;
   bool _hasExpiry = false;
   DateTime? _expiresAt;
   List<_RewardEntry> _rewards = [_RewardEntry(stamps: 5, label: '', color: '#00C896')];
   bool _saving = false;
+  bool _uploadingBg = false;
   String? _error;
 
   late TabController _bgTabController;
@@ -52,8 +69,11 @@ class _CardFormSheetState extends State<CardFormSheet>
       _stamps = c.stampsRequired;
       _icon = c.stampIcon;
       _color = c.color;
+      _style = cardStyleFromString(c.style);
+      _bgMode = c.bgMode;
+      _pushThreshold = c.pushNotifyThreshold;
       _bgType = c.bgType;
-      _bgValue = c.bgValue;
+      _bgImageUrl = c.bgImageUrl;
       _logoUrl = c.logoUrl;
       _multiRewards = c.multiRewards;
       if (c.expiresAt != null) {
@@ -67,14 +87,31 @@ class _CardFormSheetState extends State<CardFormSheet>
       }
       if (_bgType == 'image') _bgTabController.index = 1;
     }
+    _hexInput.text = _color;
   }
 
   @override
   void dispose() {
     _name.dispose();
     _benefit.dispose();
+    _hexInput.dispose();
     _bgTabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickBackground() async {
+    final picker = ImagePicker();
+    final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (img == null) return;
+    final bytes = await img.readAsBytes();
+    final mimeType = img.mimeType ?? 'image/jpeg';
+    setState(() => _uploadingBg = true);
+    try {
+      final url = await _api.uploadBackground(bytes, mimeType);
+      setState(() { _bgImageUrl = url; _uploadingBg = false; });
+    } catch (e) {
+      setState(() { _error = 'Error al subir foto de fondo'; _uploadingBg = false; });
+    }
   }
 
   Future<void> _pickLogo() async {
@@ -112,11 +149,14 @@ class _CardFormSheetState extends State<CardFormSheet>
       'name': name,
       'stamps_required': _stamps,
       'benefit_description': benefit,
+      'push_notify_threshold': _pushThreshold,
       'stamp_icon': _icon,
       'color': _color,
-      'bg_type': _bgType,
-      'bg_value': _bgValue,
-      'bg_image_url': null,
+      'style': cardStyleToString(_style),
+      'bg_mode': _bgMode,
+      'bg_type': _bgType == 'image' && _bgImageUrl != null ? 'image' : 'solid',
+      'bg_value': _color,
+      'bg_image_url': _bgType == 'image' ? _bgImageUrl : null,
       'font': 'default',
       'logo_url': _logoUrl,
       'expires_at': _hasExpiry && _expiresAt != null ? _expiresAt!.toIso8601String() : null,
@@ -192,28 +232,57 @@ class _CardFormSheetState extends State<CardFormSheet>
                 controller: controller,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [
-                  CardPreviewWidget(
+                  WalletPreviewCard(
+                    businessName: '',
                     name: _name.text,
-                    stampIcon: _icon,
-                    color: _color,
-                    bgType: _bgType,
-                    bgValue: _bgValue,
-                    bgImageUrl: null,
-                    logoUrl: _logoUrl,
-                    multiRewards: _multiRewards,
-                    rewards: _rewards
-                        .map((r) => CardRewardModel(
-                              id: '',
-                              stampsRequired: r.stamps,
-                              rewardLabel: r.label.isEmpty ? 'Premio' : r.label,
-                              color: r.color,
-                              sortOrder: 0,
-                            ))
-                        .toList(),
-                    stampsRequired: _stamps,
                     benefitDescription: _benefit.text,
+                    stampsRequired: _stamps,
+                    stampIcon: _icon,
+                    color: hexToColor(_color),
+                    cardStyle: _style,
+                    bgMode: _bgMode,
+                    bgType: _bgType,
+                    bgImageUrl: _bgImageUrl,
+                    logoUrl: _logoUrl,
+                    filledStamps: (_stamps * 0.6).ceil().clamp(0, _stamps),
                   ),
                   const SizedBox(height: 24),
+
+                  _label('Estilo de tarjeta'),
+                  Column(
+                    children: _styles.map((s) {
+                      final selected = _style == s.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () => setState(() => _style = s.value),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: selected ? const Color(0xFF00C896) : Colors.white.withValues(alpha: 0.08)),
+                              color: selected ? const Color(0xFF00C896).withValues(alpha: 0.08) : Colors.transparent,
+                            ),
+                            child: Row(children: [
+                              Container(width: 28, height: 28,
+                                  decoration: BoxDecoration(
+                                      color: selected ? const Color(0xFF00C896) : Colors.white.withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(8))),
+                              const SizedBox(width: 12),
+                              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(s.label, style: TextStyle(color: selected ? Colors.white : Colors.white60, fontWeight: FontWeight.w600, fontSize: 13)),
+                                Text(s.desc, style: const TextStyle(color: Colors.white30, fontSize: 10)),
+                              ]),
+                              if (selected) const Spacer(),
+                              if (selected) const Icon(Icons.check, color: Color(0xFF00C896), size: 16),
+                            ]),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
 
                   _label('Nombre de la tarjeta'),
                   _field(_name, 'ej. Tarjeta Café'),
@@ -228,6 +297,23 @@ class _CardFormSheetState extends State<CardFormSheet>
                       const SizedBox(width: 16),
                       _iconBtn(Icons.add, () => setState(() => _stamps = (_stamps + 1).clamp(2, 50))),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _label('Avisar por push cuando falte${_pushThreshold == 1 ? '' : 'n'}: $_pushThreshold sello${_pushThreshold == 1 ? '' : 's'}'),
+                  Row(
+                    children: [
+                      _iconBtn(Icons.remove, () => setState(() => _pushThreshold = (_pushThreshold - 1).clamp(1, 5))),
+                      const SizedBox(width: 16),
+                      Text('$_pushThreshold', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                      const SizedBox(width: 16),
+                      _iconBtn(Icons.add, () => setState(() => _pushThreshold = (_pushThreshold + 1).clamp(1, 5))),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text('Solo aplica si tu plan incluye notificaciones push (Pro/Premium).',
+                        style: TextStyle(color: Colors.white30, fontSize: 11)),
                   ),
                   const SizedBox(height: 16),
 
@@ -278,6 +364,102 @@ class _CardFormSheetState extends State<CardFormSheet>
                       );
                     }).toList(),
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _hexInput,
+                    onChanged: (v) {
+                      if (RegExp(r'^#[0-9A-Fa-f]{0,6}$').hasMatch(v)) setState(() => _color = v);
+                    },
+                    style: const TextStyle(color: Colors.white, fontSize: 13, fontFamily: 'monospace'),
+                    decoration: const InputDecoration(
+                      hintText: '#1d4ed8',
+                      hintStyle: TextStyle(color: Colors.white24, fontFamily: 'monospace'),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (_style == CardStyle.clean) ...[
+                    _label('Modo'),
+                    Row(children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() => _bgMode = 'light'),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF00C896) : Colors.white24),
+                            foregroundColor: _bgMode == 'light' ? const Color(0xFF00C896) : Colors.white38,
+                          ),
+                          child: const Text('☀️ Claro'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() => _bgMode = 'dark'),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF00C896) : Colors.white24),
+                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF00C896) : Colors.white38,
+                          ),
+                          child: const Text('🌙 Oscuro'),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 16),
+                  ],
+
+                  _label('Foto de fondo (opcional)'),
+                  Row(children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => setState(() => _bgType = 'solid'),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF00C896) : Colors.white24),
+                          foregroundColor: _bgType == 'solid' ? const Color(0xFF00C896) : Colors.white38,
+                        ),
+                        child: const Text('Color'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => setState(() => _bgType = 'image'),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF00C896) : Colors.white24),
+                          foregroundColor: _bgType == 'image' ? const Color(0xFF00C896) : Colors.white38,
+                        ),
+                        child: const Text('Foto'),
+                      ),
+                    ),
+                  ]),
+                  if (_bgType == 'image') ...[
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _uploadingBg ? null : _pickBackground,
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: _bgImageUrl != null ? 0.2 : 0.08)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_uploadingBg)
+                              const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                            else
+                              Icon(_bgImageUrl != null ? Icons.check_circle_outline : Icons.upload_outlined,
+                                  color: _bgImageUrl != null ? const Color(0xFF00C896) : Colors.white38, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              _bgImageUrl != null ? 'Foto subida ✓ — toca para cambiar' : 'Subir foto de fondo',
+                              style: TextStyle(color: _bgImageUrl != null ? const Color(0xFF00C896) : Colors.white38, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
 
                   _label('Logo del negocio (opcional)'),

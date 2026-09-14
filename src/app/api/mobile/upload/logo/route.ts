@@ -52,14 +52,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'El archivo no es una imagen válida (JPEG, PNG o WebP)' }, { status: 400 })
 
   const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
-  const path = `${business.id}/logo.${ext}`
+  // Random per upload — was a fixed `${business.id}/logo.${ext}` path with
+  // upsert:true, so a business with multiple cards would have the second
+  // logo upload silently overwrite the file the first card's logo_url still
+  // pointed to. Matches the web upload's per-upload-random-path scheme.
+  const path = `${business.id}/${crypto.randomUUID()}.${ext}`
 
   const arrayBuffer = await file.arrayBuffer()
   const { error: uploadError } = await serviceClient.storage
     .from('card-logos')
     .upload(path, arrayBuffer, {
       contentType: file.type,
-      upsert: true,
+      upsert: false,
     })
 
   if (uploadError) {

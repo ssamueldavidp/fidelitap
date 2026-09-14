@@ -16,7 +16,7 @@ async function getOwnedCard(userId: string, cardId: string) {
 
   const { data: card } = await serviceClient
     .from('loyalty_cards')
-    .select('id, business_id, name, stamps_required, benefit_description, design_config, is_active')
+    .select('id, business_id, name, stamps_required, benefit_description, push_notify_threshold, design_config, is_active')
     .eq('id', cardId)
     .eq('business_id', business.id)
     .is('deleted_at', null)
@@ -37,8 +37,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     name,
     stamps_required,
     benefit_description,
+    push_notify_threshold,
     stamp_icon,
     color,
+    style,
+    bg_mode,
     bg_type,
     bg_value,
     bg_image_url,
@@ -49,6 +52,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     multi_rewards,
     rewards,
   } = body
+
+  if (style !== undefined && !['clean', 'modern', 'luxury', 'editorial', 'minimal'].includes(style))
+    return NextResponse.json({ error: 'Estilo inválido' }, { status: 400 })
+  if (bg_mode !== undefined && !['light', 'dark'].includes(bg_mode))
+    return NextResponse.json({ error: 'bg_mode inválido' }, { status: 400 })
+  if (push_notify_threshold !== undefined) {
+    const n = Number(push_notify_threshold)
+    if (!Number.isInteger(n) || n < 1 || n > 5)
+      return NextResponse.json({ error: 'push_notify_threshold debe ser entre 1 y 5' }, { status: 400 })
+  }
 
   // Validate rewards if provided
   if (Array.isArray(rewards)) {
@@ -69,6 +82,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (stamps_required && Number(stamps_required) >= 2 && Number(stamps_required) <= 20)
     update.stamps_required = Number(stamps_required)
   if (benefit_description?.trim()) update.benefit_description = benefit_description.trim()
+  if (push_notify_threshold !== undefined) update.push_notify_threshold = Number(push_notify_threshold)
   if (logo_url !== undefined) update.logo_url = logo_url
   if (expires_at !== undefined) update.expires_at = expires_at
   if (max_uses_per_customer !== undefined)
@@ -78,9 +92,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const designUpdate: Record<string, Json | undefined> = { ...existingConfig }
   if (stamp_icon !== undefined) designUpdate.stamp_icon = stamp_icon as Json
   if (color !== undefined) designUpdate.color = color as Json
+  if (style !== undefined) designUpdate.style = style as Json
+  if (bg_mode !== undefined) designUpdate.bg_mode = bg_mode as Json
   if (bg_type !== undefined) designUpdate.bg_type = bg_type as Json
   if (bg_value !== undefined) designUpdate.bg_value = bg_value as Json
   if (bg_image_url !== undefined) designUpdate.bg_image_url = bg_image_url as Json
+  if (logo_url !== undefined) designUpdate.logo_url = logo_url as Json
   if (font !== undefined) designUpdate.font = font as Json
   if (multi_rewards !== undefined) designUpdate.multi_rewards = multi_rewards as Json
   update.design_config = designUpdate as Json
@@ -89,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     .from('loyalty_cards')
     .update(update)
     .eq('id', params.id)
-    .select('id, name, stamps_required, benefit_description, is_active, slug, design_config, logo_url, expires_at, max_uses_per_customer')
+    .select('id, name, stamps_required, benefit_description, push_notify_threshold, is_active, slug, design_config, logo_url, expires_at, max_uses_per_customer')
     .single()
 
   if (error) {
@@ -147,6 +164,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     ...data,
     stamp_icon: (cfg?.stamp_icon as string) ?? '⭐',
     color: (cfg?.color as string) ?? '#00C896',
+    style: (cfg?.style as string) ?? 'clean',
+    bg_mode: (cfg?.bg_mode as string) ?? 'light',
     bg_type: (cfg?.bg_type as string) ?? 'solid',
     bg_value: (cfg?.bg_value as string) ?? '#0f172a',
     bg_image_url: (cfg?.bg_image_url as string | null) ?? null,

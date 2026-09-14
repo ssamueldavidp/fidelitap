@@ -43,8 +43,11 @@ class LoyaltyCardModel {
   final String name;
   final int stampsRequired;
   final String benefitDescription;
+  final int pushNotifyThreshold;
   final String stampIcon;
   final String color;
+  final String style;
+  final String bgMode;
   final String bgType;
   final String bgValue;
   final String? bgImageUrl;
@@ -62,8 +65,11 @@ class LoyaltyCardModel {
     required this.name,
     required this.stampsRequired,
     required this.benefitDescription,
+    this.pushNotifyThreshold = 1,
     required this.stampIcon,
     required this.color,
+    this.style = 'clean',
+    this.bgMode = 'light',
     required this.bgType,
     required this.bgValue,
     this.bgImageUrl,
@@ -82,8 +88,11 @@ class LoyaltyCardModel {
         name: j['name'] as String,
         stampsRequired: j['stamps_required'] as int,
         benefitDescription: j['benefit_description'] as String,
+        pushNotifyThreshold: (j['push_notify_threshold'] as int?) ?? 1,
         stampIcon: (j['stamp_icon'] as String?) ?? '⭐',
         color: (j['color'] as String?) ?? '#00C896',
+        style: (j['style'] as String?) ?? 'clean',
+        bgMode: (j['bg_mode'] as String?) ?? 'light',
         bgType: (j['bg_type'] as String?) ?? 'solid',
         bgValue: (j['bg_value'] as String?) ?? '#0f172a',
         bgImageUrl: j['bg_image_url'] as String?,
@@ -234,7 +243,13 @@ class MobileApiClient {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  Future<String> uploadLogo(List<int> bytes, String mimeType) async {
+  Future<String> uploadLogo(List<int> bytes, String mimeType) =>
+      _uploadImage('/api/mobile/upload/logo', bytes, mimeType, 'logo');
+
+  Future<String> uploadBackground(List<int> bytes, String mimeType) =>
+      _uploadImage('/api/mobile/upload/background', bytes, mimeType, 'background');
+
+  Future<String> _uploadImage(String path, List<int> bytes, String mimeType, String filenamePrefix) async {
     final mimeSubtype = mimeType.contains('png')
         ? 'png'
         : mimeType.contains('webp')
@@ -243,14 +258,14 @@ class MobileApiClient {
     final ext = mimeSubtype == 'jpeg' ? 'jpg' : mimeSubtype;  // filename uses .jpg
     final req = http.MultipartRequest(
       'POST',
-      Uri.parse('$_base/api/mobile/upload/logo'),
+      Uri.parse('$_base$path'),
     );
     req.headers['Authorization'] =
         'Bearer ${supabase.auth.currentSession?.accessToken ?? ''}';
     req.files.add(http.MultipartFile.fromBytes(
       'file',
       bytes,
-      filename: 'logo.$ext',
+      filename: '$filenamePrefix.$ext',
       contentType: MediaType('image', mimeSubtype),  // ← use mimeSubtype here
     ));
     final streamed = await req.send();

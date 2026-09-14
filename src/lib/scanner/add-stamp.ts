@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
+import { sendPushToCustomerCard } from '@/lib/push/send'
+import { isPushEligible } from '@/lib/push/eligibility'
 
 export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
 
@@ -21,21 +23,44 @@ export type ClaimResult =
   | { error: string }
   | { timesCompleted: number; status: CardStatus }
 
-export async function addStampForBusiness(
-  serviceClient: SupabaseClient,
-  businessId: string,
-  businessName: string,
-  ownerId: string,
-  stampCooldownSeconds: number,
+export interface AddStampParams {
+  serviceClient: SupabaseClient
+  businessId: string
+  businessName: string
+  businessPlan: string
+  businessSubscriptionStatus: string | null
+  stampCooldownSeconds: number
+  ownerId: string
   uniqueCode: string
-): Promise<StampResult> {
+}
+
+// Single source of truth for "add a stamp" — called by both the web
+// dashboard scanner (src/app/(dashboard)/scanner/actions.ts) and the
+// Flutter app's scanner (src/app/api/mobile/add-stamp/route.ts). Keep it
+// that way: this used to be duplicated between the two call sites and the
+// implementations drifted (web had Web Push progress/completion
+// notifications, mobile had multi-level card_rewards support for the
+// Google Wallet label — neither client had both).
+export async function addStampForBusiness(params: AddStampParams): Promise<StampResult> {
+  const {
+    serviceClient,
+    businessId,
+    businessName,
+    businessPlan,
+    businessSubscriptionStatus,
+    stampCooldownSeconds,
+    ownerId,
+    uniqueCode,
+  } = params
+
   const { data: ccRaw } = await serviceClient
     .from('customer_cards')
     .select(`
       id,
       wallet_pass_serial,
       loyalty_card_id,
-      loyalty_cards ( id, stamps_required, business_id, businesses ( plan ) ),
+      near_completion_notified_at,
+      loyalty_cards ( id, stamps_required, benefit_description, business_id, push_notify_threshold ),
       customers ( name, email )
     `)
     .eq('unique_code', uniqueCode.trim())
@@ -47,11 +72,13 @@ export async function addStampForBusiness(
     id: string
     wallet_pass_serial: string | null
     loyalty_card_id: string
+    near_completion_notified_at: string | null
     loyalty_cards: {
       id: string
       stamps_required: number
+      benefit_description: string | null
       business_id: string
-      businesses: { plan: string } | null
+      push_notify_threshold: number
     } | null
     customers: { name: string; email: string | null } | null
   }
@@ -126,6 +153,25 @@ export async function addStampForBusiness(
     type: 'stamp',
   })
 
+  const remaining = card.stamps_required - currentStamps
+  const shouldNotifyProgress =
+    !isComplete &&
+    remaining === card.push_notify_threshold &&
+    !cc.near_completion_notified_at &&
+    isPushEligible(businessPlan, businessSubscriptionStatus)
+
+  const { error: progressUpdateError } = await serviceClient
+    .from('customer_cards')
+    .update({
+      last_stamp_at: new Date().toISOString(),
+      ...(shouldNotifyProgress ? { near_completion_notified_at: new Date().toISOString() } : {}),
+    })
+    .eq('id', cc.id)
+
+  if (progressUpdateError) {
+    console.error('[addStamp] failed to update last_stamp_at/near_completion_notified_at', progressUpdateError)
+  }
+
   let pushTokens: string[] = []
   if (cc.wallet_pass_serial) {
     const { data: registrations } = await serviceClient
@@ -135,9 +181,16 @@ export async function addStampForBusiness(
     pushTokens = registrations?.map((r) => r.push_token) ?? []
   }
 
-  const skipWalletUpdate = card.businesses?.plan === 'free'
+  const skipWalletUpdate = businessPlan === 'free'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
   const customerEmail = cc.customers?.email
+  const sideEffectNames = [
+    'apns_push',
+    'google_wallet_update',
+    'completion_email',
+    'progress_web_push',
+    'completion_web_push',
+  ]
   void Promise.allSettled([
     !skipWalletUpdate && pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
     !skipWalletUpdate
@@ -152,7 +205,25 @@ export async function addStampForBusiness(
           googleWalletUrl: `${appUrl}/api/wallet/google/${cc.id}`,
         })
       : Promise.resolve(),
-  ])
+    shouldNotifyProgress
+      ? sendPushToCustomerCard(serviceClient, cc.id, {
+          title: `⭐ Sellos en ${businessName}`,
+          body: `Llevas ${currentStamps} de ${card.stamps_required} sellos. ¡Ya casi tienes tu premio!`,
+        })
+      : Promise.resolve(),
+    isComplete && isPushEligible(businessPlan, businessSubscriptionStatus)
+      ? sendPushToCustomerCard(serviceClient, cc.id, {
+          title: '🎉 ¡Premio listo!',
+          body: `Completaste tu tarjeta en ${businessName}. Muéstrala en caja para reclamar${card.benefit_description ? ': ' + card.benefit_description : ' tu premio'}.`,
+        })
+      : Promise.resolve(),
+  ]).then((results) => {
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`[addStamp] ${sideEffectNames[i]} failed for customer_card ${cc.id}:`, r.reason)
+      }
+    })
+  })
 
   return {
     customerCardId: cc.id,
@@ -201,6 +272,11 @@ export async function claimRewardForBusiness(
     scan_token: crypto.randomUUID(),
     type: 'reward_claimed',
   })
+
+  await serviceClient
+    .from('customer_cards')
+    .update({ near_completion_notified_at: null })
+    .eq('id', customerCardId)
 
   return {
     timesCompleted: result.times_completed ?? 0,

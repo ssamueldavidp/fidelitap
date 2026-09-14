@@ -42,7 +42,7 @@ export default async function SettingsPage({
   ]
 
   // Fetch usage metrics for the "Uso" tab
-  type BusinessMetrics = { activos: number; sellos_hoy: number; canjes_totales: number; retencion_pct: number }
+  type BusinessMetrics = { activos: number; sellos_hoy: number; canjes_totales: number; total_clientes: number; retencion_pct: number }
   let metrics: BusinessMetrics | null = null
   let cardCount = 0
   if (activeTab === 'uso' && business) {
@@ -170,7 +170,7 @@ export default async function SettingsPage({
             />
             <_UsageBar
               label="Clientes registrados"
-              current={metrics?.activos ?? 0}
+              current={metrics?.total_clientes ?? 0}
               limit={limits.maxCustomers}
             />
           </div>

@@ -20,13 +20,15 @@ export default async function EditarCardPage({
 
   const { data: card } = await supabase
     .from('loyalty_cards')
-    .select('*')
+    .select('*, card_rewards(id, stamps_required, reward_label, color, sort_order)')
     .eq('id', params.id)
     .eq('business_id', business.id)
     .is('deleted_at', null)
+    .order('sort_order', { referencedTable: 'card_rewards', ascending: true })
     .single()
 
   if (!card) notFound()
 
-  return <CardEditor card={card} businessName={business.name} />
+  const { card_rewards, ...cardFields } = card
+  return <CardEditor card={cardFields} existingRewards={card_rewards} businessName={business.name} />
 }

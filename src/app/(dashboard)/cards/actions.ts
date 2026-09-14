@@ -17,7 +17,28 @@ const cardFormSchema = z.object({
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color inválido'),
   style: z.enum(['clean', 'modern', 'luxury', 'editorial', 'minimal']).default('clean'),
   bg_mode: z.enum(['light', 'dark']).default('light'),
+  multi_rewards: z.coerce.boolean().default(false),
+  expires_at: z.string().optional(),
 })
+
+const rewardSchema = z.object({
+  stamps_required: z.coerce.number().int().min(1, 'stamps_required debe ser ≥ 1'),
+  reward_label: z.string().trim().min(1, 'Todos los niveles necesitan descripción').max(100),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#00C896'),
+})
+
+function parseRewards(raw: FormDataEntryValue | null): { rewards: { stamps_required: number; reward_label: string; color: string }[] } | { error: string } {
+  if (!raw || typeof raw !== 'string') return { rewards: [] }
+  let json: unknown
+  try {
+    json = JSON.parse(raw)
+  } catch {
+    return { error: 'Niveles de premio inválidos' }
+  }
+  const parsed = z.array(rewardSchema).max(20, 'Máximo 20 niveles de premio').safeParse(json)
+  if (!parsed.success) return { error: parsed.error.issues[0].message }
+  return { rewards: parsed.data }
+}
 
 async function uploadImage(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -92,10 +113,15 @@ export async function createCardAction(
     color: formData.get('color'),
     style: formData.get('style'),
     bg_mode: formData.get('bg_mode'),
+    multi_rewards: formData.get('multi_rewards'),
+    expires_at: formData.get('expires_at'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
+  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode, multi_rewards, expires_at } = parsed.data
+
+  const rewardsResult = multi_rewards ? parseRewards(formData.get('rewards_json')) : { rewards: [] }
+  if ('error' in rewardsResult) return rewardsResult
 
   let bgImageUrl: string | null = null
   if (bg_type === 'image') {
@@ -125,9 +151,10 @@ export async function createCardAction(
     style,
     bg_mode,
     logo_url: logoUrl,
+    multi_rewards,
   }
 
-  const { error } = await supabase.from('loyalty_cards').insert({
+  const { data: newCard, error } = await supabase.from('loyalty_cards').insert({
     business_id: business.id,
     name,
     benefit_description,
@@ -136,11 +163,25 @@ export async function createCardAction(
     design_config,
     slug: generateSlug(name),
     is_active: true,
-  })
+    expires_at: expires_at || null,
+  }).select('id').single()
 
-  if (error) {
-    if (error.code === '23505') return { error: 'Nombre duplicado. Elige otro nombre.' }
+  if (error || !newCard) {
+    if (error?.code === '23505') return { error: 'Nombre duplicado. Elige otro nombre.' }
     return { error: 'Error creando tarjeta. Intenta de nuevo.' }
+  }
+
+  if (multi_rewards && rewardsResult.rewards.length > 0) {
+    const { error: rewardError } = await supabase.from('card_rewards').insert(
+      rewardsResult.rewards.map((r, i) => ({
+        loyalty_card_id: newCard.id,
+        stamps_required: r.stamps_required,
+        reward_label: r.reward_label,
+        color: r.color,
+        sort_order: i,
+      }))
+    )
+    if (rewardError) return { error: 'Tarjeta creada pero los premios no se guardaron.' }
   }
 
   revalidatePath('/cards')
@@ -182,11 +223,16 @@ export async function updateCardAction(
     color: formData.get('color'),
     style: formData.get('style'),
     bg_mode: formData.get('bg_mode'),
+    multi_rewards: formData.get('multi_rewards'),
+    expires_at: formData.get('expires_at'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode } = parsed.data
+  const { name, benefit_description, stamps_required, push_notify_threshold, stamp_icon, bg_type, color, style, bg_mode, multi_rewards, expires_at } = parsed.data
   const existingConfig = card.design_config as Record<string, unknown>
+
+  const rewardsResult = multi_rewards ? parseRewards(formData.get('rewards_json')) : { rewards: [] }
+  if ('error' in rewardsResult) return rewardsResult
 
   let bgImageUrl = bg_type === 'image'
     ? (existingConfig.bg_image_url as string | null) ?? null
@@ -219,14 +265,32 @@ export async function updateCardAction(
     style,
     bg_mode,
     logo_url: logoUrl,
+    multi_rewards,
   }
 
   const { error } = await supabase
     .from('loyalty_cards')
-    .update({ name, benefit_description, stamps_required, push_notify_threshold, design_config })
+    .update({ name, benefit_description, stamps_required, push_notify_threshold, design_config, expires_at: expires_at || null })
     .eq('id', cardId)
 
   if (error) return { error: 'Error actualizando tarjeta.' }
+
+  // Replace the reward tiers wholesale — simplest correct approach for an edit.
+  const { error: deleteRewardsError } = await supabase.from('card_rewards').delete().eq('loyalty_card_id', cardId)
+  if (deleteRewardsError) return { error: 'Error actualizando los niveles de premio.' }
+  if (multi_rewards && rewardsResult.rewards.length > 0) {
+    const { error: rewardError } = await supabase.from('card_rewards').insert(
+      rewardsResult.rewards.map((r, i) => ({
+        loyalty_card_id: cardId,
+        stamps_required: r.stamps_required,
+        reward_label: r.reward_label,
+        color: r.color,
+        sort_order: i,
+      }))
+    )
+    if (rewardError) return { error: 'Tarjeta actualizada pero los premios no se guardaron.' }
+  }
+
   revalidatePath('/cards')
   redirect('/cards')
 }

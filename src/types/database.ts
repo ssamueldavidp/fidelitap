@@ -874,7 +874,10 @@ export interface CardDesignConfig {
   style: 'clean' | 'modern' | 'luxury' | 'editorial' | 'minimal'
   bg_mode: 'light' | 'dark'
   logo_url: string | null
+  multi_rewards?: boolean
 }
+
+export type CardReward = Database['public']['Tables']['card_rewards']['Row']
 
 export type CardStyle = CardDesignConfig['style']
 

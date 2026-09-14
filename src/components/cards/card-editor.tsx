@@ -9,6 +9,14 @@ import type { LoyaltyCard, CardDesignConfig } from '@/types/database'
 import type { CardStyle } from '@/components/cards/wallet-preview'
 import { resolveStorageUrl } from '@/lib/storage-url'
 
+const REWARD_COLORS = ['#00C896', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
+
+interface RewardRow {
+  stamps_required: number
+  reward_label: string
+  color: string
+}
+
 const PALETTE = [
   '#1d4ed8', '#0f766e', '#7c3aed', '#dc2626',
   '#d97706', '#16a34a', '#db2777', '#0ea5e9',
@@ -31,10 +39,11 @@ const STYLES: { key: CardStyle; label: string; desc: string }[] = [
 
 interface CardEditorProps {
   card?: LoyaltyCard
+  existingRewards?: { stamps_required: number; reward_label: string; color: string }[]
   businessName: string
 }
 
-export function CardEditor({ card, businessName }: CardEditorProps) {
+export function CardEditor({ card, existingRewards, businessName }: CardEditorProps) {
   const isEdit = !!card
   const existingDesign = card?.design_config as CardDesignConfig | undefined
 
@@ -51,6 +60,14 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
   const [bgImagePreview,  setBgImagePreview]= useState<string | null>(resolveStorageUrl(existingDesign?.bg_image_url) ?? null)
   const [logoFile,        setLogoFile]      = useState<File | null>(null)
   const [logoPreview,     setLogoPreview]   = useState<string | null>(resolveStorageUrl(existingDesign?.logo_url) ?? null)
+  const [multiRewards,    setMultiRewards]  = useState(existingDesign?.multi_rewards ?? false)
+  const [rewards,         setRewards]       = useState<RewardRow[]>(
+    existingRewards && existingRewards.length > 0
+      ? existingRewards.map(r => ({ stamps_required: r.stamps_required, reward_label: r.reward_label, color: r.color }))
+      : [{ stamps_required: 5, reward_label: '', color: REWARD_COLORS[0] }]
+  )
+  const [hasExpiry,       setHasExpiry]     = useState(!!card?.expires_at)
+  const [expiresAt,       setExpiresAt]     = useState(card?.expires_at ? card.expires_at.slice(0, 10) : '')
   const [error,           setError]         = useState<string | null>(null)
   const [isPending,       startTransition]  = useTransition()
   const bgInputRef   = useRef<HTMLInputElement>(null)
@@ -97,6 +114,9 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
     fd.append('color',              color)
     fd.append('style',              cardStyle)
     fd.append('bg_mode',            bgMode)
+    fd.append('multi_rewards',      String(multiRewards))
+    if (multiRewards) fd.append('rewards_json', JSON.stringify(rewards))
+    if (hasExpiry && expiresAt) fd.append('expires_at', new Date(expiresAt).toISOString())
     if (bgImageFile) fd.append('bg_image', bgImageFile)
     if (logoFile)    fd.append('logo',     logoFile)
 
@@ -143,6 +163,78 @@ export function CardEditor({ card, businessName }: CardEditorProps) {
               <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>1</span><span>5</span></div>
               <p className="text-[10px] text-white/30 mt-1">Solo aplica si tu plan incluye notificaciones push (Pro/Premium).</p>
             </Field>
+          </SidebarSection>
+
+          {/* Premios y vigencia */}
+          <SidebarSection label="Premios y vigencia">
+            <ToggleRow
+              title="🏆 Multi-nivel de premios"
+              subtitle="Recompensas en distintos puntos del camino"
+              checked={multiRewards}
+              onChange={setMultiRewards}
+            />
+            {multiRewards && (
+              <div className="flex flex-col gap-2">
+                {rewards.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-2.5 py-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={r.stamps_required}
+                      onChange={e => setRewards(prev => prev.map((row, idx) => idx === i ? { ...row, stamps_required: Number(e.target.value) } : row))}
+                      className="w-14 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-[#00C896]"
+                    />
+                    <input
+                      type="text"
+                      value={r.reward_label}
+                      onChange={e => setRewards(prev => prev.map((row, idx) => idx === i ? { ...row, reward_label: e.target.value } : row))}
+                      placeholder={`Premio nivel ${i + 1}`}
+                      maxLength={100}
+                      className="flex-1 bg-transparent text-xs text-white placeholder:text-white/20 focus:outline-none"
+                    />
+                    {rewards.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setRewards(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-white/20 hover:text-red-400 transition-colors text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {rewards.length < 20 && (
+                  <button
+                    type="button"
+                    onClick={() => setRewards(prev => [...prev, {
+                      stamps_required: (prev[prev.length - 1]?.stamps_required ?? 0) + 5,
+                      reward_label: '',
+                      color: REWARD_COLORS[prev.length % REWARD_COLORS.length],
+                    }])}
+                    className="text-xs text-[#00C896] hover:underline text-left"
+                  >
+                    + Agregar nivel
+                  </button>
+                )}
+              </div>
+            )}
+
+            <ToggleRow
+              title="📅 Vigencia"
+              subtitle={hasExpiry && expiresAt ? `Vence el ${expiresAt}` : 'Sin fecha de vencimiento'}
+              checked={hasExpiry}
+              onChange={v => { setHasExpiry(v); if (!v) setExpiresAt('') }}
+            />
+            {hasExpiry && (
+              <input
+                type="date"
+                value={expiresAt}
+                min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+                onChange={e => setExpiresAt(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00C896]"
+              />
+            )}
           </SidebarSection>
 
           {/* Estilo */}
@@ -375,6 +467,28 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="block text-xs text-white/40 mb-1.5">{label}</label>
       {children}
     </div>
+  )
+}
+
+function ToggleRow({ title, subtitle, checked, onChange }: {
+  title: string
+  subtitle: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <label className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 cursor-pointer">
+      <div className="flex-1">
+        <p className="text-xs font-semibold text-white">{title}</p>
+        <p className="text-[10px] text-white/40 mt-0.5">{subtitle}</p>
+      </div>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+        className="w-4 h-4 accent-[#00C896]"
+      />
+    </label>
   )
 }
 

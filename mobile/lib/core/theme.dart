@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 const _primary = Color(0xFF00C896);
-const _bg = Color(0xFF0F172A);
-const _surface = Color(0xFF1E293B);
-const _onSurface = Color(0xFFE2E8F0);
 
-ThemeData buildTheme() {
+ThemeData buildDarkTheme() => _buildTheme(Brightness.dark, AppColors.dark);
+ThemeData buildLightTheme() => _buildTheme(Brightness.light, AppColors.light);
+
+ThemeData _buildTheme(Brightness brightness, AppColors colors) {
   return ThemeData(
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: _bg,
-    colorScheme: const ColorScheme.dark(
+    brightness: brightness,
+    scaffoldBackgroundColor: colors.bg,
+    colorScheme: ColorScheme(
+      brightness: brightness,
       primary: _primary,
-      surface: _surface,
-      onSurface: _onSurface,
-      error: Color(0xFFEF4444),
+      onPrimary: Colors.black,
+      secondary: _primary,
+      onSecondary: Colors.black,
+      surface: colors.surface,
+      onSurface: colors.textPrimary,
+      error: const Color(0xFFEF4444),
+      onError: Colors.white,
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: _bg,
-      foregroundColor: _onSurface,
+    extensions: [colors],
+    appBarTheme: AppBarTheme(
+      backgroundColor: colors.bg,
+      foregroundColor: colors.textPrimary,
       elevation: 0,
     ),
-    cardTheme: const CardThemeData(
-      color: _surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+    cardTheme: CardThemeData(
+      color: colors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -43,7 +50,8 @@ ThemeData buildTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: _surface,
+      fillColor: colors.surfaceAlt,
+      labelStyle: TextStyle(color: colors.textSecondary),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -52,8 +60,12 @@ ThemeData buildTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: _primary),
       ),
-      hintStyle: const TextStyle(color: Color(0xFF64748B)),
+      hintStyle: TextStyle(color: colors.textMuted),
     ),
+    textTheme: Typography.material2021(platform: TargetPlatform.iOS)
+        .black
+        .apply(bodyColor: colors.textPrimary, displayColor: colors.textPrimary),
+    dividerColor: colors.divider,
     useMaterial3: true,
   );
 }

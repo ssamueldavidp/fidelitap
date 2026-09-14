@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../geofence/geofence_repository.dart';
+import '../core/app_colors.dart';
+import '../core/theme_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -46,6 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: _loading
@@ -53,17 +56,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text('Notificaciones de proximidad',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                Text('Apariencia',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textPrimary)),
                 const SizedBox(height: 8),
-                const Text(
+                ListenableBuilder(
+                  listenable: themeController,
+                  builder: (context, _) => SwitchListTile(
+                    value: themeController.isDark,
+                    onChanged: (v) => themeController.setDark(v),
+                    contentPadding: EdgeInsets.zero,
+                    secondary: Icon(themeController.isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
+                    title: const Text('Tema oscuro'),
+                    subtitle: Text(themeController.isDark ? 'Oscuro activado' : 'Claro activado'),
+                    activeThumbColor: const Color(0xFF00C896),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text('Notificaciones de proximidad',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textPrimary)),
+                const SizedBox(height: 8),
+                Text(
                   'Te avisamos cuando estés cerca de un negocio y te falten sellos (negocios con plan Pro).',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                  style: TextStyle(color: colors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
                 if (_businesses.isEmpty)
-                  const Text('No hay negocios Pro+ para configurar.',
-                      style: TextStyle(color: Color(0xFF64748B))),
+                  Text('No hay negocios Pro+ para configurar.',
+                      style: TextStyle(color: colors.textMuted)),
                 ..._businesses.map((b) => SwitchListTile(
                       value: !_disabled.contains(b.businessId),
                       onChanged: (v) => _toggle(b.businessId, v),

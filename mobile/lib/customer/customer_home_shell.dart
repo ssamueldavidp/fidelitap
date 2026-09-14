@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'card_list_screen.dart';
 import 'settings_screen.dart';
 import '../geofence/geofence_manager.dart';
+import '../core/app_colors.dart';
 
 class CustomerHomeShell extends StatefulWidget {
   const CustomerHomeShell({super.key});
@@ -35,7 +36,7 @@ class _CustomerHomeShellState extends State<CustomerHomeShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: context.colors.surface,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.credit_card_outlined),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../data/mobile_api_client.dart';
+import '../core/app_colors.dart';
 import '../shared/wallet_preview_card.dart';
 
 // Matches src/components/cards/card-editor.tsx's EMOJIS/PALETTE exactly, so
@@ -189,9 +190,9 @@ class _CardFormSheetState extends State<CardFormSheet>
       minChildSize: 0.5,
       expand: false,
       builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.colors.bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -200,7 +201,7 @@ class _CardFormSheetState extends State<CardFormSheet>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: context.colors.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -211,7 +212,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                 children: [
                   Text(
                     widget.existing != null ? 'Editar tarjeta' : 'Nueva tarjeta',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
+                    style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w700, fontSize: 18),
                   ),
                   TextButton(
                     onPressed: _saving ? null : _save,
@@ -261,18 +262,18 @@ class _CardFormSheetState extends State<CardFormSheet>
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: selected ? const Color(0xFF00C896) : Colors.white.withValues(alpha: 0.08)),
+                              border: Border.all(color: selected ? const Color(0xFF00C896) : context.colors.border),
                               color: selected ? const Color(0xFF00C896).withValues(alpha: 0.08) : Colors.transparent,
                             ),
                             child: Row(children: [
                               Container(width: 28, height: 28,
                                   decoration: BoxDecoration(
-                                      color: selected ? const Color(0xFF00C896) : Colors.white.withValues(alpha: 0.05),
+                                      color: selected ? const Color(0xFF00C896) : context.colors.surfaceAlt,
                                       borderRadius: BorderRadius.circular(8))),
                               const SizedBox(width: 12),
                               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(s.label, style: TextStyle(color: selected ? Colors.white : Colors.white60, fontWeight: FontWeight.w600, fontSize: 13)),
-                                Text(s.desc, style: const TextStyle(color: Colors.white30, fontSize: 10)),
+                                Text(s.label, style: TextStyle(color: selected ? context.colors.textPrimary : context.colors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
+                                Text(s.desc, style: TextStyle(color: context.colors.textMuted, fontSize: 10)),
                               ]),
                               if (selected) const Spacer(),
                               if (selected) const Icon(Icons.check, color: Color(0xFF00C896), size: 16),
@@ -293,7 +294,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                     children: [
                       _iconBtn(Icons.remove, () => setState(() => _stamps = (_stamps - 1).clamp(2, 50))),
                       const SizedBox(width: 16),
-                      Text('$_stamps', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                      Text('$_stamps', style: TextStyle(color: context.colors.textPrimary, fontSize: 22, fontWeight: FontWeight.w700)),
                       const SizedBox(width: 16),
                       _iconBtn(Icons.add, () => setState(() => _stamps = (_stamps + 1).clamp(2, 50))),
                     ],
@@ -305,15 +306,15 @@ class _CardFormSheetState extends State<CardFormSheet>
                     children: [
                       _iconBtn(Icons.remove, () => setState(() => _pushThreshold = (_pushThreshold - 1).clamp(1, 5))),
                       const SizedBox(width: 16),
-                      Text('$_pushThreshold', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                      Text('$_pushThreshold', style: TextStyle(color: context.colors.textPrimary, fontSize: 22, fontWeight: FontWeight.w700)),
                       const SizedBox(width: 16),
                       _iconBtn(Icons.add, () => setState(() => _pushThreshold = (_pushThreshold + 1).clamp(1, 5))),
                     ],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text('Solo aplica si tu plan incluye notificaciones push (Pro/Premium).',
-                        style: TextStyle(color: Colors.white30, fontSize: 11)),
+                        style: TextStyle(color: context.colors.textMuted, fontSize: 11)),
                   ),
                   const SizedBox(height: 16),
 
@@ -329,7 +330,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                         decoration: BoxDecoration(
                           color: _icon == ic
                               ? const Color(0xFF00C896).withValues(alpha: 0.2)
-                              : Colors.white.withValues(alpha: 0.04),
+                              : context.colors.surfaceAlt,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: _icon == ic ? const Color(0xFF00C896) : Colors.transparent,
@@ -357,8 +358,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                           decoration: BoxDecoration(
                             color: Color(parsed),
                             shape: BoxShape.circle,
-                            border: selected ? Border.all(color: Colors.white, width: 2.5) : null,
-                            boxShadow: selected ? [BoxShadow(color: Colors.white.withValues(alpha: 0.3), blurRadius: 4)] : null,
+                            border: selected ? Border.all(color: context.colors.textPrimary, width: 2.5) : null,
+                            boxShadow: selected ? [BoxShadow(color: context.colors.textPrimary.withValues(alpha: 0.3), blurRadius: 4)] : null,
                           ),
                         ),
                       );
@@ -370,10 +371,10 @@ class _CardFormSheetState extends State<CardFormSheet>
                     onChanged: (v) {
                       if (RegExp(r'^#[0-9A-Fa-f]{0,6}$').hasMatch(v)) setState(() => _color = v);
                     },
-                    style: const TextStyle(color: Colors.white, fontSize: 13, fontFamily: 'monospace'),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: context.colors.textPrimary, fontSize: 13, fontFamily: 'monospace'),
+                    decoration: InputDecoration(
                       hintText: '#1d4ed8',
-                      hintStyle: TextStyle(color: Colors.white24, fontFamily: 'monospace'),
+                      hintStyle: TextStyle(color: context.colors.textMuted, fontFamily: 'monospace'),
                       isDense: true,
                     ),
                   ),
@@ -386,8 +387,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                         child: OutlinedButton(
                           onPressed: () => setState(() => _bgMode = 'light'),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF00C896) : Colors.white24),
-                            foregroundColor: _bgMode == 'light' ? const Color(0xFF00C896) : Colors.white38,
+                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF00C896) : context.colors.border),
+                            foregroundColor: _bgMode == 'light' ? const Color(0xFF00C896) : context.colors.textMuted,
                           ),
                           child: const Text('☀️ Claro'),
                         ),
@@ -397,8 +398,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                         child: OutlinedButton(
                           onPressed: () => setState(() => _bgMode = 'dark'),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF00C896) : Colors.white24),
-                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF00C896) : Colors.white38,
+                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF00C896) : context.colors.border),
+                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF00C896) : context.colors.textMuted,
                           ),
                           child: const Text('🌙 Oscuro'),
                         ),
@@ -413,8 +414,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                       child: OutlinedButton(
                         onPressed: () => setState(() => _bgType = 'solid'),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF00C896) : Colors.white24),
-                          foregroundColor: _bgType == 'solid' ? const Color(0xFF00C896) : Colors.white38,
+                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF00C896) : context.colors.border),
+                          foregroundColor: _bgType == 'solid' ? const Color(0xFF00C896) : context.colors.textMuted,
                         ),
                         child: const Text('Color'),
                       ),
@@ -424,8 +425,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                       child: OutlinedButton(
                         onPressed: () => setState(() => _bgType = 'image'),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF00C896) : Colors.white24),
-                          foregroundColor: _bgType == 'image' ? const Color(0xFF00C896) : Colors.white38,
+                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF00C896) : context.colors.border),
+                          foregroundColor: _bgType == 'image' ? const Color(0xFF00C896) : context.colors.textMuted,
                         ),
                         child: const Text('Foto'),
                       ),
@@ -438,9 +439,9 @@ class _CardFormSheetState extends State<CardFormSheet>
                       child: Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.04),
+                          color: context.colors.surfaceAlt,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: _bgImageUrl != null ? 0.2 : 0.08)),
+                          border: Border.all(color: _bgImageUrl != null ? const Color(0xFF00C896).withValues(alpha: 0.3) : context.colors.border),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -449,11 +450,11 @@ class _CardFormSheetState extends State<CardFormSheet>
                               const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                             else
                               Icon(_bgImageUrl != null ? Icons.check_circle_outline : Icons.upload_outlined,
-                                  color: _bgImageUrl != null ? const Color(0xFF00C896) : Colors.white38, size: 20),
+                                  color: _bgImageUrl != null ? const Color(0xFF00C896) : context.colors.textMuted, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               _bgImageUrl != null ? 'Foto subida ✓ — toca para cambiar' : 'Subir foto de fondo',
-                              style: TextStyle(color: _bgImageUrl != null ? const Color(0xFF00C896) : Colors.white38, fontSize: 13),
+                              style: TextStyle(color: _bgImageUrl != null ? const Color(0xFF00C896) : context.colors.textMuted, fontSize: 13),
                             ),
                           ],
                         ),
@@ -468,10 +469,10 @@ class _CardFormSheetState extends State<CardFormSheet>
                     child: Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
+                        color: context.colors.surfaceAlt,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: _logoUrl != null ? 0.2 : 0.08),
+                          color: _logoUrl != null ? const Color(0xFF00C896).withValues(alpha: 0.3) : context.colors.border,
                         ),
                       ),
                       child: Row(
@@ -479,14 +480,14 @@ class _CardFormSheetState extends State<CardFormSheet>
                         children: [
                           Icon(
                             _logoUrl != null ? Icons.check_circle_outline : Icons.upload_outlined,
-                            color: _logoUrl != null ? const Color(0xFF00C896) : Colors.white38,
+                            color: _logoUrl != null ? const Color(0xFF00C896) : context.colors.textMuted,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             _logoUrl != null ? 'Logo subido ✓ — toca para cambiar' : 'Subir logo (PNG, JPG, WebP)',
                             style: TextStyle(
-                              color: _logoUrl != null ? const Color(0xFF00C896) : Colors.white38,
+                              color: _logoUrl != null ? const Color(0xFF00C896) : context.colors.textMuted,
                               fontSize: 13,
                             ),
                           ),
@@ -564,7 +565,7 @@ class _CardFormSheetState extends State<CardFormSheet>
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(text,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: context.colors.textMuted,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8)),
@@ -573,19 +574,19 @@ class _CardFormSheetState extends State<CardFormSheet>
   Widget _field(TextEditingController ctrl, String hint) => TextField(
         controller: ctrl,
         onChanged: (_) => setState(() {}),
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: context.colors.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+          hintStyle: TextStyle(color: context.colors.textMuted),
           filled: true,
-          fillColor: Colors.white.withValues(alpha: 0.04),
+          fillColor: context.colors.surfaceAlt,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            borderSide: BorderSide(color: context.colors.border),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            borderSide: BorderSide(color: context.colors.border),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -601,10 +602,10 @@ class _CardFormSheetState extends State<CardFormSheet>
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
+            color: context.colors.surfaceAlt,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: Colors.white70, size: 18),
+          child: Icon(icon, color: context.colors.textSecondary, size: 18),
         ),
       );
 
@@ -613,16 +614,16 @@ class _CardFormSheetState extends State<CardFormSheet>
         padding: const EdgeInsets.all(14),
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: context.colors.surfaceAlt,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(title, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600, fontSize: 13)),
                 const SizedBox(height: 2),
-                Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11)),
+                Text(subtitle, style: TextStyle(color: context.colors.textMuted, fontSize: 11)),
               ]),
             ),
             Switch(
@@ -682,7 +683,7 @@ class _RewardTileState extends State<_RewardTile> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: context.colors.surfaceAlt,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: barColor.withValues(alpha: 0.25)),
       ),
@@ -702,10 +703,10 @@ class _RewardTileState extends State<_RewardTile> {
             child: TextField(
               controller: _ctrl,
               onChanged: (v) { widget.entry.label = v; widget.onChanged(); },
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: context.colors.textPrimary, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Premio nivel ${widget.index + 1}',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
+                hintStyle: TextStyle(color: context.colors.textMuted, fontSize: 13),
                 isDense: true,
                 border: InputBorder.none,
               ),
@@ -715,12 +716,12 @@ class _RewardTileState extends State<_RewardTile> {
             children: [
               InkWell(
                 onTap: () => setState(() { widget.entry.stamps = (widget.entry.stamps - 1).clamp(1, 200); widget.onChanged(); }),
-                child: const Icon(Icons.remove_circle_outline, color: Colors.white38, size: 18),
+                child: Icon(Icons.remove_circle_outline, color: context.colors.textMuted, size: 18),
               ),
               const SizedBox(width: 4),
               InkWell(
                 onTap: () => setState(() { widget.entry.stamps = (widget.entry.stamps + 1).clamp(1, 200); widget.onChanged(); }),
-                child: const Icon(Icons.add_circle_outline, color: Colors.white38, size: 18),
+                child: Icon(Icons.add_circle_outline, color: context.colors.textMuted, size: 18),
               ),
             ],
           ),
@@ -728,7 +729,7 @@ class _RewardTileState extends State<_RewardTile> {
             const SizedBox(width: 4),
             InkWell(
               onTap: widget.onRemove,
-              child: const Icon(Icons.close, color: Colors.white24, size: 18),
+              child: Icon(Icons.close, color: context.colors.textMuted, size: 18),
             ),
           ],
         ],

@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'core/supabase_client.dart';
 import 'core/notification_service.dart';
+import 'core/theme_controller.dart';
 import 'push/push_service.dart';
 import 'app.dart';
 
@@ -17,6 +18,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initSupabase();
   await initNotifications();
+  await themeController.load();
 
   // Initialize Firebase (no-op if google-services files contain placeholder values)
   try {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme.dart';
+import 'core/theme_controller.dart';
 import 'auth/role_gate_screen.dart';
 import 'auth/choose_screen.dart';
 import 'auth/login_screen.dart';
@@ -15,20 +16,25 @@ class FideliTapApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FideliTap',
-      debugShowCheckedModeBanner: false,
-      theme: buildTheme(),
-      navigatorKey: navigatorKey,
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const RoleGateScreen(),
-        '/auth/choose': (_) => const ChooseScreen(),
-        '/auth/login': (_) => const LoginScreen(),
-        '/auth/claim': (_) => const ClaimCardScreen(),
-        '/owner': (_) => const OwnerHomeShell(),
-        '/customer/cards': (_) => const CustomerHomeShell(),
-      },
+    return ListenableBuilder(
+      listenable: themeController,
+      builder: (context, _) => MaterialApp(
+        title: 'FideliTap',
+        debugShowCheckedModeBanner: false,
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
+        themeMode: themeController.mode,
+        navigatorKey: navigatorKey,
+        initialRoute: '/',
+        routes: {
+          '/': (_) => const RoleGateScreen(),
+          '/auth/choose': (_) => const ChooseScreen(),
+          '/auth/login': (_) => const LoginScreen(),
+          '/auth/claim': (_) => const ClaimCardScreen(),
+          '/owner': (_) => const OwnerHomeShell(),
+          '/customer/cards': (_) => const CustomerHomeShell(),
+        },
+      ),
     );
   }
 }

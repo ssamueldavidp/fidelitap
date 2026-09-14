@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/mobile_api_client.dart';
+import '../core/app_colors.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});
@@ -58,6 +59,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clientes'),
@@ -68,13 +70,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: TextField(
             controller: _search,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: colors.textPrimary),
             decoration: InputDecoration(
               hintText: 'Buscar cliente...',
-              hintStyle: const TextStyle(color: Color(0xFF64748B)),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)),
+              hintStyle: TextStyle(color: colors.textMuted),
+              prefixIcon: Icon(Icons.search, color: colors.textMuted),
               filled: true,
-              fillColor: const Color(0xFF1E293B),
+              fillColor: colors.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -109,12 +111,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
               : _error != null
                   ? Center(
                       child: Text('Error: $_error',
-                          style: const TextStyle(color: Color(0xFF94A3B8))),
+                          style: TextStyle(color: colors.textMuted)),
                     )
                   : _filtered.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('Sin clientes',
-                              style: TextStyle(color: Color(0xFF94A3B8))),
+                              style: TextStyle(color: colors.textMuted)),
                         )
                       : RefreshIndicator(
                           onRefresh: _load,
@@ -140,19 +142,20 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF00C896) : const Color(0xFF1E293B),
+          color: selected ? const Color(0xFF00C896) : colors.surface,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.black : const Color(0xFF94A3B8),
+            color: selected ? Colors.black : colors.textMuted,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
             fontSize: 13,
           ),
@@ -168,6 +171,7 @@ class _CustomerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final pct = customer.stampsRequired > 0
         ? customer.currentStamps / customer.stampsRequired
         : 0.0;
@@ -176,7 +180,7 @@ class _CustomerTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(14),
         border: isReady
             ? Border.all(color: const Color(0xFFF59E0B), width: 1.5)
@@ -186,7 +190,7 @@ class _CustomerTile extends StatelessWidget {
         Row(children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: colors.bg,
             child: Text(
               customer.customerName[0].toUpperCase(),
               style: const TextStyle(
@@ -197,10 +201,10 @@ class _CustomerTile extends StatelessWidget {
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(customer.customerName,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: colors.textPrimary, fontWeight: FontWeight.bold)),
               Text(customer.cardName,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                  style: TextStyle(color: colors.textMuted, fontSize: 12)),
             ]),
           ),
           if (isReady)
@@ -228,7 +232,7 @@ class _CustomerTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: pct.clamp(0.0, 1.0),
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: colors.bg,
             valueColor: AlwaysStoppedAnimation(
               isReady ? const Color(0xFFF59E0B) : const Color(0xFF00C896),
             ),
@@ -239,7 +243,7 @@ class _CustomerTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${customer.timesCompleted} canje${customer.timesCompleted != 1 ? 's' : ''} completados',
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+            style: TextStyle(color: colors.textMuted, fontSize: 11),
           ),
         ],
       ]),

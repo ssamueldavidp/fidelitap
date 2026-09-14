@@ -3,6 +3,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
 import '../core/env.dart';
 import '../core/supabase_client.dart';
+import '../core/theme_controller.dart';
+import '../core/app_colors.dart';
 
 class OwnerSettingsScreen extends StatefulWidget {
   const OwnerSettingsScreen({super.key});
@@ -180,8 +182,8 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
               ),
               if (_geofenceEnabled) ...[
                 const SizedBox(height: 16),
-                const Text('Radio de detección',
-                    style: TextStyle(fontSize: 13, color: Colors.white70)),
+                Text('Radio de detección',
+                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -198,8 +200,8 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
                   maxLength: 120,
                 ),
                 const SizedBox(height: 16),
-                const Text('Sin notificaciones de noche',
-                    style: TextStyle(fontSize: 13, color: Colors.white70)),
+                Text('Sin notificaciones de noche',
+                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary)),
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(
@@ -231,19 +233,34 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             ],
             const SizedBox(height: 32),
 
+            // ── Apariencia ─────────────────────────────────────────────────
+            _sectionHeader('Apariencia'),
+            ListenableBuilder(
+              listenable: themeController,
+              builder: (context, _) => SwitchListTile(
+                value: themeController.isDark,
+                onChanged: (v) => themeController.setDark(v),
+                contentPadding: EdgeInsets.zero,
+                secondary: Icon(themeController.isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
+                title: const Text('Tema oscuro'),
+                subtitle: Text(themeController.isDark ? 'Oscuro activado' : 'Claro activado'),
+              ),
+            ),
+            const SizedBox(height: 32),
+
             // ── Cuenta ─────────────────────────────────────────────────────
             _sectionHeader('Cuenta'),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: context.colors.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white12),
+                border: Border.all(color: context.colors.border),
               ),
               child: Row(children: [
                 Expanded(
                   child: Text('Plan ${_plan[0].toUpperCase()}${_plan.substring(1)}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                      style: TextStyle(color: context.colors.textSecondary, fontSize: 13)),
                 ),
                 TextButton(
                   onPressed: _openPlanManagement,
@@ -292,33 +309,37 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
     );
   }
 
-  Widget _proBadge() => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white12),
+  Widget _proBadge() => Builder(
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: context.colors.surfaceAlt,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.colors.border),
+          ),
+          child: Row(children: [
+            Icon(Icons.lock_outline, size: 16, color: context.colors.textMuted),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Solo disponible en Plan Pro',
+                  style: TextStyle(color: context.colors.textMuted, fontSize: 13)),
+            ),
+            TextButton(
+              onPressed: _openPlanManagement,
+              child: const Text('Actualizar →', style: TextStyle(fontSize: 12)),
+            ),
+          ]),
         ),
-        child: Row(children: [
-          const Icon(Icons.lock_outline, size: 16, color: Colors.white38),
-          const SizedBox(width: 8),
-          const Expanded(
-            child: Text('Solo disponible en Plan Pro',
-                style: TextStyle(color: Colors.white54, fontSize: 13)),
-          ),
-          TextButton(
-            onPressed: _openPlanManagement,
-            child: const Text('Actualizar →', style: TextStyle(fontSize: 12)),
-          ),
-        ]),
       );
 
-  Widget _sectionHeader(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(text.toUpperCase(),
-            style: const TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w700,
-                color: Colors.white38, letterSpacing: 1.2)),
+  Widget _sectionHeader(String text) => Builder(
+        builder: (context) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text(text.toUpperCase(),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w700,
+                  color: context.colors.textMuted, letterSpacing: 1.2)),
+        ),
       );
 
   Widget _field(String label, TextEditingController ctrl) => TextField(

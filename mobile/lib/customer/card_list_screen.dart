@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
 import '../core/supabase_client.dart';
 import '../core/notification_service.dart';
+import '../core/app_colors.dart';
 import '../shared/wallet_preview_card.dart';
 
 class CardListScreen extends StatefulWidget {
@@ -189,16 +190,16 @@ class _CardListScreenState extends State<CardListScreen> {
                   color: const Color(0xFF00C896),
                   child: _cards.isEmpty
                       ? ListView(
-                          children: const [
-                            SizedBox(height: 80),
+                          children: [
+                            const SizedBox(height: 80),
                             Center(
                               child: Column(children: [
                                 Icon(Icons.credit_card_off_outlined,
-                                    size: 64, color: Color(0xFF475569)),
-                                SizedBox(height: 16),
+                                    size: 64, color: context.colors.textMuted),
+                                const SizedBox(height: 16),
                                 Text('No tienes tarjetas aún',
                                     style: TextStyle(
-                                        color: Color(0xFF94A3B8), fontSize: 16)),
+                                        color: context.colors.textSecondary, fontSize: 16)),
                               ]),
                             ),
                           ],

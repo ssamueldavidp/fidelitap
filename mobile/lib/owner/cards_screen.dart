@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/mobile_api_client.dart';
+import '../core/app_colors.dart';
 import 'card_form_sheet.dart';
 
 class CardsScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _CardsScreenState extends State<CardsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: context.colors.bg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -45,11 +46,11 @@ class _CardsScreenState extends State<CardsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('¿Eliminar tarjeta?', style: TextStyle(color: Colors.white)),
+        backgroundColor: context.colors.surface,
+        title: Text('¿Eliminar tarjeta?', style: TextStyle(color: context.colors.textPrimary)),
         content: Text(
           'Se eliminará "${card.name}". Los clientes conservarán su historial.',
-          style: const TextStyle(color: Color(0xFF94A3B8)),
+          style: TextStyle(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -88,7 +89,7 @@ class _CardsScreenState extends State<CardsScreen> {
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text('Error: $_error',
-                        style: const TextStyle(color: Color(0xFF94A3B8))),
+                        style: TextStyle(color: context.colors.textMuted)),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: _load,
@@ -102,11 +103,11 @@ class _CardsScreenState extends State<CardsScreen> {
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         const Text('🎴', style: TextStyle(fontSize: 48)),
                         const SizedBox(height: 12),
-                        const Text('Aún no tienes tarjetas',
-                            style: TextStyle(color: Colors.white, fontSize: 16)),
+                        Text('Aún no tienes tarjetas',
+                            style: TextStyle(color: context.colors.textPrimary, fontSize: 16)),
                         const SizedBox(height: 8),
-                        const Text('Crea tu primera tarjeta de fidelidad',
-                            style: TextStyle(color: Color(0xFF94A3B8))),
+                        Text('Crea tu primera tarjeta de fidelidad',
+                            style: TextStyle(color: context.colors.textMuted)),
                         const SizedBox(height: 20),
                         FilledButton.icon(
                           onPressed: () => _openForm(),
@@ -145,10 +146,11 @@ class _CardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(children: [
@@ -158,13 +160,13 @@ class _CardTile extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               card.name,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(
+                  color: colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: 4),
             Text(
               '${card.stampsRequired} sellos · ${card.benefitDescription}',
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+              style: TextStyle(color: colors.textMuted, fontSize: 12),
             ),
             if (card.expiresAt != null) ...[
               const SizedBox(height: 4),
@@ -179,7 +181,7 @@ class _CardTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isUrgent
                           ? const Color(0xFFEF4444).withValues(alpha: 0.15)
-                          : Colors.white.withValues(alpha: 0.06),
+                          : colors.textMuted.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -188,7 +190,7 @@ class _CardTile extends StatelessWidget {
                           : '📅 Vence ${expires.day}/${expires.month}/${expires.year}',
                       style: TextStyle(
                         fontSize: 10,
-                        color: isUrgent ? const Color(0xFFEF4444) : Colors.white38,
+                        color: isUrgent ? const Color(0xFFEF4444) : colors.textMuted,
                         fontWeight: isUrgent ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
@@ -199,18 +201,18 @@ class _CardTile extends StatelessWidget {
           ]),
         ),
         PopupMenuButton<String>(
-          color: const Color(0xFF1E293B),
+          color: colors.surface,
           onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
-          itemBuilder: (_) => const [
+          itemBuilder: (ctx) => [
             PopupMenuItem(
               value: 'edit',
               child: Row(children: [
-                Icon(Icons.edit_outlined, size: 18, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Editar', style: TextStyle(color: Colors.white)),
+                Icon(Icons.edit_outlined, size: 18, color: ctx.colors.textPrimary),
+                const SizedBox(width: 8),
+                Text('Editar', style: TextStyle(color: ctx.colors.textPrimary)),
               ]),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'delete',
               child: Row(children: [
                 Icon(Icons.delete_outline, size: 18, color: Color(0xFFEF4444)),
@@ -219,7 +221,7 @@ class _CardTile extends StatelessWidget {
               ]),
             ),
           ],
-          icon: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
+          icon: Icon(Icons.more_vert, color: colors.textMuted),
         ),
       ]),
     );

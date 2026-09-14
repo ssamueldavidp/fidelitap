@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
 import 'dashboard_screen.dart';
 import 'scanner_screen.dart';
 import 'cards_screen.dart';
@@ -30,7 +31,7 @@ class _OwnerHomeShellState extends State<OwnerHomeShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: context.colors.surface,
         indicatorColor: const Color(0xFF00C896).withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(

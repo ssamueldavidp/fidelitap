@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/mobile_api_client.dart';
+import '../core/app_colors.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -121,7 +122,7 @@ class _MetricCard extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 24, fontWeight: FontWeight.w800, color: color)),
             Text(label,
-                style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
           ],
         ),
       ),

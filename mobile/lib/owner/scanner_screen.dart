@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../data/mobile_api_client.dart';
+import '../core/app_colors.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -81,17 +82,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         },
                       )
                     : Container(
-                        color: const Color(0xFF1E293B),
+                        color: context.colors.surface,
                         child: const Center(
                             child: CircularProgressIndicator(color: Color(0xFF00C896)))),
               ),
             ),
             const SizedBox(height: 20),
-            const Row(children: [
-              Expanded(child: Divider()),
-              Padding(padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('o', style: TextStyle(color: Color(0xFF64748B)))),
-              Expanded(child: Divider()),
+            Row(children: [
+              const Expanded(child: Divider()),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text('o', style: TextStyle(color: context.colors.textMuted))),
+              const Expanded(child: Divider()),
             ]),
             const SizedBox(height: 16),
             TextField(
@@ -107,10 +108,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF450A0A),
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(_error!, style: const TextStyle(color: Color(0xFFFCA5A5))),
+                child: Text(_error!, style: const TextStyle(color: Color(0xFFEF4444))),
               ),
             ],
             const SizedBox(height: 16),
@@ -163,16 +164,16 @@ class _StampResultCard extends StatelessWidget {
           children: [
             const Icon(Icons.check_circle, color: Color(0xFF00C896), size: 48),
             const SizedBox(height: 12),
-            Text('¡Sello agregado!',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const Text('¡Sello agregado!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text(name, style: const TextStyle(color: Color(0xFF94A3B8))),
+            Text(name, style: TextStyle(color: context.colors.textMuted)),
             const SizedBox(height: 20),
             LinearProgressIndicator(
               value: progress.clamp(0.0, 1.0),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
-              backgroundColor: const Color(0xFF334155),
+              backgroundColor: context.colors.surfaceAlt,
               color: isReadyToClaim ? const Color(0xFFFBBF24) : const Color(0xFF00C896),
             ),
             const SizedBox(height: 8),
@@ -183,7 +184,7 @@ class _StampResultCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF451A03),
+                  color: const Color(0xFFFBBF24).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text('🎉 ¡Tarjeta completa! Cliente listo para reclamar su premio.',

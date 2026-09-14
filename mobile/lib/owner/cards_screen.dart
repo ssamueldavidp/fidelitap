@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/mobile_api_client.dart';
 import '../core/app_colors.dart';
 import 'card_form_sheet.dart';
+import 'poster_screen.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -131,6 +132,9 @@ class _CardsScreenState extends State<CardsScreen> {
                           card: _cards[i],
                           onEdit: () => _openForm(_cards[i]),
                           onDelete: () => _delete(_cards[i]),
+                          onPoster: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => PosterScreen(cardId: _cards[i].id, cardName: _cards[i].name),
+                          )),
                         ),
                       ),
                     ),
@@ -142,7 +146,8 @@ class _CardTile extends StatelessWidget {
   final LoyaltyCardModel card;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  const _CardTile({required this.card, required this.onEdit, required this.onDelete});
+  final VoidCallback onPoster;
+  const _CardTile({required this.card, required this.onEdit, required this.onDelete, required this.onPoster});
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +207,15 @@ class _CardTile extends StatelessWidget {
         ),
         PopupMenuButton<String>(
           color: colors.surface,
-          onSelected: (v) => v == 'edit' ? onEdit() : onDelete(),
+          onSelected: (v) {
+            if (v == 'edit') {
+              onEdit();
+            } else if (v == 'poster') {
+              onPoster();
+            } else {
+              onDelete();
+            }
+          },
           itemBuilder: (ctx) => [
             PopupMenuItem(
               value: 'edit',
@@ -210,6 +223,14 @@ class _CardTile extends StatelessWidget {
                 Icon(Icons.edit_outlined, size: 18, color: ctx.colors.textPrimary),
                 const SizedBox(width: 8),
                 Text('Editar', style: TextStyle(color: ctx.colors.textPrimary)),
+              ]),
+            ),
+            PopupMenuItem(
+              value: 'poster',
+              child: Row(children: [
+                Icon(Icons.image_outlined, size: 18, color: ctx.colors.textPrimary),
+                const SizedBox(width: 8),
+                Text('Plantilla / Cartel', style: TextStyle(color: ctx.colors.textPrimary)),
               ]),
             ),
             const PopupMenuItem(

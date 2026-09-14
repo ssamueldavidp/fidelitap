@@ -8,6 +8,8 @@
 	<string>FideliTap usa tu ubicación para detectar negocios cercanos.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>FideliTap usa la cámara para escanear códigos QR de tarjetas de fidelización.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FideliTap necesita acceso a tus fotos para subir el logo, el fondo de tu tarjeta y el cartel.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

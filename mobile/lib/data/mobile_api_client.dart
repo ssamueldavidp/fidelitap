@@ -142,6 +142,50 @@ class CustomerModel {
       );
 }
 
+class PosterCardModel {
+  final String id;
+  final String name;
+  final String? slug;
+  final int stampsRequired;
+  final String posterRewardText;
+
+  const PosterCardModel({
+    required this.id,
+    required this.name,
+    this.slug,
+    required this.stampsRequired,
+    required this.posterRewardText,
+  });
+
+  factory PosterCardModel.fromJson(Map<String, dynamic> j) => PosterCardModel(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        slug: j['slug'] as String?,
+        stampsRequired: j['stamps_required'] as int,
+        posterRewardText: (j['poster_reward_text'] as String?) ?? '',
+      );
+}
+
+class PosterSettings {
+  final List<PosterCardModel> cards;
+  final String bgColor;
+  final String? bgImageUrl;
+
+  const PosterSettings({
+    required this.cards,
+    required this.bgColor,
+    this.bgImageUrl,
+  });
+
+  factory PosterSettings.fromJson(Map<String, dynamic> j) => PosterSettings(
+        cards: ((j['cards'] as List<dynamic>?) ?? [])
+            .map((e) => PosterCardModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        bgColor: (j['bg_color'] as String?) ?? '#0B0B0B',
+        bgImageUrl: j['bg_image_url'] as String?,
+      );
+}
+
 class BusinessSettings {
   final String name;
   final String? address;
@@ -305,4 +349,31 @@ class MobileApiClient {
 
   Future<Map<String, dynamic>> saveSettings(Map<String, dynamic> body) =>
       patch('/api/mobile/settings', body);
+
+  Future<PosterSettings> getPosterSettings() async {
+    final data = await get('/api/mobile/poster/settings') as Map<String, dynamic>;
+    return PosterSettings.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> savePosterSettings(Map<String, dynamic> body) async {
+    final res = await http.patch(
+      Uri.parse('$_base/api/mobile/poster/settings'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<String> uploadPosterBackground(List<int> bytes, String mimeType) =>
+      _uploadImage('/api/mobile/poster/settings/background', bytes, mimeType, 'poster-bg');
+
+  Future<List<int>> downloadPoster(String cardId, {required String format, required String orientation}) async {
+    final uri = Uri.parse('$_base/api/mobile/poster/$cardId?format=$format&orientation=$orientation');
+    final res = await http.get(uri, headers: _headers);
+    if (res.statusCode != 200) {
+      final err = jsonDecode(res.body) as Map<String, dynamic>;
+      throw Exception(err['error'] ?? 'Error al generar el cartel');
+    }
+    return res.bodyBytes;
+  }
 }

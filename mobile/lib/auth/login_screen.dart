@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/supabase_client.dart';
 import '../core/auth_error.dart';
+import '../core/env.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   String? _error;
   bool _obscure = true;
+
+  Future<void> _openForgotPassword() async {
+    final uri = Uri.parse('${Env.apiBaseUrl}/forgot-password');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   Future<void> _login() async {
     setState(() { _loading = true; _error = null; });
@@ -61,6 +68,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _openForgotPassword,
+              child: const Text('¿Olvidaste tu contraseña?'),
             ),
           ),
           if (_error != null) ...[

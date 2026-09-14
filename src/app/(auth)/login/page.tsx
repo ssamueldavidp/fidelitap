@@ -4,6 +4,7 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loginAction } from './actions'
+import { PasswordInput } from '@/components/ui/password-input'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -50,11 +51,13 @@ function LoginForm() {
             <label htmlFor="password" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Contraseña
             </label>
+            <Link href="/forgot-password" className="text-xs text-[#00C896] hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="current-password"
             required
             placeholder="••••••••"

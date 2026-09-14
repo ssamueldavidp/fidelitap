@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { registerAction, type RegisterResult } from './actions'
 import { Check } from 'lucide-react'
+import { PasswordInput } from '@/components/ui/password-input'
 
 const PLANS = [
   {
@@ -150,10 +151,9 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
           <label htmlFor="password" className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
             Contraseña
           </label>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="new-password"
             required
             placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número"

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
+import '../core/env.dart';
+import '../core/supabase_client.dart';
 
 class OwnerSettingsScreen extends StatefulWidget {
   const OwnerSettingsScreen({super.key});
@@ -123,6 +126,16 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
 
   bool get _isPro => ['pro', 'premium'].contains(_plan);
 
+  Future<void> _openPlanManagement() async {
+    final uri = Uri.parse('${Env.apiBaseUrl}/settings?tab=suscripcion');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _logout() async {
+    await supabase.auth.signOut();
+    if (mounted) Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -218,6 +231,37 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             ],
             const SizedBox(height: 32),
 
+            // ── Cuenta ─────────────────────────────────────────────────────
+            _sectionHeader('Cuenta'),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(children: [
+                Expanded(
+                  child: Text('Plan ${_plan[0].toUpperCase()}${_plan.substring(1)}',
+                      style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                ),
+                TextButton(
+                  onPressed: _openPlanManagement,
+                  child: const Text('Gestionar plan →', style: TextStyle(fontSize: 12)),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _logout,
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Cerrar sesión'),
+              ),
+            ),
+            const SizedBox(height: 32),
+
             // ── Feedback ───────────────────────────────────────────────────
             if (_error != null)
               Padding(
@@ -263,7 +307,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
                 style: TextStyle(color: Colors.white54, fontSize: 13)),
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: _openPlanManagement,
             child: const Text('Actualizar →', style: TextStyle(fontSize: 12)),
           ),
         ]),

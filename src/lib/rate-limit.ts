@@ -33,6 +33,15 @@ export const loginRateLimit = isDev
       prefix: 'rl:login',
     })
 
+// 3 solicitudes de reseteo de contraseña por 15 minutos por IP
+export const passwordResetRateLimit = isDev
+  ? noopLimiter
+  : new Ratelimit({
+      redis: redis!,
+      limiter: Ratelimit.slidingWindow(3, '15 m'),
+      prefix: 'rl:pwreset',
+    })
+
 // 20 requests por minuto para API general
 export const apiRateLimit = isDev
   ? noopLimiter

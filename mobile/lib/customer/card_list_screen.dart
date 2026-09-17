@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
@@ -58,7 +58,7 @@ class _CardListScreenState extends State<CardListScreen> {
         return;
       }
 
-      final url = Platform.isIOS
+      final url = defaultTargetPlatform == TargetPlatform.iOS
           ? data['apple_url'] as String
           : data['google_url'] as String;
 
@@ -277,7 +277,7 @@ class _CardListScreenState extends State<CardListScreen> {
                                 _buildRewardProgress(lc, design, currentStamps),
                                 const SizedBox(height: 10),
                                 _WalletButton(
-                                  isIOS: Platform.isIOS,
+                                  isIOS: defaultTargetPlatform == TargetPlatform.iOS,
                                   loading: isWalletLoading,
                                   onTap: () => _addToWallet(
                                     cardId,

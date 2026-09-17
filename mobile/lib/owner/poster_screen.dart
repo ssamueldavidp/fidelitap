@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/mobile_api_client.dart';
 import '../core/app_colors.dart';
@@ -111,13 +110,15 @@ class _PosterScreenState extends State<PosterScreen> {
     try {
       await _save();
       final bytes = await _api.downloadPoster(widget.cardId, format: format, orientation: _orientation);
-      final dir = await getTemporaryDirectory();
       final ext = format == 'pdf' ? 'pdf' : 'png';
-      final file = File('${dir.path}/cartel_${widget.cardId}.$ext');
-      await file.writeAsBytes(bytes);
+      final xfile = XFile.fromData(
+        Uint8List.fromList(bytes),
+        mimeType: format == 'pdf' ? 'application/pdf' : 'image/png',
+        name: 'cartel_${widget.cardId}.$ext',
+      );
       if (mounted) {
         await SharePlus.instance.share(ShareParams(
-          files: [XFile(file.path)],
+          files: [xfile],
           text: 'Cartel para ${widget.cardName}',
         ));
       }

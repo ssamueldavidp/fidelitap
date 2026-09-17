@@ -41,6 +41,13 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <!--
+    Required by the passkeys_web plugin (pulled in transitively via Supabase
+    Auth's optional WebAuthn/MFA support — this app doesn't use passkey login).
+    Without it, PasskeyAuthenticator.init() crashes the app on load: see
+    https://github.com/corbado/flutter-passkeys/releases/tag/2.4.0
+  -->
+  <script src="passkeys-bundle.js"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 final _plugin = FlutterLocalNotificationsPlugin();
 
+// flutter_local_notifications has no web implementation — calling it there
+// throws before first paint instead of a catchable MissingPluginException.
 Future<void> initNotifications() async {
+  if (kIsWeb) return;
   const android = AndroidInitializationSettings('@mipmap/ic_launcher');
   const iOS = DarwinInitializationSettings(
     requestAlertPermission: true,
@@ -15,6 +19,7 @@ Future<void> initNotifications() async {
 }
 
 Future<void> showWalletAddedNotification({required String cardName}) async {
+  if (kIsWeb) return;
   const androidDetails = AndroidNotificationDetails(
     'wallet_channel',
     'Wallet',

@@ -23,6 +23,11 @@ class _LoginScreenState extends State<LoginScreen> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  Future<void> _openWebRegister() async {
+    final uri = Uri.parse('${Env.apiBaseUrl}/register');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   Future<void> _login() async {
     setState(() { _loading = true; _error = null; });
     try {
@@ -88,6 +93,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ? const SizedBox(height: 20, width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
                 : const Text('Entrar'),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: TextButton(
+              onPressed: _openWebRegister,
+              child: const Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: '¿No tienes cuenta? '),
+                  TextSpan(text: 'Regístrate en la página web', style: TextStyle(fontWeight: FontWeight.w700)),
+                ]),
+              ),
+            ),
           ),
         ],
       ),

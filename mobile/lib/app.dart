@@ -5,6 +5,7 @@ import 'auth/role_gate_screen.dart';
 import 'auth/choose_screen.dart';
 import 'auth/login_screen.dart';
 import 'auth/claim_card_screen.dart';
+import 'auth/customer_entry_screen.dart';
 import 'owner/owner_home_shell.dart';
 import 'customer/customer_home_shell.dart';
 
@@ -31,6 +32,7 @@ class FideliTapApp extends StatelessWidget {
           '/auth/choose': (_) => const ChooseScreen(),
           '/auth/login': (_) => const LoginScreen(),
           '/auth/claim': (_) => const ClaimCardScreen(),
+          '/auth/customer': (_) => const CustomerEntryScreen(),
           '/owner': (_) => const OwnerHomeShell(),
           '/customer/cards': (_) => const CustomerHomeShell(),
         },

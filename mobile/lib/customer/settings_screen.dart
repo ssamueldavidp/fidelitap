@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../geofence/geofence_repository.dart';
 import '../core/app_colors.dart';
 import '../core/theme_controller.dart';
+import '../core/supabase_client.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -44,6 +45,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     });
     await prefs.setStringList('disabled_geofences', _disabled.toList());
+  }
+
+  Future<void> _logout() async {
+    await supabase.auth.signOut();
+    if (mounted) Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   @override
@@ -90,6 +96,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: const Text('Avisar al entrar en radio de 300m'),
                       activeThumbColor: const Color(0xFF00C896),
                     )),
+                const SizedBox(height: 32),
+                Text('Cuenta', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textPrimary)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _logout,
+                    icon: const Icon(Icons.logout, size: 18),
+                    label: const Text('Cerrar sesión'),
+                  ),
+                ),
               ],
             ),
     );

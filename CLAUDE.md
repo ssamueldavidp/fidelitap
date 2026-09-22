@@ -95,7 +95,7 @@ src/
 
 Fuente de verdad: `src/lib/plan-limits.ts` (límites) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
 
-**Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos).
+**Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos); geofencing de proximidad (app móvil); aparecer en el directorio "Tiendas cercanas" de la app móvil (ver abajo).
 
 ---
 
@@ -172,9 +172,10 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 - [x] Web Push Notifications (Pro/Premium): opt-in en success-screen de activación, aviso de progreso de sellos, recordatorio de re-engagement a 14 días (cron), panel de campañas manuales en dashboard (envío inmediato/programado/cancelable)
 - [x] Páginas legales `/privacy` y `/terms` (borrador — requieren revisión legal antes de producción)
 - [x] **App móvil Flutter** — dueño y cliente en una sola app
-  - Auth Supabase anónimo (cliente) + email/password (dueño)
-  - Dueño: dashboard, crear/editar tarjetas con logo upload, multi-nivel de premios, scanner QR
-  - Cliente: lista de tarjetas con progreso de sellos (multi-nivel), botón Agregar a Wallet
+  - Auth Supabase anónimo (cliente) + email/password (dueño). Dueño solo puede iniciar sesión desde la app (el registro es web-only); un cliente puede registrarse en la app con o sin tener ya un código de tarjeta (`/auth/customer` → escanear QR o crear cuenta y agregar una tarjeta después)
+  - Validación de correos temporales/desechables en todo registro (web negocio, activación pública, y ambos flujos de registro de cliente en la app) — ver `src/lib/validations/disposable-email-domains.ts`
+  - Dueño: dashboard, crear/editar tarjetas con logo upload, multi-nivel de premios, scanner QR, categoría del negocio
+  - Cliente: lista de tarjetas con progreso de sellos (multi-nivel), botón Agregar a Wallet, pestaña **Tiendas cercanas** (directorio Pro+, filtro por categoría, ubicación actual o búsqueda por ciudad)
   - Tarjetas avanzadas: `card_rewards` (multi-nivel), `logo_url`, `expires_at`, `max_uses_per_customer`, preview en vivo
   - Push FCM (Firebase): registro de token, notificaciones locales
   - Geofencing (Pro+): notificación FCM cuando el cliente entra al radio del negocio; dueño configura radio, mensaje y horario silencioso desde la app

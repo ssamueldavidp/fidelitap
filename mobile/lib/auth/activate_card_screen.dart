@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/supabase_client.dart';
+import '../core/email_validation.dart';
 import '../data/mobile_api_client.dart';
 
 /// A brand-new customer registers a card entirely inside the app: they
@@ -60,7 +61,8 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
 
   Future<void> _activate() async {
     if (_name.text.trim().length < 2) { setState(() => _submitError = 'Ingresa tu nombre'); return; }
-    if (!_email.text.contains('@')) { setState(() => _submitError = 'Ingresa un email válido'); return; }
+    final emailError = validateEmail(_email.text);
+    if (emailError != null) { setState(() => _submitError = emailError); return; }
     if (!_dataConsent) { setState(() => _submitError = 'Debes aceptar el tratamiento de datos para continuar.'); return; }
 
     setState(() { _submitting = true; _submitError = null; });

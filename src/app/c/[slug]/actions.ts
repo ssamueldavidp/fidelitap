@@ -5,10 +5,11 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
+import { emailSchema } from '@/lib/validations/common'
 
 const schema = z.object({
   name:            z.string().min(2, 'Mínimo 2 caracteres').max(80).trim(),
-  email:           z.string().email('Email inválido').toLowerCase(),
+  email:           emailSchema,
   phone:           z.string().max(20).trim().optional(),
   data_consent:    z.literal('true').refine(v => v === 'true', 'Debes aceptar el tratamiento de datos para continuar.'),
   marketing:       z.string().optional(),

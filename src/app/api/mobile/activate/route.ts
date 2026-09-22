@@ -5,19 +5,15 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
+import { customerProfileSchema, findOrCreateCustomer } from '@/lib/mobile/customer-registration'
 
 // Lets a brand-new customer create their card entirely inside the app —
 // scan a business's QR (or enter its slug), fill in name/email, done.
 // Mirrors src/app/c/[slug]/actions.ts's activateCardAction, but links the
 // new customer_cards row directly to the caller's auth uid instead of
 // requiring a separate claim_customer_card RPC call afterwards.
-const bodySchema = z.object({
+const bodySchema = customerProfileSchema.extend({
   slug: z.string().min(1),
-  name: z.string().min(2, 'Mínimo 2 caracteres').max(80).trim(),
-  email: z.string().email('Email inválido').toLowerCase().trim(),
-  phone: z.string().max(20).trim().optional(),
-  data_consent: z.literal(true, { message: 'Debes aceptar el tratamiento de datos para continuar.' }),
-  marketing_consent: z.boolean().default(false),
 })
 
 export async function POST(req: NextRequest) {
@@ -27,7 +23,7 @@ export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null)
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
-  const { slug, name, email, phone, marketing_consent } = parsed.data
+  const { slug, email } = parsed.data
 
   const serviceClient = createServiceClient()
 
@@ -43,26 +39,8 @@ export async function POST(req: NextRequest) {
   const business = card.businesses as unknown as { name: string; plan: string } | null
 
   // 1. Find or create the customer by email
-  let { data: customer } = await serviceClient
-    .from('customers')
-    .select('id')
-    .eq('email', email)
-    .maybeSingle()
-
-  if (!customer) {
-    const { data: newCustomer, error: insertErr } = await serviceClient
-      .from('customers')
-      .insert({ email, name, phone: phone ?? null, marketing_consent })
-      .select('id')
-      .single()
-    if (insertErr || !newCustomer) return NextResponse.json({ error: 'Error al registrarte. Intenta de nuevo.' }, { status: 500 })
-    customer = newCustomer
-  } else if (phone || marketing_consent) {
-    await serviceClient
-      .from('customers')
-      .update({ ...(phone ? { phone } : {}), ...(marketing_consent ? { marketing_consent: true } : {}) })
-      .eq('id', customer.id)
-  }
+  const customer = await findOrCreateCustomer(serviceClient, parsed.data)
+  if (!customer) return NextResponse.json({ error: 'Error al registrarte. Intenta de nuevo.' }, { status: 500 })
 
   // 2. Anti-fraud: one email = one card per business. Already have one? Just link it.
   const { data: existing } = await serviceClient
@@ -126,7 +104,7 @@ export async function POST(req: NextRequest) {
   if (business) {
     void sendCustomerWelcome({
       to: email,
-      customerName: name,
+      customerName: parsed.data.name,
       businessName: business.name,
       cardUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'}/c/${slug}`,
     })

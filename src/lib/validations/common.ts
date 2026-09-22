@@ -1,10 +1,12 @@
 import { z } from 'zod'
+import { isDisposableEmailDomain } from './disposable-email-domains'
 
 export const emailSchema = z
   .string()
   .email('Email inválido')
   .toLowerCase()
   .trim()
+  .refine((email) => !isDisposableEmailDomain(email), 'No se permiten correos temporales')
 
 export const uuidSchema = z.string().uuid('ID inválido')
 

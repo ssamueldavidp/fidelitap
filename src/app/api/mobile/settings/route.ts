@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
+import { BUSINESS_CATEGORIES } from '@/lib/business-categories'
 
 const VALID_COOLDOWNS = [0, 60, 300, 900, 3600, 86400]
 const VALID_RADII = [100, 300, 500]
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (db.from('businesses') as any)
     .select(`
-      name, address, latitude, longitude, stamp_cooldown_seconds, plan, email,
+      name, address, category, latitude, longitude, stamp_cooldown_seconds, plan, email,
       timezone, geofence_enabled, geofence_radius_m, geofence_message,
       geofence_cooldown_h, quiet_hours_start, quiet_hours_end
     `)
@@ -30,7 +31,7 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json()
   const {
-    name, address, latitude, longitude, stamp_cooldown_seconds,
+    name, address, category, latitude, longitude, stamp_cooldown_seconds,
     timezone, geofence_enabled, geofence_radius_m, geofence_message,
     geofence_cooldown_h, quiet_hours_start, quiet_hours_end,
   } = body
@@ -48,6 +49,12 @@ export async function PATCH(req: NextRequest) {
   const update: Record<string, unknown> = {}
   if (name?.trim()) update.name = name.trim()
   if (address !== undefined) update.address = address || null
+  if (category !== undefined) {
+    if (category && !BUSINESS_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: 'Categoría inválida' }, { status: 400 })
+    }
+    update.category = category || null
+  }
   if (latitude !== undefined) update.latitude = latitude ? Number(latitude) : null
   if (longitude !== undefined) update.longitude = longitude ? Number(longitude) : null
   if (stamp_cooldown_seconds !== undefined && VALID_COOLDOWNS.includes(Number(stamp_cooldown_seconds))) {
@@ -83,7 +90,7 @@ export async function PATCH(req: NextRequest) {
     .update(update)
     .eq('owner_id', user.id)
     .select(`
-      name, address, latitude, longitude, stamp_cooldown_seconds,
+      name, address, category, latitude, longitude, stamp_cooldown_seconds,
       timezone, geofence_enabled, geofence_radius_m, geofence_message,
       geofence_cooldown_h, quiet_hours_start, quiet_hours_end
     `)

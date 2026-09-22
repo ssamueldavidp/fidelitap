@@ -186,9 +186,61 @@ class PosterSettings {
       );
 }
 
+class StoreListingModel {
+  final String id;
+  final String name;
+  final String? category;
+  final String? address;
+  final String? avatarUrl;
+  final double? distanceKm;
+  final String primaryCardId;
+  final String primaryCardSlug;
+  final String primaryCardName;
+  final String benefitDescription;
+  final int stampsRequired;
+  final String? expiresAt;
+  final Map<String, dynamic> designConfig;
+
+  const StoreListingModel({
+    required this.id,
+    required this.name,
+    this.category,
+    this.address,
+    this.avatarUrl,
+    this.distanceKm,
+    required this.primaryCardId,
+    required this.primaryCardSlug,
+    required this.primaryCardName,
+    required this.benefitDescription,
+    required this.stampsRequired,
+    this.expiresAt,
+    required this.designConfig,
+  });
+
+  factory StoreListingModel.fromJson(Map<String, dynamic> j) {
+    final card = j['primary_card'] as Map<String, dynamic>;
+    return StoreListingModel(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      category: j['category'] as String?,
+      address: j['address'] as String?,
+      avatarUrl: j['avatar_url'] as String?,
+      distanceKm: (j['distance_km'] as num?)?.toDouble(),
+      primaryCardId: card['id'] as String,
+      primaryCardSlug: card['slug'] as String,
+      primaryCardName: card['name'] as String,
+      benefitDescription: card['benefit_description'] as String,
+      stampsRequired: card['stamps_required'] as int,
+      expiresAt: card['expires_at'] as String?,
+      designConfig: (card['design_config'] as Map<String, dynamic>?) ?? {},
+    );
+  }
+}
+
 class BusinessSettings {
   final String name;
   final String? address;
+  final String? category;
   final double? latitude;
   final double? longitude;
   final int stampCooldownSeconds;
@@ -203,6 +255,7 @@ class BusinessSettings {
   const BusinessSettings({
     required this.name,
     this.address,
+    this.category,
     this.latitude,
     this.longitude,
     required this.stampCooldownSeconds,
@@ -218,6 +271,7 @@ class BusinessSettings {
   factory BusinessSettings.fromJson(Map<String, dynamic> j) => BusinessSettings(
         name: j['name'] as String,
         address: j['address'] as String?,
+        category: j['category'] as String?,
         latitude: (j['latitude'] as num?)?.toDouble(),
         longitude: (j['longitude'] as num?)?.toDouble(),
         stampCooldownSeconds: j['stamp_cooldown_seconds'] as int? ?? 0,
@@ -375,5 +429,27 @@ class MobileApiClient {
       throw Exception(err['error'] ?? 'Error al generar el cartel');
     }
     return res.bodyBytes;
+  }
+
+  Future<List<StoreListingModel>> getNearbyStores({
+    double? lat,
+    double? lng,
+    double? radiusKm,
+    String? city,
+    String? category,
+  }) async {
+    final params = <String, String>{
+      if (lat != null) 'lat': lat.toString(),
+      if (lng != null) 'lng': lng.toString(),
+      if (radiusKm != null) 'radius_km': radiusKm.toString(),
+      if (city != null && city.isNotEmpty) 'city': city,
+      if (category != null && category.isNotEmpty) 'category': category,
+    };
+    final uri = Uri.parse('$_base/api/mobile/directory/businesses').replace(queryParameters: params.isEmpty ? null : params);
+    final res = await http.get(uri, headers: _headers);
+    final json = jsonDecode(res.body) as Map<String, dynamic>;
+    if (json.containsKey('error')) throw Exception(json['error']);
+    final stores = json['stores'] as List<dynamic>;
+    return stores.map((e) => StoreListingModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

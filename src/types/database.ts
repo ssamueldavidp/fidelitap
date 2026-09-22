@@ -36,7 +36,9 @@ export type Database = {
     Tables: {
       businesses: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          category: string | null
           created_at: string
           email: string
           geo_radius_m: number
@@ -46,7 +48,9 @@ export type Database = {
           geofence_radius_m: number
           id: string
           lat: number | null
+          latitude: number | null
           lng: number | null
+          longitude: number | null
           mp_payer_email: string | null
           mp_preapproval_id: string | null
           name: string
@@ -64,7 +68,9 @@ export type Database = {
           wompi_customer_id: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          category?: string | null
           created_at?: string
           email: string
           geo_radius_m?: number
@@ -74,7 +80,9 @@ export type Database = {
           geofence_radius_m?: number
           id?: string
           lat?: number | null
+          latitude?: number | null
           lng?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name: string
@@ -92,7 +100,9 @@ export type Database = {
           wompi_customer_id?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          category?: string | null
           created_at?: string
           email?: string
           geo_radius_m?: number
@@ -102,7 +112,9 @@ export type Database = {
           geofence_radius_m?: number
           id?: string
           lat?: number | null
+          latitude?: number | null
           lng?: number | null
+          longitude?: number | null
           mp_payer_email?: string | null
           mp_preapproval_id?: string | null
           name?: string
@@ -683,6 +695,18 @@ export type Database = {
     }
     Functions: {
       add_stamp: { Args: { p_card_id: string }; Returns: Json }
+      business_has_active_card: { Args: { biz_id: string }; Returns: boolean }
+      claim_customer_card: {
+        Args: { p_unique_code: string }
+        Returns: {
+          business_name: string
+          card_name: string
+          current_stamps: number
+          customer_card_id: string
+          stamps_required: number
+          status: string
+        }[]
+      }
       claim_reward: { Args: { p_card_id: string }; Returns: Json }
       get_business_metrics: { Args: { p_business_id: string }; Returns: Json }
       get_customers_list: {
@@ -834,7 +858,6 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
 
 // Helpers para tablas individuales
 export type Business = Database['public']['Tables']['businesses']['Row']

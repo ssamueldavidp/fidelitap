@@ -5,6 +5,7 @@ import '../core/env.dart';
 import '../core/supabase_client.dart';
 import '../core/theme_controller.dart';
 import '../core/app_colors.dart';
+import '../core/business_categories.dart';
 
 class OwnerSettingsScreen extends StatefulWidget {
   const OwnerSettingsScreen({super.key});
@@ -22,6 +23,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
   String? _success;
   int _cooldown = 0;
   String _plan = 'free';
+  String? _category;
 
   // Geofence state
   bool _geofenceEnabled = false;
@@ -67,6 +69,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
       setState(() {
         _name.text = s.name;
         _address.text = s.address ?? '';
+        _category = s.category;
         _cooldown = s.stampCooldownSeconds;
         _plan = s.plan;
         _geofenceEnabled = s.geofenceEnabled;
@@ -88,6 +91,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
       final body = <String, dynamic>{
         'name': _name.text.trim(),
         'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
+        'category': _category,
         'stamp_cooldown_seconds': _cooldown,
       };
       if (_isPro) {
@@ -154,6 +158,15 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             _field('Nombre del negocio', _name),
             const SizedBox(height: 12),
             _field('Dirección', _address),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _category,
+              decoration: _inputDeco('Categoría'),
+              items: businessCategories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (v) => setState(() => _category = v),
+            ),
             const SizedBox(height: 24),
 
             // ── Cooldown de sellos ─────────────────────────────────────────

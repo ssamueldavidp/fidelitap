@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { saveAccountAction } from './actions'
-import { MapPin, Building2, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { MapPin, Building2, Tag, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { BUSINESS_CATEGORIES } from '@/lib/business-categories'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -22,13 +23,14 @@ function SubmitButton() {
 interface AccountFormProps {
   name: string
   address: string | null
+  category: string | null
   latitude: number | null
   longitude: number | null
 }
 
 const initial = { error: undefined, success: false }
 
-export function AccountForm({ name, address, latitude, longitude }: AccountFormProps) {
+export function AccountForm({ name, address, category, latitude, longitude }: AccountFormProps) {
   const [state, formAction] = useFormState(saveAccountAction, initial)
   const [lat, setLat] = useState(latitude?.toString() ?? '')
   const [lng, setLng] = useState(longitude?.toString() ?? '')
@@ -77,6 +79,24 @@ export function AccountForm({ name, address, latitude, longitude }: AccountFormP
           placeholder="Calle 123 # 45-67, Bogotá"
           className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
         />
+      </div>
+
+      {/* Categoría */}
+      <div>
+        <label className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">
+          <Tag size={12} />
+          Categoría <span className="font-normal normal-case">(para aparecer en Tiendas cercanas, plan Pro+)</span>
+        </label>
+        <select
+          name="category"
+          defaultValue={category ?? ''}
+          className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary"
+        >
+          <option value="">Sin categoría</option>
+          {BUSINESS_CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
       {/* Ubicación GPS (geofencing) */}

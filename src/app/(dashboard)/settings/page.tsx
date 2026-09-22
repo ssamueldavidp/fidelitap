@@ -23,7 +23,7 @@ export default async function SettingsPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: business } = await (supabase as any)
     .from('businesses')
-    .select('id, name, plan, stamp_cooldown_seconds, lat, lng, geo_radius_m, address, latitude, longitude, timezone, geofence_enabled, geofence_radius_m, geofence_message, geofence_cooldown_h, quiet_hours_start, quiet_hours_end')
+    .select('id, name, plan, stamp_cooldown_seconds, lat, lng, geo_radius_m, address, category, latitude, longitude, timezone, geofence_enabled, geofence_radius_m, geofence_message, geofence_cooldown_h, quiet_hours_start, quiet_hours_end')
     .eq('owner_id', user.id)
     .single() as { data: Record<string, any> | null }
 
@@ -93,6 +93,7 @@ export default async function SettingsPage({
             <AccountForm
               name={business?.name ?? ''}
               address={business?.address ?? null}
+              category={business?.category ?? null}
               latitude={business?.latitude ?? null}
               longitude={business?.longitude ?? null}
             />

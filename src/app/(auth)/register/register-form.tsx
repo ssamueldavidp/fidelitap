@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { registerAction, type RegisterResult } from './actions'
 import { Check } from 'lucide-react'
 import { PasswordInput } from '@/components/ui/password-input'
+import { getPlanFeatures } from '@/lib/plan-features'
+import type { PlanSlug } from '@/lib/plan-limits'
 
 const PLANS = [
   {
@@ -112,6 +114,14 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
             )
           })}
         </div>
+        <ul className="mt-3 flex flex-col gap-1">
+          {getPlanFeatures(selectedPlan as PlanSlug).map((f) => (
+            <li key={f} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+              <Check size={11} className="text-[#00C896] mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <form action={formAction} className="flex flex-col gap-4">

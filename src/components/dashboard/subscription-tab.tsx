@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, Loader2, Check } from 'lucide-react'
+import { getPlanFeatures, isProPlan } from '@/lib/plan-features'
+import type { PlanSlug } from '@/lib/plan-limits'
 
 type SubscriptionData = {
   plan: string
@@ -149,6 +151,20 @@ export function SubscriptionTab() {
           <span>{statusCfg.label}</span>
         </div>
 
+        <ul className="mt-4 flex flex-col gap-1.5">
+          {getPlanFeatures(data.plan as PlanSlug).map((f) => (
+            <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
+              <Check size={12} className="text-primary mt-0.5 shrink-0" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        {!isProPlan(data.plan) && (
+          <p className="mt-4 text-xs text-amber-400 bg-amber-400/10 rounded-lg px-3 py-2">
+            Con Pro o Premium tu negocio aparece en &quot;Tiendas cercanas&quot; de la app y puedes enviar notificaciones push a tus clientes.
+          </p>
+        )}
+
         {data.subscriptionStatus === 'pending_cancel' && data.subscriptionEndDate && (
           <p className="mt-2 text-sm text-amber-400">
             Activo hasta el {formatDate(data.subscriptionEndDate)}
@@ -182,6 +198,9 @@ export function SubscriptionTab() {
               <div>
                 <p className="font-semibold text-foreground text-sm">{PLAN_LABELS[slug]}</p>
                 <p className="text-xs text-muted-foreground">{formatCOP(PLAN_PRICES[slug])}/mes</p>
+                {isProPlan(slug) && !isProPlan(data.plan) && (
+                  <p className="text-[11px] text-primary mt-1">Incluye Tiendas cercanas, push y alertas de proximidad</p>
+                )}
               </div>
               <button
                 type="button"

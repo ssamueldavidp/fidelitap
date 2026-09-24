@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
 import '../core/env.dart';
@@ -6,6 +7,7 @@ import '../core/supabase_client.dart';
 import '../core/theme_controller.dart';
 import '../core/app_colors.dart';
 import '../core/business_categories.dart';
+import 'campaigns_screen.dart';
 
 class OwnerSettingsScreen extends StatefulWidget {
   const OwnerSettingsScreen({super.key});
@@ -24,6 +26,10 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
   int _cooldown = 0;
   String _plan = 'free';
   String? _category;
+  List<String> _planFeatures = [];
+  double? _lat;
+  double? _lng;
+  bool _locating = false;
 
   // Geofence state
   bool _geofenceEnabled = false;
@@ -70,6 +76,9 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
         _name.text = s.name;
         _address.text = s.address ?? '';
         _category = s.category;
+        _planFeatures = s.planFeatures;
+        _lat = s.latitude;
+        _lng = s.longitude;
         _cooldown = s.stampCooldownSeconds;
         _plan = s.plan;
         _geofenceEnabled = s.geofenceEnabled;
@@ -92,6 +101,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
         'name': _name.text.trim(),
         'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
         'category': _category,
+        if (_lat != null && _lng != null) ...{'latitude': _lat, 'longitude': _lng},
         'stamp_cooldown_seconds': _cooldown,
       };
       if (_isPro) {
@@ -112,6 +122,24 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
       setState(() { _success = 'Ajustes guardados'; _saving = false; });
     } catch (e) {
       setState(() { _error = 'Error de conexión'; _saving = false; });
+    }
+  }
+
+  Future<void> _useMyLocation() async {
+    setState(() { _locating = true; _error = null; });
+    try {
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        setState(() { _error = 'Activa el permiso de ubicación para fijar la ubicación de tu negocio'; _locating = false; });
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      setState(() { _lat = pos.latitude; _lng = pos.longitude; _locating = false; });
+    } catch (e) {
+      setState(() { _error = 'No se pudo obtener la ubicación'; _locating = false; });
     }
   }
 
@@ -166,6 +194,38 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
               onChanged: (v) => setState(() => _category = v),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: context.colors.surfaceAlt,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: context.colors.border),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  _lat != null && _lng != null
+                      ? 'Ubicación fijada: ${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}'
+                      : 'Sin ubicación GPS todavía',
+                  style: TextStyle(color: context.colors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _isPro
+                      ? 'Se usa para ordenarte por cercanía en "Tiendas cercanas" y para las alertas de proximidad. Guarda los cambios al terminar.'
+                      : 'Solo se usa con plan Pro o Premium (Tiendas cercanas y alertas de proximidad).',
+                  style: TextStyle(color: context.colors.textMuted, fontSize: 12),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _locating ? null : _useMyLocation,
+                  icon: _locating
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.my_location, size: 18),
+                  label: const Text('Usar mi ubicación actual'),
+                ),
+              ]),
             ),
             const SizedBox(height: 24),
 
@@ -246,6 +306,20 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             ],
             const SizedBox(height: 32),
 
+            // ── Marketing ──────────────────────────────────────────────────
+            _sectionHeader('Marketing'),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.campaign_outlined),
+              title: const Text('Campañas push'),
+              subtitle: Text(_isPro ? 'Envía promociones a tus clientes' : 'Disponible en plan Pro o Premium'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CampaignsScreen()),
+              ),
+            ),
+            const SizedBox(height: 24),
+
             // ── Apariencia ─────────────────────────────────────────────────
             _sectionHeader('Apariencia'),
             ListenableBuilder(
@@ -281,6 +355,31 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
                 ),
               ]),
             ),
+            if (_planFeatures.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              ..._planFeatures.map((f) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Icon(Icons.check, size: 14, color: Color(0xFF00C896)),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text(f, style: TextStyle(color: context.colors.textSecondary, fontSize: 12))),
+                    ]),
+                  )),
+            ],
+            if (!_isPro) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFBBF24).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Con Pro o Premium tu negocio aparece en "Tiendas cercanas" de la app y puedes enviar notificaciones push a tus clientes.',
+                  style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,

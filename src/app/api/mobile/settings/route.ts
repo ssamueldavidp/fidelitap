@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
 import { BUSINESS_CATEGORIES } from '@/lib/business-categories'
+import { getPlanFeatures, isProPlan } from '@/lib/plan-features'
+import type { PlanSlug } from '@/lib/plan-limits'
 
 const VALID_COOLDOWNS = [0, 60, 300, 900, 3600, 86400]
 const VALID_RADII = [100, 300, 500]
@@ -22,7 +24,11 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (error || !data) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
-  return NextResponse.json(data)
+  return NextResponse.json({
+    ...data,
+    plan_features: getPlanFeatures(data.plan as PlanSlug),
+    is_pro: isProPlan(data.plan),
+  })
 }
 
 export async function PATCH(req: NextRequest) {

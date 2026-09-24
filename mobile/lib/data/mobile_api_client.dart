@@ -237,6 +237,40 @@ class StoreListingModel {
   }
 }
 
+class CampaignModel {
+  final String id;
+  final String title;
+  final String body;
+  final String status;
+  final String? scheduledAt;
+  final int? recipientsCount;
+
+  const CampaignModel({
+    required this.id,
+    required this.title,
+    required this.body,
+    required this.status,
+    this.scheduledAt,
+    this.recipientsCount,
+  });
+
+  factory CampaignModel.fromJson(Map<String, dynamic> j) => CampaignModel(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        body: j['body'] as String,
+        status: j['status'] as String,
+        scheduledAt: j['scheduled_at'] as String?,
+        recipientsCount: j['recipients_count'] as int?,
+      );
+}
+
+class CampaignsData {
+  final bool eligible;
+  final List<({String id, String name})> cards;
+  final List<CampaignModel> campaigns;
+  const CampaignsData({required this.eligible, required this.cards, required this.campaigns});
+}
+
 class BusinessSettings {
   final String name;
   final String? address;
@@ -245,6 +279,7 @@ class BusinessSettings {
   final double? longitude;
   final int stampCooldownSeconds;
   final String plan;
+  final List<String> planFeatures;
   final bool geofenceEnabled;
   final int geofenceRadiusM;
   final String geofenceMessage;
@@ -260,6 +295,7 @@ class BusinessSettings {
     this.longitude,
     required this.stampCooldownSeconds,
     required this.plan,
+    this.planFeatures = const [],
     required this.geofenceEnabled,
     required this.geofenceRadiusM,
     required this.geofenceMessage,
@@ -276,6 +312,7 @@ class BusinessSettings {
         longitude: (j['longitude'] as num?)?.toDouble(),
         stampCooldownSeconds: j['stamp_cooldown_seconds'] as int? ?? 0,
         plan: j['plan'] as String? ?? 'free',
+        planFeatures: ((j['plan_features'] as List<dynamic>?) ?? []).map((e) => e as String).toList(),
         geofenceEnabled: j['geofence_enabled'] as bool? ?? false,
         geofenceRadiusM: j['geofence_radius_m'] as int? ?? 300,
         geofenceMessage: j['geofence_message'] as String? ?? '',
@@ -452,4 +489,24 @@ class MobileApiClient {
     final stores = json['stores'] as List<dynamic>;
     return stores.map((e) => StoreListingModel.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<CampaignsData> getCampaigns() async {
+    final j = await get('/api/mobile/campaigns') as Map<String, dynamic>;
+    if (j.containsKey('error')) throw Exception(j['error']);
+    return CampaignsData(
+      eligible: j['eligible'] as bool? ?? false,
+      cards: ((j['cards'] as List<dynamic>?) ?? [])
+          .map((e) => (id: (e as Map<String, dynamic>)['id'] as String, name: e['name'] as String))
+          .toList(),
+      campaigns: ((j['campaigns'] as List<dynamic>?) ?? [])
+          .map((e) => CampaignModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  Future<Map<String, dynamic>> createCampaign(Map<String, dynamic> body) =>
+      post('/api/mobile/campaigns', body);
+
+  Future<Map<String, dynamic>> cancelCampaign(String id) =>
+      post('/api/mobile/campaigns/$id/cancel', {});
 }

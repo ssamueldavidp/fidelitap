@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
-import { customerProfileSchema, findOrCreateCustomer } from '@/lib/mobile/customer-registration'
+import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED } from '@/lib/mobile/customer-registration'
 
 // Lets someone create a customer account inside the app with no loyalty
 // card yet — they land on an empty "Mis tarjetas" and can add a card later
@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
   const json = await req.json().catch(() => null)
   const parsed = customerProfileSchema.safeParse(json)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
+
+  if (!hasVerifiedEmail(user, parsed.data.email)) {
+    return NextResponse.json({ error: EMAIL_NOT_VERIFIED }, { status: 403 })
+  }
 
   const serviceClient = createServiceClient()
 

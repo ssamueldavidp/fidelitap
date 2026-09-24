@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Shield, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 import { activateCardAction, recoverCardAction } from './actions'
 import { SuccessScreen } from './success-screen'
+import { EmailCodeField } from './email-code-field'
 
 interface ActivateFormProps {
   loyaltyCardId: string
@@ -81,16 +82,10 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
           <label className="block text-xs text-muted-foreground mb-1.5 font-medium">
             Email <span className="text-red-400">*</span>
           </label>
-          <input
-            name="email"
-            type="email"
-            required
+          <EmailCodeField
             placeholder="Ej: maria@gmail.com"
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            hint="Tu email identifica tu tarjeta. Usa siempre el mismo. Te enviaremos un código para verificarlo."
           />
-          <p className="text-[10px] text-muted-foreground/60 mt-1">
-            Tu email identifica tu tarjeta. Usa siempre el mismo.
-          </p>
         </div>
 
         {/* Phone */}
@@ -181,15 +176,9 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
         {showRecover && (
           <form onSubmit={handleRecover} className="px-4 pb-4 flex flex-col gap-3 border-t border-border">
             <p className="text-[11px] text-muted-foreground pt-3 leading-relaxed">
-              Ingresa el email con el que activaste la tarjeta y te enviamos el enlace a tu Wallet.
+              Ingresa el email con el que activaste la tarjeta. Te enviamos un código para verificar que es tuyo.
             </p>
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder="Tu email de activación"
-              className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
-            />
+            <EmailCodeField placeholder="Tu email de activación" />
             {recoverError && (
               <p className="text-xs text-red-400 bg-red-950/50 border border-red-800 rounded-lg px-3 py-2">
                 {recoverError}

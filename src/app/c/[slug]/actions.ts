@@ -6,6 +6,18 @@ import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
 import { emailSchema } from '@/lib/validations/common'
+import { sendEmailCode, verifyEmailCode } from '@/lib/email-otp'
+
+const BAD_CODE = 'El código es incorrecto o venció. Pide uno nuevo.'
+
+// Step 1 of activation/recovery: email a 6-digit code to prove the address is theirs.
+// Disposable domains are rejected here too so no code is even sent to them.
+export async function sendEmailCodeAction(email: string): Promise<{ error?: string }> {
+  const parsed = emailSchema.safeParse(email)
+  if (!parsed.success) return { error: parsed.error.issues[0].message }
+  const ok = await sendEmailCode(parsed.data)
+  return ok ? {} : { error: 'No pudimos enviar el código. Intenta de nuevo en un minuto.' }
+}
 
 const schema = z.object({
   name:            z.string().min(2, 'Mínimo 2 caracteres').max(80).trim(),
@@ -15,11 +27,13 @@ const schema = z.object({
   marketing:       z.string().optional(),
   loyalty_card_id: z.string().uuid(),
   business_id:     z.string().uuid(),
+  code:            z.string(),
 })
 
 const recoverSchema = z.object({
   email:           z.string().email('Email inválido').toLowerCase(),
   loyalty_card_id: z.string().uuid(),
+  code:            z.string(),
 })
 
 export type ActivateResult =
@@ -35,10 +49,12 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
     marketing:       formData.get('marketing') || undefined,
     loyalty_card_id: formData.get('loyalty_card_id'),
     business_id:     formData.get('business_id'),
+    code:            formData.get('code') ?? '',
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const { name, email, phone, marketing, loyalty_card_id, business_id } = parsed.data
+  if (!(await verifyEmailCode(email, parsed.data.code))) return { error: BAD_CODE }
   const marketingConsent = marketing === 'true'
   const supabase = createServiceClient()
 
@@ -164,15 +180,17 @@ export async function activateCardAction(formData: FormData): Promise<ActivateRe
   }
 }
 
-// Recover an existing card using only email
+// Recover an existing card — requires proving ownership of the email (emailed code)
 export async function recoverCardAction(formData: FormData): Promise<ActivateResult> {
   const parsed = recoverSchema.safeParse({
     email:           formData.get('email'),
     loyalty_card_id: formData.get('loyalty_card_id'),
+    code:            formData.get('code') ?? '',
   })
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const { email, loyalty_card_id } = parsed.data
+  if (!(await verifyEmailCode(email, parsed.data.code))) return { error: BAD_CODE }
   const supabase = createServiceClient()
 
   const { data: customer } = await supabase

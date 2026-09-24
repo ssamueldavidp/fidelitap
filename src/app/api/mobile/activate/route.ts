@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
-import { customerProfileSchema, findOrCreateCustomer } from '@/lib/mobile/customer-registration'
+import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED } from '@/lib/mobile/customer-registration'
 
 // Lets a brand-new customer create their card entirely inside the app —
 // scan a business's QR (or enter its slug), fill in name/email, done.
@@ -24,6 +24,10 @@ export async function POST(req: NextRequest) {
   const parsed = bodySchema.safeParse(json)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   const { slug, email } = parsed.data
+
+  if (!hasVerifiedEmail(user, parsed.data.email)) {
+    return NextResponse.json({ error: EMAIL_NOT_VERIFIED }, { status: 403 })
+  }
 
   const serviceClient = createServiceClient()
 

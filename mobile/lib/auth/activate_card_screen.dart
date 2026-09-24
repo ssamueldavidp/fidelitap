@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/supabase_client.dart';
 import '../core/email_validation.dart';
+import 'email_verification.dart';
 import '../data/mobile_api_client.dart';
 
 /// A brand-new customer registers a card entirely inside the app: they
@@ -67,8 +67,9 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
 
     setState(() { _submitting = true; _submitError = null; });
     try {
-      if (supabase.auth.currentUser == null) {
-        await supabase.auth.signInAnonymously();
+      if (!await ensureVerifiedEmail(context, _email.text)) {
+        setState(() { _submitError = 'Debes verificar tu correo para continuar.'; _submitting = false; });
+        return;
       }
       final res = await _api.post('/api/mobile/activate', {
         'slug': widget.slug,

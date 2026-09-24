@@ -1,5 +1,6 @@
 import 'server-only'
 import { z } from 'zod'
+import type { User } from '@supabase/supabase-js'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import { emailSchema } from '@/lib/validations/common'
@@ -44,3 +45,12 @@ export async function findOrCreateCustomer(serviceClient: SupabaseClient<Databas
   }
   return existing
 }
+
+// New customers must prove they own the email they register with: the session
+// comes from a verified Supabase email OTP (see mobile ensureVerifiedEmail), so
+// its confirmed email has to match the one in the form.
+export function hasVerifiedEmail(user: User, email: string): boolean {
+  return !!user.email_confirmed_at && user.email?.toLowerCase().trim() === email.toLowerCase().trim()
+}
+
+export const EMAIL_NOT_VERIFIED = 'Verifica tu correo con el código que te enviamos para continuar.'

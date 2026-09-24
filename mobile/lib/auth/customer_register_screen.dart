@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/supabase_client.dart';
 import '../core/email_validation.dart';
+import 'email_verification.dart';
 import '../core/app_colors.dart';
 import '../data/mobile_api_client.dart';
 
@@ -44,8 +44,9 @@ class _CustomerRegisterScreenState extends State<CustomerRegisterScreen> {
 
     setState(() { _submitting = true; _error = null; });
     try {
-      if (supabase.auth.currentUser == null) {
-        await supabase.auth.signInAnonymously();
+      if (!await ensureVerifiedEmail(context, _email.text)) {
+        setState(() { _error = 'Debes verificar tu correo para continuar.'; _submitting = false; });
+        return;
       }
       final res = await _api.post('/api/mobile/customer/register', {
         'name': _name.text.trim(),

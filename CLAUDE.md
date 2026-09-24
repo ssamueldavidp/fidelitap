@@ -93,7 +93,7 @@ src/
 | pro | 99.900 | 2.000 | 10 |
 | premium | 179.900 | ilimitado | ilimitado |
 
-Fuente de verdad: `src/lib/plan-limits.ts` (límites) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
+Fuente de verdad: `src/lib/plan-limits.ts` (límites), `src/lib/plan-features.ts` (qué incluye cada plan — lo usan el registro web, la pestaña de suscripción y `/api/mobile/settings`) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
 
 **Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos); geofencing de proximidad (app móvil); aparecer en el directorio "Tiendas cercanas" de la app móvil (ver abajo).
 
@@ -175,6 +175,8 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
   - Auth Supabase anónimo (cliente) + email/password (dueño). Dueño solo puede iniciar sesión desde la app (el registro es web-only); un cliente puede registrarse en la app con o sin tener ya un código de tarjeta (`/auth/customer` → escanear QR o crear cuenta y agregar una tarjeta después)
   - Validación de correos temporales/desechables en todo registro (web negocio, activación pública, y ambos flujos de registro de cliente en la app) — ver `src/lib/validations/disposable-email-domains.ts`
   - Dueño: dashboard, crear/editar tarjetas con logo upload, multi-nivel de premios, scanner QR, categoría del negocio
+  - Dueño Pro+: campañas push desde la app (`/api/mobile/campaigns`, misma lógica que la web en `src/lib/push/campaigns.ts`); fijar ubicación GPS del negocio desde Ajustes
+  - Cliente: recuperar cuenta en dispositivo nuevo con código OTP por correo (`/auth/customer` → recuperar; `POST /api/mobile/customer/claim` exige correo verificado — a diferencia de la recuperación web, que solo pide el email)
   - Cliente: lista de tarjetas con progreso de sellos (multi-nivel), botón Agregar a Wallet, pestaña **Tiendas cercanas** (directorio Pro+, filtro por categoría, ubicación actual o búsqueda por ciudad)
   - Tarjetas avanzadas: `card_rewards` (multi-nivel), `logo_url`, `expires_at`, `max_uses_per_customer`, preview en vivo
   - Push FCM (Firebase): registro de token, notificaciones locales

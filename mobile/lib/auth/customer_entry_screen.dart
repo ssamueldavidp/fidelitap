@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import 'claim_card_screen.dart';
 import 'customer_register_screen.dart';
+import 'recover_account_screen.dart';
 
 /// The branch point for a regular user: do they already have a QR/code from
 /// a business, or are they just creating an account to browse Tiendas /
@@ -46,6 +47,13 @@ class CustomerEntryScreen extends StatelessWidget {
               ),
               icon: const Icon(Icons.person_add_alt),
               label: const Text('No, quiero registrarme'),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RecoverAccountScreen()),
+              ),
+              child: const Text('Ya tengo cuenta — recuperar mis tarjetas'),
             ),
           ],
         ),

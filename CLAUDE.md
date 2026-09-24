@@ -95,7 +95,7 @@ src/
 
 Fuente de verdad: `src/lib/plan-limits.ts` (límites), `src/lib/plan-features.ts` (qué incluye cada plan — lo usan el registro web, la pestaña de suscripción y `/api/mobile/settings`) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
 
-**Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos); geofencing de proximidad (app móvil); aparecer en el directorio "Tiendas cercanas" de la app móvil (ver abajo).
+**Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos); geofencing de proximidad (app móvil); aparecer en el directorio "Tiendas cercanas" (app móvil y página pública `/tiendas` en la web; misma consulta en `src/lib/directory.ts`).
 
 ---
 
@@ -133,7 +133,7 @@ Los siguientes archivos tienen `import 'server-only'` — NUNCA importarlos en C
 Toda query a `loyalty_cards` debe incluir `.is('deleted_at', null)`. El proyecto usa soft-delete.
 
 ### `customer_cards` — anti-fraude
-Un email = una tarjeta por negocio. Si el cliente ya tiene tarjeta, `activateCardAction` devuelve la existente (`alreadyHadCard: true`). La recuperación de tarjeta usa solo el email.
+Un email = una tarjeta por negocio. Si el cliente ya tiene tarjeta, `activateCardAction` devuelve la existente (`alreadyHadCard: true`). Activar y recuperar tarjeta exigen un código de 6 dígitos enviado al correo (`src/lib/email-otp.ts`, OTP de Supabase Auth), tanto en la web como en la app — antes la recuperación entregaba el token del Wallet a cualquiera que supiera el email.
 
 ### `addStampAction` (scanner/actions.ts)
 Punto de entrada cuando el negocio sella una tarjeta. Al terminar dispara en paralelo:
@@ -176,6 +176,7 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
   - Validación de correos temporales/desechables en todo registro (web negocio, activación pública, y ambos flujos de registro de cliente en la app) — ver `src/lib/validations/disposable-email-domains.ts`
   - Dueño: dashboard, crear/editar tarjetas con logo upload, multi-nivel de premios, scanner QR, categoría del negocio
   - Dueño Pro+: campañas push desde la app (`/api/mobile/campaigns`, misma lógica que la web en `src/lib/push/campaigns.ts`); fijar ubicación GPS del negocio desde Ajustes
+  - Cliente: el registro (con o sin tarjeta) verifica el correo con un código (`ensureVerifiedEmail`); `/api/mobile/customer/register` y `/api/mobile/activate` exigen que el correo de la sesión esté confirmado y coincida con el del formulario
   - Cliente: recuperar cuenta en dispositivo nuevo con código OTP por correo (`/auth/customer` → recuperar; `POST /api/mobile/customer/claim` exige correo verificado — a diferencia de la recuperación web, que solo pide el email)
   - Cliente: lista de tarjetas con progreso de sellos (multi-nivel), botón Agregar a Wallet, pestaña **Tiendas cercanas** (directorio Pro+, filtro por categoría, ubicación actual o búsqueda por ciudad)
   - Tarjetas avanzadas: `card_rewards` (multi-nivel), `logo_url`, `expires_at`, `max_uses_per_customer`, preview en vivo

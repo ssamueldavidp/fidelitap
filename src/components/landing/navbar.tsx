@@ -17,6 +17,9 @@ export function Navbar() {
           <Link href="#precios" className="hover:text-slate-900 transition-colors">
             Precios
           </Link>
+          <Link href="/tiendas" className="hover:text-slate-900 transition-colors">
+            Tiendas
+          </Link>
           <Link href="/register" className="hover:text-slate-900 transition-colors">
             Negocios
           </Link>

@@ -232,7 +232,11 @@ enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+# 60s — was 1s, far too low for the email-OTP verification flow (web activation/recovery,
+# mobile customer registration) added in this codebase: 1 request/second per email let
+# someone hammer another person's inbox with codes. Sending routes also rate-limit by IP
+# (src/lib/rate-limit.ts) but that's defense in depth, not a substitute for this floor.
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).

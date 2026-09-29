@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
-import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED } from '@/lib/mobile/customer-registration'
+import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED, checkApiRateLimit } from '@/lib/mobile/customer-registration'
 
 // Lets someone create a customer account inside the app with no loyalty
 // card yet — they land on an empty "Mis tarjetas" and can add a card later
@@ -11,6 +11,10 @@ import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NO
 // mobile/lib/core/session_role.dart's resolveRole() checks to recognize
 // them as a customer with no card yet.
 export async function POST(req: NextRequest) {
+  if (!(await checkApiRateLimit(req))) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo en un momento.' }, { status: 429 })
+  }
+
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 

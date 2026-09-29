@@ -7,12 +7,21 @@ import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
 import { emailSchema } from '@/lib/validations/common'
 import { sendEmailCode, verifyEmailCode } from '@/lib/email-otp'
+import { emailCodeRateLimit } from '@/lib/rate-limit'
+import { headers } from 'next/headers'
 
 const BAD_CODE = 'El código es incorrecto o venció. Pide uno nuevo.'
 
 // Step 1 of activation/recovery: email a 6-digit code to prove the address is theirs.
 // Disposable domains are rejected here too so no code is even sent to them.
 export async function sendEmailCodeAction(email: string): Promise<{ error?: string }> {
+  const headersList = await headers()
+  const forwarded = headersList.get('x-forwarded-for')
+  const ip = forwarded?.split(',')[0].trim() || '127.0.0.1'
+
+  const { success } = await emailCodeRateLimit.limit(ip)
+  if (!success) return { error: 'Demasiadas solicitudes. Espera unos minutos e intenta de nuevo.' }
+
   const parsed = emailSchema.safeParse(email)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
   const ok = await sendEmailCode(parsed.data)

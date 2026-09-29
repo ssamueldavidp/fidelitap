@@ -1,9 +1,11 @@
 import 'server-only'
 import { z } from 'zod'
+import type { NextRequest } from 'next/server'
 import type { User } from '@supabase/supabase-js'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import { emailSchema } from '@/lib/validations/common'
+import { apiRateLimit, getIP } from '@/lib/rate-limit'
 
 // Shared by /api/mobile/activate (register + join a specific card) and
 // /api/mobile/customer/register (register with no card yet) — same
@@ -54,3 +56,11 @@ export function hasVerifiedEmail(user: User, email: string): boolean {
 }
 
 export const EMAIL_NOT_VERIFIED = 'Verifica tu correo con el código que te enviamos para continuar.'
+
+// Shared IP rate limit for the mobile registration/activation/claim routes —
+// the email itself is already gated by emailCodeRateLimit when it's sent;
+// this protects the write endpoints themselves from being hammered directly.
+export async function checkApiRateLimit(req: NextRequest): Promise<boolean> {
+  const { success } = await apiRateLimit.limit(getIP(req))
+  return success
+}

@@ -5,7 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { generateUniqueCode } from '@/lib/wallet/hmac'
 import { sendCustomerWelcome } from '@/lib/email/send-customer-welcome'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
-import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED } from '@/lib/mobile/customer-registration'
+import { customerProfileSchema, findOrCreateCustomer, hasVerifiedEmail, EMAIL_NOT_VERIFIED, checkApiRateLimit } from '@/lib/mobile/customer-registration'
 
 // Lets a brand-new customer create their card entirely inside the app —
 // scan a business's QR (or enter its slug), fill in name/email, done.
@@ -17,6 +17,10 @@ const bodySchema = customerProfileSchema.extend({
 })
 
 export async function POST(req: NextRequest) {
+  if (!(await checkApiRateLimit(req))) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo en un momento.' }, { status: 429 })
+  }
+
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 

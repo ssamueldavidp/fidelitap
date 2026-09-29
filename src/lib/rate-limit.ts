@@ -42,6 +42,17 @@ export const passwordResetRateLimit = isDev
       prefix: 'rl:pwreset',
     })
 
+// 5 códigos de verificación por email por 15 minutos por IP — cubre el envío de OTP
+// para activar/recuperar tarjeta (web) y registro/activación de cliente (app).
+// Complementa, no reemplaza, el max_frequency de Supabase (supabase/config.toml).
+export const emailCodeRateLimit = isDev
+  ? noopLimiter
+  : new Ratelimit({
+      redis: redis!,
+      limiter: Ratelimit.slidingWindow(5, '15 m'),
+      prefix: 'rl:emailcode',
+    })
+
 // 20 requests por minuto para API general
 export const apiRateLimit = isDev
   ? noopLimiter

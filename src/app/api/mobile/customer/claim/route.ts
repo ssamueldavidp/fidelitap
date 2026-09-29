@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
+import { checkApiRateLimit } from '@/lib/mobile/customer-registration'
 
 // Account recovery for the mobile app. The caller has just proven ownership of
 // their email by verifying a Supabase email OTP (so the JWT carries a
@@ -8,6 +9,10 @@ import { createServiceClient } from '@/lib/supabase/service'
 // to this session. Unlike the web's email-only card recovery, nobody can claim
 // someone else's cards by merely typing their address.
 export async function POST(req: NextRequest) {
+  if (!(await checkApiRateLimit(req))) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes. Intenta de nuevo en un momento.' }, { status: 429 })
+  }
+
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   if (!user.email || !user.email_confirmed_at) {

@@ -100,6 +100,11 @@ try {
   await shot('10-activate')
   logResult('Public activation page loads', await page.locator('text=Activar mi tarjeta').isVisible().catch(() => false))
 
+  // ── Tiendas cercanas (public directory, Pro+ businesses only) ──
+  await page.goto(`${BASE}/tiendas`, { waitUntil: 'networkidle' })
+  await shot('10b-tiendas')
+  logResult('Tiendas cercanas page loads', await page.locator('h1:has-text("Tiendas cercanas")').isVisible().catch(() => false))
+
   // ── Legal pages ──
   await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' })
   await shot('11-privacy')

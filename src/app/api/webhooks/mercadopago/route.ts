@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { mpPreApproval, mpPayment, verifyMpSignature } from '@/lib/mercadopago'
+import { mpPayment, verifyMpSignature } from '@/lib/mercadopago'
 import type { Json } from '@/types/database'
 
 const VALID_PAID_PLANS = ['basic', 'pro', 'premium'] as const
 type PaidPlan = typeof VALID_PAID_PLANS[number]
-
-const SUBSCRIPTION_PLANS: Record<string, PaidPlan> = {
-  [process.env.MP_PLAN_ID_BASIC   ?? 'UNSET_BASIC']:   'basic',
-  [process.env.MP_PLAN_ID_PRO     ?? 'UNSET_PRO']:     'pro',
-  [process.env.MP_PLAN_ID_PREMIUM ?? 'UNSET_PREMIUM']: 'premium',
-}
 
 export async function POST(request: NextRequest) {
   const xSignature  = request.headers.get('x-signature')
@@ -40,10 +34,10 @@ export async function POST(request: NextRequest) {
   const serviceClient = createServiceClient()
 
   try {
+    // Checkout Pro (Preferences) only — this project doesn't use PreApproval
+    // (see CLAUDE.md), so a `topic=preapproval` notification is ignored.
     if ((topic === 'payment' || topic === 'payment.updated') && paymentId) {
       await handlePayment(paymentId, body, serviceClient)
-    } else if (topic === 'preapproval' && paymentId) {
-      await handlePreapproval(paymentId, body, serviceClient)
     }
   } catch (err) {
     console.error('[mp-webhook] processing error:', err)
@@ -140,85 +134,9 @@ async function handlePayment(
   }
 }
 
-// Handles preapproval webhooks (when topic is available)
-async function handlePreapproval(
-  preapprovalId: string,
-  rawPayload: Json,
-  serviceClient: ReturnType<typeof createServiceClient>,
-) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const preapproval = await mpPreApproval.get({ id: preapprovalId }) as any
-  const extRef = preapproval.external_reference as string | undefined
-
-  const biz = await findBusiness(preapprovalId, extRef, preapproval.payer_email, serviceClient)
-  if (!biz) {
-    console.warn('[mp-webhook] Business not found for preapproval:', preapprovalId)
-    return
-  }
-
-  const planSlug = resolvePlanSlug(preapproval, extRef, biz.plan)
-
-  if (preapproval.status === 'authorized') {
-    await serviceClient
-      .from('businesses')
-      .update({
-        plan:                  planSlug,
-        subscription_status:   'active',
-        mp_preapproval_id:     preapproval.id,
-        mp_payer_email:        preapproval.payer_email ?? null,
-        subscription_end_date: null,
-      })
-      .eq('id', biz.id)
-
-    await serviceClient.from('payment_events').insert({
-      business_id:       biz.id,
-      mp_preapproval_id: preapproval.id,
-      event_type:        'payment_success',
-      plan_slug:         planSlug,
-      status:            'authorized',
-      raw_payload:       rawPayload as Json,
-    })
-
-  } else if (preapproval.status === 'cancelled') {
-    const hasGrace = biz.subscription_end_date
-      ? new Date(biz.subscription_end_date) > new Date()
-      : false
-
-    await serviceClient
-      .from('businesses')
-      .update({
-        subscription_status: 'canceled',
-        ...(hasGrace ? {} : { plan: 'free' }),
-      })
-      .eq('id', biz.id)
-
-    await serviceClient.from('payment_events').insert({
-      business_id:       biz.id,
-      mp_preapproval_id: preapproval.id,
-      event_type:        'subscription_cancelled',
-      plan_slug:         planSlug,
-      status:            'cancelled',
-      raw_payload:       rawPayload as Json,
-    })
-
-  } else if (preapproval.status === 'paused' || preapproval.status === 'pending') {
-    await serviceClient
-      .from('businesses')
-      .update({ subscription_status: 'past_due' })
-      .eq('id', biz.id)
-
-    await serviceClient.from('payment_events').insert({
-      business_id:       biz.id,
-      mp_preapproval_id: preapproval.id,
-      event_type:        'payment_failed',
-      plan_slug:         planSlug,
-      status:            preapproval.status,
-      raw_payload:       rawPayload as Json,
-    })
-  }
-}
-
 // Lookup business in priority order: preapproval_id → external_reference → payer_email
+// (preapproval_id is kept as a lookup key only — see the note above the POST handler.
+// Checkout Pro payments won't carry one, so this branch is normally a no-op.)
 async function findBusiness(
   preapprovalId: string,
   extRef: string | undefined,
@@ -265,15 +183,3 @@ function resolvePlanFromExtRef(
   return currentPlan as 'free' | 'basic' | 'pro' | 'premium'
 }
 
-// Resolve plan slug from preapproval_plan_id > external_reference > fallback
-function resolvePlanSlug(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  preapproval: any,
-  extRef: string | undefined,
-  currentPlan: string,
-): 'free' | 'basic' | 'pro' | 'premium' {
-  if (preapproval.preapproval_plan_id && SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]) {
-    return SUBSCRIPTION_PLANS[preapproval.preapproval_plan_id]
-  }
-  return resolvePlanFromExtRef(extRef, currentPlan)
-}

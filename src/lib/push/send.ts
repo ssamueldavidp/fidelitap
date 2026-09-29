@@ -2,6 +2,7 @@ import 'server-only'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPushEligible } from '@/lib/push/eligibility'
 import { sendPushToTokens, type PushPayload } from '@/lib/push/firebase'
+import { sendWebPush } from '@/lib/push/webpush'
 
 type ServiceClient = ReturnType<typeof createServiceClient>
 
@@ -10,10 +11,44 @@ export type { PushPayload }
 // Re-export for callers that previously imported isPushEligible from this file
 export { isPushEligible }
 
+// Sends to both delivery channels for a set of customer_ids: FCM device
+// tokens (mobile app) and browser Web Push subscriptions (opted in from the
+// public activation success screen, no app installed). Deactivates any
+// subscription the push service reports as gone. Returns the combined count.
+async function sendToCustomers(
+  service: ServiceClient,
+  customerIds: string[],
+  payload: PushPayload
+): Promise<number> {
+  if (customerIds.length === 0) return 0
+
+  const [tokenRes, subRes] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (service as any).from('device_tokens').select('expo_token').in('customer_id', customerIds),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (service as any)
+      .from('push_subscriptions')
+      .select('id, endpoint, p256dh, auth')
+      .in('customer_id', customerIds)
+      .eq('active', true),
+  ])
+
+  const tokens = ((tokenRes.data ?? []) as { expo_token: string }[]).map((r) => r.expo_token)
+  const fcmSent = tokens.length > 0 ? await sendPushToTokens(tokens, payload) : 0
+
+  const subs = (subRes.data ?? []) as { id: string; endpoint: string; p256dh: string; auth: string }[]
+  const { sent: webSent, expired } = await sendWebPush(subs, { title: payload.title, body: payload.body })
+  if (expired.length > 0) {
+    await service.from('push_subscriptions').update({ active: false }).in('id', expired)
+  }
+
+  return fcmSent + webSent
+}
+
 /**
- * Sends a push notification to all FCM tokens registered for a given customer_card.
- * Looks up the customer_id from customer_cards, then fetches tokens from device_tokens.
- * Returns count sent.
+ * Sends a push notification to a given customer_card's owner, on every
+ * channel they're reachable on (mobile app FCM token, browser Web Push
+ * subscription). Returns count sent.
  */
 export async function sendPushToCustomerCard(
   _serviceClient: ServiceClient,
@@ -31,17 +66,7 @@ export async function sendPushToCustomerCard(
 
   if (!cc?.customer_id) return 0
 
-  // Fetch all FCM tokens for this customer
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenRows } = await (service as any)
-    .from('device_tokens')
-    .select('expo_token')
-    .eq('customer_id', cc.customer_id)
-
-  if (!tokenRows || tokenRows.length === 0) return 0
-
-  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
-  return sendPushToTokens(tokens, payload)
+  return sendToCustomers(service, [cc.customer_id], payload)
 }
 
 /**
@@ -82,17 +107,7 @@ export async function sendCampaignPush(
 
   const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
 
-  // Fetch FCM tokens for all these customers
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenRows } = await (service as any)
-    .from('device_tokens')
-    .select('expo_token')
-    .in('customer_id', customerIds)
-
-  if (!tokenRows || tokenRows.length === 0) return 0
-
-  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
-  return sendPushToTokens(tokens, { title: params.title, body: params.body })
+  return sendToCustomers(service, customerIds, { title: params.title, body: params.body })
 }
 
 /**
@@ -104,22 +119,12 @@ export async function sendPushToCustomer(
   payload: PushPayload
 ): Promise<void> {
   const service = createServiceClient()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenRows } = await (service as any)
-    .from('device_tokens')
-    .select('expo_token')
-    .eq('customer_id', customerId)
-
-  if (!tokenRows || tokenRows.length === 0) return
-
-  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
-  await sendPushToTokens(tokens, payload)
+  await sendToCustomers(service, [customerId], payload)
 }
 
 /**
- * Sends a push to all customers of a business who have FCM tokens registered.
- * Does NOT check plan eligibility — caller is responsible.
+ * Sends a push to all customers of a business, on every channel they're
+ * reachable on. Does NOT check plan eligibility — caller is responsible.
  * Returns count sent.
  */
 export async function sendPushToBusinessCustomers(
@@ -138,14 +143,5 @@ export async function sendPushToBusinessCustomers(
 
   const customerIds = Array.from(new Set(cardRows.map((r) => r.customer_id as string)))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tokenRows } = await (service as any)
-    .from('device_tokens')
-    .select('expo_token')
-    .in('customer_id', customerIds)
-
-  if (!tokenRows || tokenRows.length === 0) return 0
-
-  const tokens = (tokenRows as { expo_token: string }[]).map((r) => r.expo_token)
-  return sendPushToTokens(tokens, payload)
+  return sendToCustomers(service, customerIds, payload)
 }

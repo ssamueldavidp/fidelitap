@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 import { loginRateLimit } from '@/lib/rate-limit'
 import { headers } from 'next/headers'
 import { sendBusinessWelcome } from '@/lib/email/send-business-welcome'
-import { mpPreference, getPlanPrice, getPlanName, getCheckoutUrl, type PlanSlug } from '@/lib/mercadopago'
+import { createSubscriptionLink, type PlanSlug } from '@/lib/mercadopago'
 
 const PAID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
 
@@ -87,45 +87,17 @@ export async function registerAction(
     redirect('/dashboard')
   }
 
-  // 4b. Plan pago → crear Preference en MercadoPago y devolver URL de checkout
+  // 4b. Plan pago → crear la suscripción automática en MercadoPago y devolver la URL de autorización
   try {
-    const planSlug = plan as PlanSlug
-    const price    = getPlanPrice(planSlug)
-    const planName = getPlanName(planSlug)
-    const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'
-
-    const response = await mpPreference.create({
-      body: {
-        items: [
-          {
-            id:          planSlug,
-            title:       `FideliTap Plan ${planName}`,
-            quantity:    1,
-            unit_price:  price,
-            currency_id: 'COP',
-          },
-        ],
-        external_reference: `${newBiz.id}:${planSlug}`,
-        back_urls: {
-          success: `${appUrl}/dashboard?subscription=success`,
-          failure: `${appUrl}/settings?tab=suscripcion&payment=failed`,
-          pending: `${appUrl}/dashboard?subscription=pending`,
-        },
-        auto_return:          'approved',
-        statement_descriptor: 'FideliTap',
-        notification_url:     `${appUrl}/api/webhooks/mercadopago`,
-        binary_mode:          true,
-      },
+    const checkoutUrl = await createSubscriptionLink({
+      businessId: newBiz.id,
+      businessEmail: email,
+      planSlug: plan as PlanSlug,
     })
-
-    const checkoutUrl = getCheckoutUrl(response)
-    if (!checkoutUrl) {
-      redirect('/dashboard')
-    }
 
     return { checkoutUrl }
   } catch (err) {
-    console.error('[register] MP preference error:', err)
+    console.error('[register] MP subscription error:', err)
     redirect('/dashboard')
   }
 }

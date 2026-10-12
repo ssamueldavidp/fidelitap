@@ -43,7 +43,8 @@ Todas las credenciales están en `.env.local` y NUNCA se commitean. Variables cl
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role (solo server) |
 | `NEXT_PUBLIC_APP_URL` | URL pública (ngrok o producción) |
-| `MP_ACCESS_TOKEN` | MercadoPago access token (TEST-... para sandbox) |
+| `MP_ACCESS_TOKEN` | MercadoPago access token |
+| `MP_SANDBOX_PAYER_EMAIL` | Solo pruebas: correo del comprador de prueba para el PreApproval |
 | `MP_PUBLIC_KEY` | MercadoPago public key |
 | `RESEND_API_KEY` | Resend para emails |
 | `APPLE_PASS_*` | Certificados Apple Wallet |
@@ -70,7 +71,7 @@ src/
 │   └── push/             # push-opt-in.tsx — UI de suscripción Web Push
 ├── lib/
 │   ├── supabase/         # server.ts, admin.ts, service.ts (todos server-only)
-│   ├── mercadopago.ts    # server-only; mpPreference, isSandbox(), getCheckoutUrl()
+│   ├── mercadopago.ts    # server-only; createSubscriptionLink(), cancelMpSubscription(), verifyMpSignature()
 │   ├── storage-url.ts    # resolveStorageUrl() — reescribe localhost:54321 → ngrok
 │   ├── wallet/           # apple.ts, google.ts, apns.ts, hmac.ts
 │   ├── email/            # send-business-welcome, send-customer-welcome, send-card-complete
@@ -93,7 +94,7 @@ src/
 | pro | 99.900 | 2.000 | 10 |
 | premium | 179.900 | ilimitado | ilimitado |
 
-Fuente de verdad: `src/lib/plan-limits.ts` (límites), `src/lib/plan-features.ts` (qué incluye cada plan — lo usan el registro web, la pestaña de suscripción y `/api/mobile/settings`) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago tras pago exitoso. `external_reference` format: `${businessId}:${planSlug}`.
+Fuente de verdad: `src/lib/plan-limits.ts` (límites), `src/lib/plan-features.ts` (qué incluye cada plan — lo usan el registro web, la pestaña de suscripción y `/api/mobile/settings`) y `src/lib/mercadopago.ts` (precios). El plan se activa vía webhook de MercadoPago cuando la suscripción queda autorizada y se renueva con cada cobro mensual aprobado. `external_reference` format: `${businessId}:${planSlug}`.
 
 **Funciones exclusivas Pro/Premium:** notificaciones Web Push (campañas, recordatorio de re-engagement a 14 días, aviso de progreso de sellos); geofencing de proximidad (app móvil); aparecer en el directorio "Tiendas cercanas" (app móvil y página pública `/tiendas` en la web; misma consulta en `src/lib/directory.ts`).
 
@@ -102,11 +103,15 @@ Fuente de verdad: `src/lib/plan-limits.ts` (límites), `src/lib/plan-features.ts
 ## Flujo de pagos (MercadoPago)
 
 - SDK: `mercadopago` npm package
-- API usada: **Checkout Pro** (Preferences), NO PreApproval
-- Sandbox: usar `sandbox_init_point`, no `init_point`. Helper `isSandbox()` detecta si `MP_ACCESS_TOKEN` empieza con `TEST-`
-- `getCheckoutUrl(response)` selecciona automáticamente el URL correcto
-- Credenciales: app **Fidelitap** (no "Nuestra misión"). Si `MP_ACCESS_TOKEN` empieza con `TEST-`, es sandbox
-- Para probar pagos: login como test buyer en MP antes de ingresar datos de tarjeta
+- API usada: **Suscripciones (PreApproval)**: cobro mensual **automático** hasta que el cliente cancele. Ya NO se usa Checkout Pro (pago único): el cobro único obligaba a pagar a mano cada mes.
+- Crear: `createSubscriptionLink()` en `src/lib/mercadopago.ts` crea el PreApproval en estado `pending` y devuelve el `init_point` donde el negocio autoriza el cobro. Lo usan el registro web y `POST /api/subscriptions/create`.
+- Webhook (`/api/webhooks/mercadopago`): `subscription_preapproval` (autorizada → activa plan; cancelada → `pending_cancel`; pausada → `past_due`), `subscription_authorized_payment` (cada cobro mensual: aprobado extiende `subscription_end_date` = fecha de corte; rechazado → `past_due`) y `payment` (pagos sueltos / respaldo). La lógica de estados vive en `src/lib/subscriptions/apply.ts` y se prueba con `pnpm test:subscriptions`.
+- En el panel de MercadoPago → Webhooks hay que marcar **Pagos** y **Planes y suscripciones**.
+- Cancelar (`POST /api/subscriptions/cancel`): primero cancela el PreApproval en MercadoPago (deja de cobrar), luego marca `pending_cancel`; el plan sigue hasta `subscription_end_date` y el cron `/api/subscriptions/jobs/downgrade-expired` (header `x-cron-secret`) lo pasa a Free. Si no se cancela antes de la fecha de corte, se renueva. Cobros fallidos (`past_due`): 3 días de gracia antes de bajar a Free.
+- Cambio de plan = nueva suscripción; al autorizarse, la anterior se cancela sola.
+- Política visible al usuario: `/terms#suscripciones` (borrador, requiere revisión legal) y avisos en el registro y en Ajustes → Suscripción.
+- Sandbox: las credenciales `APP_USR-` de esta app pertenecen a un **usuario de prueba** (vendedor); MercadoPago exige que el pagador también lo sea. Usa `MP_SANDBOX_PAYER_EMAIL` (correo `test_user_...@testuser.com` del comprador de prueba) para sobrescribir el correo del pagador solo en pruebas. En el checkout hay que entrar con el **comprador** de prueba, no con el vendedor ni con tu cuenta real. Tarjetas de prueba: panel → Tarjetas de prueba.
+- Credenciales: app **Fidelitap** (no "Nuestra misión").
 
 ---
 
@@ -195,8 +200,8 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 - `publicaciones` / fotos en DB son `TEXT[]`, no `foto_url` string.
 - `documentos.categoria` usa title-case exacto: `'Reglamento'`, `'Actas'`, `'Finanzas'`.
 - Flutter `FileOptions` requiere import explícito — no se resuelve transitivamente.
-- MercadoPago: NO pasar `payer_email` en Preference — causa "Both payer and collector must be real or test users" en sandbox.
-- MercadoPago sandbox: botón de pagar solo se habilita si el comprador está logueado como test user en MP.
+- MercadoPago: el PreApproval exige `payer_email`; en sandbox debe ser el de un usuario de prueba (si no: "Both payer and collector must be real or test users"). Ver `MP_SANDBOX_PAYER_EMAIL`.
+- MercadoPago sandbox: hay que pagar logueado como el comprador de prueba; con el vendedor de prueba o tu cuenta real sale "Una de las partes con la que intentas hacer el pago es de prueba".
 - `satori` (poster) exige `display: 'flex' | 'contents' | 'none'` explícito en cualquier `<div>` con más de un nodo hijo — incluido texto mixto con interpolación tipo `ACUMULA {n} SELLOS` (son 3 nodos de texto, no uno). Si falta, lanza "Expected `<div>` to have explicit display..." sin indicar cuál div. Usar un solo string interpolado (`` {`ACUMULA ${n} SELLOS`} ``) o declarar `display` explícito.
 - `<img>` con `onLoad`/`onError` en un componente SSR puede quedarse en estado "cargando" para siempre: el navegador puede terminar de cargar la imagen (parseando el HTML inicial) antes de que React hidrate y adjunte el listener, y el evento `load` no se reemite. Mitigación: usar `ref={(el) => el?.complete && setLoading(false)}` además de `onLoad`/`onError` (ver `poster-editor.tsx`).
 

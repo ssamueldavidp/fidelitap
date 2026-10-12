@@ -183,6 +183,16 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
           </div>
         )}
 
+        {isPaid && (
+          <p className="text-xs text-muted-foreground leading-relaxed bg-muted border border-border rounded-xl px-4 py-3">
+            <span className="font-semibold text-foreground">Suscripción con renovación automática.</span>{' '}
+            Se te cobrará {PLANS.find((p) => p.slug === selectedPlan)?.price} cada mes, en la misma fecha del primer cobro,
+            hasta que canceles. Puedes cancelar cuando quieras desde Ajustes → Suscripción; si no cancelas antes de la fecha
+            de corte, se renueva y se cobra el siguiente mes.{' '}
+            <Link href="/terms#suscripciones" target="_blank" className="underline hover:text-foreground">Ver política de cancelación</Link>.
+          </p>
+        )}
+
         <SubmitButton isPaid={isPaid} />
 
         <p className="text-center text-xs text-muted-foreground leading-relaxed">

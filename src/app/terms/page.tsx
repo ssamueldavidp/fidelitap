@@ -34,14 +34,52 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold text-white mb-2">2. Cuentas de negocio y planes</h2>
             <p>
               Los negocios se registran eligiendo un plan (Gratis, Básico, Pro o Premium), cada uno
-              con límites de tarjetas y clientes activos. Los planes pagos se facturan
-              mensualmente a través de la pasarela de pagos integrada y se renuevan automáticamente
-              salvo cancelación.
+              con límites de tarjetas y clientes activos. Los planes pagos son suscripciones
+              mensuales que se cobran a través de la pasarela de pagos integrada (Mercado Pago) y
+              se renuevan automáticamente, según se explica en la sección 3.
             </p>
           </section>
 
+          <section id="suscripciones">
+            <h2 className="text-lg font-bold text-white mb-2">3. Suscripción, renovación automática y cancelación</h2>
+            <ul className="list-disc pl-5 flex flex-col gap-2">
+              <li>
+                <strong>Renovación automática.</strong> Al suscribirte a un plan pago autorizas el cobro
+                recurrente del valor del plan cada mes, en la misma fecha del primer cobro (la &quot;fecha
+                de corte&quot;), hasta que canceles.
+              </li>
+              <li>
+                <strong>Cómo cancelar.</strong> Puedes cancelar en cualquier momento desde Ajustes →
+                Suscripción en la versión web. Si no cancelas antes de la fecha de corte, la suscripción
+                se renueva y se cobra el mes siguiente.
+              </li>
+              <li>
+                <strong>Efecto de la cancelación.</strong> Al cancelar dejamos de cobrarte. Mantienes tu
+                plan hasta el final del período ya pagado; después tu cuenta pasa al plan Gratis y se
+                aplican sus límites.
+              </li>
+              <li>
+                <strong>Cobros fallidos.</strong> Si un cobro no se puede realizar, Mercado Pago intentará
+                cobrarlo de nuevo. Si no se logra, la suscripción se cancela y, tras un breve período de
+                gracia, tu cuenta pasa al plan Gratis.
+              </li>
+              <li>
+                <strong>Cambio de plan.</strong> Cambiar de plan inicia una nueva suscripción con su propia
+                fecha de corte; la suscripción anterior se cancela cuando se activa la nueva.
+              </li>
+              <li>
+                <strong>Reembolsos.</strong> Los cobros de períodos ya iniciados no se reembolsan, sin
+                perjuicio de los derechos que la ley reconozca a los consumidores.
+              </li>
+              <li>
+                <strong>Cambios de precio.</strong> Si modificamos el precio de un plan, te lo
+                notificaremos antes de que se aplique a tu siguiente cobro.
+              </li>
+            </ul>
+          </section>
+
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">3. Uso por parte de clientes</h2>
+            <h2 className="text-lg font-bold text-white mb-2">4. Uso por parte de clientes</h2>
             <p>
               Un cliente puede activar una tarjeta de fidelización por negocio, asociada a su
               correo electrónico. Los sellos y premios son otorgados a discreción del negocio
@@ -50,7 +88,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">4. Uso aceptable</h2>
+            <h2 className="text-lg font-bold text-white mb-2">5. Uso aceptable</h2>
             <p>
               No está permitido usar la plataforma para fines fraudulentos, incluyendo la creación
               de tarjetas o cuentas falsas para obtener premios indebidamente. FideliTap puede
@@ -59,7 +97,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">5. Disponibilidad del servicio</h2>
+            <h2 className="text-lg font-bold text-white mb-2">6. Disponibilidad del servicio</h2>
             <p>
               Hacemos esfuerzos razonables para mantener la plataforma disponible, pero no
               garantizamos un funcionamiento ininterrumpido. No nos hacemos responsables por
@@ -68,7 +106,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">6. Tratamiento de datos</h2>
+            <h2 className="text-lg font-bold text-white mb-2">7. Tratamiento de datos</h2>
             <p>
               El tratamiento de datos personales se rige por nuestra{' '}
               <Link href="/privacy" className="text-[#00C896] underline underline-offset-2">
@@ -79,7 +117,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-2">7. Contacto</h2>
+            <h2 className="text-lg font-bold text-white mb-2">8. Contacto</h2>
             <p>Para preguntas sobre estos términos, escríbenos a [correo de contacto].</p>
           </section>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle2, AlertTriangle, XCircle, Loader2, Check } from 'lucide-react'
 import { getPlanFeatures, isProPlan } from '@/lib/plan-features'
@@ -47,6 +48,7 @@ const EVENT_LABELS: Record<string, string> = {
   subscription_created:   'Suscripción creada',
   subscription_cancelled: 'Suscripción cancelada',
   payment_received:       'Pago recibido',
+  plan_downgraded:        'Plan cambiado a Gratis',
 }
 
 function formatCOP(amount: number) {
@@ -94,7 +96,8 @@ export function SubscriptionTab() {
   }
 
   const handleCancel = () => {
-    if (!confirm('¿Estás seguro que deseas cancelar tu suscripción? Tu plan seguirá activo hasta el final del período.')) return
+    const until = data?.subscriptionEndDate ? ` hasta el ${formatDate(data.subscriptionEndDate)}` : ' hasta el final del período pagado'
+    if (!confirm(`¿Cancelar tu suscripción? Dejaremos de cobrarte y tu plan seguirá activo${until}. Después pasará al plan Gratis.`)) return
     startTransition(async () => {
       const res  = await fetch('/api/subscriptions/cancel', { method: 'POST' })
       const json = await res.json()
@@ -165,9 +168,24 @@ export function SubscriptionTab() {
           </p>
         )}
 
+        {isPaid && data.subscriptionStatus === 'active' && data.subscriptionEndDate && planPrice && (
+          <p className="mt-4 text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2">
+            <span className="font-semibold text-foreground">Renovación automática:</span> el{' '}
+            {formatDate(data.subscriptionEndDate)} se cobrarán {formatCOP(planPrice)} y tu plan se renovará un mes más.
+            Si no quieres que se renueve, cancela antes de esa fecha de corte.
+          </p>
+        )}
+
         {data.subscriptionStatus === 'pending_cancel' && data.subscriptionEndDate && (
           <p className="mt-2 text-sm text-amber-400">
-            Activo hasta el {formatDate(data.subscriptionEndDate)}
+            Suscripción cancelada: no se te volverá a cobrar. Tu plan sigue activo hasta el {formatDate(data.subscriptionEndDate)}.
+          </p>
+        )}
+
+        {data.subscriptionStatus === 'past_due' && (
+          <p className="mt-2 text-sm text-amber-400">
+            No pudimos cobrar tu renovación. MercadoPago volverá a intentarlo; revisa tu medio de pago allí.
+            Si no se logra el cobro, tu cuenta pasará al plan Gratis.
           </p>
         )}
 
@@ -192,6 +210,13 @@ export function SubscriptionTab() {
         <div className="flex flex-col gap-3">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             {data.plan === 'free' ? 'Elige tu plan' : 'Mejorar plan'}
+          </p>
+          <p className="text-xs text-muted-foreground -mt-1">
+            Los planes pagos son una suscripción mensual con <span className="text-foreground font-semibold">renovación automática</span>:
+            se cobra cada mes en tu fecha de corte hasta que canceles. Puedes cancelar cuando quieras desde esta pantalla;
+            si no cancelas antes de la fecha de corte, se renueva. Más detalles en los{' '}
+            <Link href="/terms#suscripciones" target="_blank" className="underline hover:text-foreground">términos</Link>.
+            {data.plan !== 'free' && ' Al activarse el nuevo plan se cancela el actual.'}
           </p>
           {upgradePlans.map((slug) => (
             <div key={slug} className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3">

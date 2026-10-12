@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
+import { findExpiredBusinessIds } from '@/lib/subscriptions/apply'
 
 // Cron counterpart to /api/subscriptions/cancel: a cancelled business keeps
 // its paid plan until subscription_end_date (the grace period), then this
@@ -22,16 +23,14 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient()
 
-  const { data: expired, error } = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('subscription_status', 'pending_cancel')
-    .lt('subscription_end_date', new Date().toISOString())
+  const { ids, error } = await findExpiredBusinessIds(supabase)
+  if (error) {
+    return NextResponse.json({ error: 'Error al consultar negocios' }, { status: 500 })
+  }
+  if (ids.length === 0) {
+    return NextResponse.json({ downgraded: 0 })
+  }
 
-  if (error) return NextResponse.json({ error: 'Error al consultar negocios' }, { status: 500 })
-  if (!expired || expired.length === 0) return NextResponse.json({ downgraded: 0 })
-
-  const ids = expired.map((b) => b.id)
   const { error: updateErr } = await supabase
     .from('businesses')
     .update({ plan: 'free', subscription_status: 'canceled' })

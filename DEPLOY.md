@@ -114,7 +114,7 @@ UPSTASH_REDIS_REST_TOKEN=<token>
 ### 3.3 Configurar webhook de MercadoPago
 En el dashboard de MercadoPago → Webhooks:
 - URL: `https://fidelitap.co/api/webhooks/mercadopago`
-- Eventos: `preapproval`, `payment`
+- Eventos: **Pagos** y **Planes y suscripciones** (el cobro mensual es una suscripción automática)
 
 ---
 

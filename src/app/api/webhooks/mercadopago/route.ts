@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { mpPayment, verifyMpSignature } from '@/lib/mercadopago'
+import { mpPayment, mpPreApproval, verifyMpSignature, cancelMpSubscription, getAuthorizedPayment } from '@/lib/mercadopago'
+import { applyPreapproval, applyAuthorizedPayment, type MpPreapproval } from '@/lib/subscriptions/apply'
 import type { Json } from '@/types/database'
 
 const VALID_PAID_PLANS = ['basic', 'pro', 'premium'] as const
@@ -34,9 +35,18 @@ export async function POST(request: NextRequest) {
   const serviceClient = createServiceClient()
 
   try {
-    // Checkout Pro (Preferences) only — this project doesn't use PreApproval
-    // (see CLAUDE.md), so a `topic=preapproval` notification is ignored.
-    if ((topic === 'payment' || topic === 'payment.updated') && paymentId) {
+    if (!paymentId) {
+      // sin id no hay nada que consultar
+    } else if (topic === 'subscription_preapproval' || topic === 'preapproval') {
+      const pre = await mpPreApproval.get({ id: paymentId }) as unknown as MpPreapproval
+      const outcome = await applyPreapproval(serviceClient, pre, { cancelOldSubscription: cancelMpSubscription })
+      console.log('[mp-webhook] preapproval', paymentId, pre.status, '->', outcome)
+    } else if (topic === 'subscription_authorized_payment' || topic === 'authorized_payment') {
+      const ap = await getAuthorizedPayment(paymentId)
+      const pre = await mpPreApproval.get({ id: ap.preapproval_id }) as unknown as MpPreapproval
+      const outcome = await applyAuthorizedPayment(serviceClient, ap, pre)
+      console.log('[mp-webhook] authorized_payment', paymentId, '->', outcome)
+    } else if (topic === 'payment' || topic === 'payment.updated') {
       await handlePayment(paymentId, body, serviceClient)
     }
   } catch (err) {
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true })
 }
 
-// Handles payment webhooks from Checkout Pro (Preferences) and PreApproval
+// Pagos sueltos (cobros de suscripción reportados como `payment`, o pagos únicos antiguos)
 async function handlePayment(
   paymentId: string,
   rawPayload: Json,

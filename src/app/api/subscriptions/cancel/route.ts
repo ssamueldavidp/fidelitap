@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { cancelMpSubscription } from '@/lib/mercadopago'
 
-// Checkout Pro (what this project actually uses) is a one-off payment, not a
-// recurring MercadoPago subscription — there's no PreApproval object to call
-// MercadoPago and cancel. "Cancelar" just means: stop the plan from renewing
-// and let it run out at subscription_end_date (set to +30 days by the
-// webhook on each approved payment). This previously gated on
-// mp_preapproval_id, which handlePayment only ever sets for the unused
-// PreApproval path — so this route 404'd with "No tienes una suscripción
-// activa" for every real paying business.
+// "Cancelar" detiene la renovación automática en MercadoPago y deja el plan activo hasta
+// la fecha de corte (subscription_end_date, que fija el webhook en cada cobro aprobado).
+// Después, el cron downgrade-expired lo pasa a Gratis. Si el cliente no cancela antes de
+// esa fecha, MercadoPago cobra el siguiente mes automáticamente.
 export async function POST() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,7 +16,7 @@ export async function POST() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, plan, subscription_status, subscription_end_date')
+    .select('id, plan, subscription_status, subscription_end_date, mp_preapproval_id')
     .eq('owner_id', user.id)
     .single()
 
@@ -35,7 +32,18 @@ export async function POST() {
     return NextResponse.json({ error: 'La suscripción ya está en proceso de cancelación' }, { status: 400 })
   }
 
-  // If subscription_end_date is somehow already past, cancel takes effect immediately.
+  // Primero MercadoPago: si falla no marcamos nada, para no dejar al cliente creyendo que
+  // canceló mientras se le sigue cobrando.
+  if (business.mp_preapproval_id) {
+    try {
+      await cancelMpSubscription(business.mp_preapproval_id)
+    } catch (err) {
+      console.error('[subscriptions/cancel] MercadoPago', err)
+      return NextResponse.json({ error: 'No se pudo cancelar en MercadoPago. Intenta de nuevo en unos minutos.' }, { status: 502 })
+    }
+  }
+
+  // Si la fecha de corte ya pasó (o no existe), la cancelación aplica de inmediato.
   const endDate = business.subscription_end_date && new Date(business.subscription_end_date) > new Date()
     ? new Date(business.subscription_end_date)
     : new Date()
@@ -53,10 +61,11 @@ export async function POST() {
   }
 
   await serviceClient.from('payment_events').insert({
-    business_id: business.id,
-    event_type:  'subscription_cancelled',
-    plan_slug:   business.plan,
-    status:      'pending_cancel',
+    business_id:       business.id,
+    mp_preapproval_id: business.mp_preapproval_id,
+    event_type:        'subscription_cancelled',
+    plan_slug:         business.plan,
+    status:            'pending_cancel',
   })
 
   return NextResponse.json({ availableUntil: endDate.toISOString() })

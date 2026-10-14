@@ -31,6 +31,9 @@ build/
 android/.gradle/
 android/local.properties
 android/key.properties
+*.p12
+*.jks
+*.keystore
 android/app/debug
 android/app/profile
 android/app/release

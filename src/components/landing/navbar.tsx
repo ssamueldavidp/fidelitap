@@ -1,44 +1,45 @@
+import Image from 'next/image'
 import Link from 'next/link'
+
+const LINKS = [
+  { href: '#como-funciona', label: 'Cómo funciona' },
+  { href: '#precios', label: 'Precios' },
+  { href: '/tiendas', label: 'Tiendas' },
+  { href: '/register', label: 'Negocios' },
+]
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
-      <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-        {/* Logo */}
-        <Link href="/" className="text-xl font-black tracking-tight shrink-0">
-          fideli<span className="text-[#00C896]">tap</span>
+    <nav className="lp-nav" aria-label="Principal">
+      <div className="lp-nav-in">
+        <Link href="/" className="lp-logo" aria-label="Fidelitap, inicio">
+          <Image src="/fidelitap-logo.png" alt="Fidelitap" width={106} height={46} priority />
         </Link>
 
-        {/* Links — ocultos en mobile */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
-          <Link href="#como-funciona" className="hover:text-slate-900 transition-colors">
-            Cómo funciona
-          </Link>
-          <Link href="#precios" className="hover:text-slate-900 transition-colors">
-            Precios
-          </Link>
-          <Link href="/tiendas" className="hover:text-slate-900 transition-colors">
-            Tiendas
-          </Link>
-          <Link href="/register" className="hover:text-slate-900 transition-colors">
-            Negocios
-          </Link>
+        <div className="lp-links">
+          {LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="lp-navlink">{l.label}</Link>
+          ))}
         </div>
 
-        {/* CTAs */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden sm:block text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors px-3 py-2"
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/register"
-            className="text-sm font-bold bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700 transition-colors whitespace-nowrap"
-          >
-            Empezar gratis →
-          </Link>
+        <div className="lp-actions">
+          <Link href="/login" className="lp-signin lp-navlink">Iniciar sesión</Link>
+          <Link href="/register" className="lp-btn lp-cta-sm">Empezar gratis</Link>
+
+          {/* Menú móvil sin JavaScript */}
+          <details className="lp-menu">
+            <summary aria-label="Abrir menú">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12161C" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </summary>
+            <div className="lp-menu-panel">
+              {LINKS.map((l) => (
+                <Link key={l.href} href={l.href}>{l.label}</Link>
+              ))}
+              <Link href="/login">Iniciar sesión</Link>
+            </div>
+          </details>
         </div>
       </div>
     </nav>

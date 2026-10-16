@@ -4,55 +4,73 @@
 
 @layer base {
   :root {
-    /* Light mode */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    /* Claro — paleta "Rappi" de Fidelitap */
+    --background: 220 33% 97%;
+    --foreground: 216 22% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 216 22% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 161 100% 39%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 222 47% 20%;
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 161 60% 94%;
-    --accent-foreground: 161 80% 25%;
+    --popover-foreground: 216 22% 9%;
+    --primary: 152 87% 31%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 33% 96%;
+    --secondary-foreground: 216 22% 20%;
+    --muted: 216 33% 96%;
+    --muted-foreground: 215 15% 39%;
+    --accent: 149 58% 92%;
+    --accent-foreground: 152 87% 26%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 161 100% 39%;
-    --radius: 0.75rem;
-    --sidebar: 222 47% 11%;
-    --sidebar-foreground: 210 20% 98%;
+    --border: 216 20% 91%;
+    --input: 216 20% 88%;
+    --ring: 152 87% 31%;
+    --radius: 1rem;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 216 22% 9%;
+    --shadow-card: 0 1px 2px rgba(18, 22, 28, 0.04), 0 14px 34px rgba(18, 22, 28, 0.07);
+    --tone-sky: 221 83% 53%;
+    --tone-sky-soft: 218 100% 94%;
+    --tone-sun: 36 70% 41%;
+    --tone-sun-soft: 43 100% 92%;
+    --tone-lilac: 255 76% 58%;
+    --tone-lilac-soft: 252 100% 95%;
+    --tone-coral: 14 76% 52%;
+    --tone-coral-soft: 19 100% 94%;
   }
 
   .dark {
-    /* Dark mode — FideliTap default */
-    --background: 222 47% 4%;
-    --foreground: 210 20% 96%;
-    --card: 222 47% 7%;
-    --card-foreground: 210 20% 96%;
-    --popover: 222 47% 7%;
-    --popover-foreground: 210 20% 96%;
-    --primary: 161 100% 39%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 217 33% 14%;
-    --secondary-foreground: 210 20% 80%;
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 161 60% 10%;
-    --accent-foreground: 161 80% 60%;
+    /* Oscuro */
+    --background: 213 33% 6%;
+    --foreground: 213 36% 95%;
+    --card: 213 29% 10%;
+    --card-foreground: 213 36% 95%;
+    --popover: 213 29% 10%;
+    --popover-foreground: 213 36% 95%;
+    --primary: 158 64% 52%;
+    --primary-foreground: 158 78% 9%;
+    --secondary: 212 29% 14%;
+    --secondary-foreground: 213 25% 85%;
+    --muted: 212 29% 14%;
+    --muted-foreground: 214 14% 66%;
+    --accent: 160 40% 15%;
+    --accent-foreground: 158 64% 62%;
     --destructive: 0 63% 50%;
-    --destructive-foreground: 210 20% 96%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 161 100% 39%;
-    --radius: 0.75rem;
-    --sidebar: 222 47% 5%;
-    --sidebar-foreground: 210 20% 90%;
+    --destructive-foreground: 213 36% 95%;
+    --border: 212 22% 18%;
+    --input: 212 22% 20%;
+    --ring: 158 64% 52%;
+    --radius: 1rem;
+    --sidebar: 213 29% 10%;
+    --sidebar-foreground: 213 36% 95%;
+    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px rgba(0, 0, 0, 0.45);
+    --tone-sky: 217 100% 72%;
+    --tone-sky-soft: 217 40% 18%;
+    --tone-sun: 41 100% 65%;
+    --tone-sun-soft: 40 40% 17%;
+    --tone-lilac: 250 100% 79%;
+    --tone-lilac-soft: 252 30% 20%;
+    --tone-coral: 17 100% 69%;
+    --tone-coral-soft: 17 40% 18%;
   }
 }
 
@@ -62,6 +80,10 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-outfit), system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -73,4 +95,16 @@
 }
 .confetti-dot {
   animation: confetti-fly 0.8s ease-out forwards;
+}
+
+/* Barras de la gráfica del dashboard */
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.bar-grow {
+  animation: bar-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-grow { animation: none; }
 }

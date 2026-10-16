@@ -5,7 +5,6 @@ import { PlanUsage } from '@/components/dashboard/plan-usage'
 import { SidebarNav } from '@/components/dashboard/sidebar-nav'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { MobileNav } from '@/components/dashboard/mobile-nav'
-import { LogoutButton } from '@/components/dashboard/logout-button'
 
 export default async function DashboardLayout({
   children,
@@ -27,24 +26,16 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-[hsl(var(--sidebar))]">
-        <Link
-          href="/dashboard"
-          className="px-6 h-14 flex items-center text-xl font-black tracking-tight border-b border-border/30 text-[hsl(var(--sidebar-foreground))]"
-        >
-          fideli<span className="text-primary">tap</span>
+      <aside className="hidden md:flex w-[272px] shrink-0 flex-col gap-5 border-r border-border bg-[hsl(var(--sidebar))] px-0 py-6">
+        <Link href="/dashboard" aria-label="Fidelitap, inicio" className="px-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-[46px] w-auto dark:brightness-[1.45] dark:saturate-110" />
         </Link>
 
         <SidebarNav />
 
-        <div className="border-t border-border/30">
+        <div className="mt-auto px-4">
           <PlanUsage businessId={business.id} plan={business.plan} />
-        </div>
-
-        {/* Desktop logout */}
-        <div className="border-t border-border/30 px-3 py-3">
-          <p className="text-[10px] text-muted-foreground/40 px-3 mb-1 truncate">{user.email}</p>
-          <LogoutButton />
         </div>
       </aside>
 

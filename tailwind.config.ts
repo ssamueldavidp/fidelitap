@@ -43,6 +43,12 @@ const config: Config = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        tone: {
+          sky: { DEFAULT: 'hsl(var(--tone-sky))', soft: 'hsl(var(--tone-sky-soft))' },
+          sun: { DEFAULT: 'hsl(var(--tone-sun))', soft: 'hsl(var(--tone-sun-soft))' },
+          lilac: { DEFAULT: 'hsl(var(--tone-lilac))', soft: 'hsl(var(--tone-lilac-soft))' },
+          coral: { DEFAULT: 'hsl(var(--tone-coral))', soft: 'hsl(var(--tone-coral-soft))' },
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -50,6 +56,13 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+      },
+      fontFamily: {
+        sans: ['var(--font-dm)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
       },
       borderRadius: {
         lg: 'var(--radius)',

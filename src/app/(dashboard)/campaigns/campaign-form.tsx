@@ -13,7 +13,7 @@ interface CampaignFormProps {
 }
 
 const input =
-  'w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-[#00C896] transition-colors'
+  'w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-colors'
 
 export function CampaignForm({ cards }: CampaignFormProps) {
   const [isPending, startTransition] = useTransition()
@@ -73,11 +73,11 @@ export function CampaignForm({ cards }: CampaignFormProps) {
         <input name="scheduledAt" type="datetime-local" className={input} />
       </div>
       {error && <p className="text-xs text-red-400 bg-red-950/50 border border-red-800 rounded-lg px-3 py-2">{error}</p>}
-      {success && <p className="text-xs text-[#00C896]">✓ Campaña creada</p>}
+      {success && <p className="text-xs text-primary">✓ Campaña creada</p>}
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#00C896] text-slate-900 font-bold text-sm rounded-xl py-3 hover:bg-[#00b386] disabled:opacity-50 transition-colors"
+        className="bg-primary text-primary-foreground font-bold text-sm rounded-xl py-3 hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {isPending ? 'Enviando...' : 'Crear campaña'}
       </button>

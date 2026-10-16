@@ -21,8 +21,9 @@ export function MobileNav({ planContent, userEmail }: MobileNavProps) {
     <>
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-card">
-        <Link href="/dashboard" className="text-lg font-black tracking-tight">
-          fideli<span className="text-primary">tap</span>
+        <Link href="/dashboard" aria-label="Fidelitap, inicio">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-9 w-auto dark:brightness-[1.45] dark:saturate-110" />
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -47,17 +48,14 @@ export function MobileNav({ planContent, userEmail }: MobileNavProps) {
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 w-64 bg-[hsl(var(--sidebar))] z-50 flex flex-col transform transition-transform duration-300 md:hidden ${
+        className={`fixed inset-y-0 left-0 w-72 bg-[hsl(var(--sidebar))] z-50 flex flex-col transform transition-transform duration-300 md:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between px-6 h-14 border-b border-border/30">
-          <Link
-            href="/dashboard"
-            className="text-xl font-black tracking-tight text-[hsl(var(--sidebar-foreground))]"
-            onClick={() => setOpen(false)}
-          >
-            fideli<span className="text-primary">tap</span>
+          <Link href="/dashboard" aria-label="Fidelitap, inicio" onClick={() => setOpen(false)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-9 w-auto dark:brightness-[1.45] dark:saturate-110" />
           </Link>
           <button
             type="button"
@@ -73,7 +71,7 @@ export function MobileNav({ planContent, userEmail }: MobileNavProps) {
           <SidebarNav onNavigate={() => setOpen(false)} />
         </div>
 
-        <div className="border-t border-border/30">
+        <div className="border-t border-border/30 p-4">
           {planContent}
         </div>
 

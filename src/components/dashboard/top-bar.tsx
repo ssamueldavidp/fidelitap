@@ -8,12 +8,17 @@ interface TopBarProps {
 
 export function TopBar({ businessName, userEmail }: TopBarProps) {
   return (
-    <div className="hidden md:flex h-14 border-b border-border items-center justify-between px-6 shrink-0">
-      <p className="text-sm text-muted-foreground font-medium">{businessName}</p>
+    <div className="hidden md:flex min-h-[84px] shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-8">
+      <p className="truncate text-sm text-muted-foreground">{userEmail}</p>
       <div className="flex items-center gap-3">
-        <span className="text-xs text-muted-foreground/60 truncate max-w-[180px]">{userEmail}</span>
         <ThemeToggle />
-        <LogoutButton />
+        <div className="flex items-center gap-2.5 rounded-full border border-border bg-muted py-1.5 pl-1.5 pr-4">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#34D399] to-[#0A9F5B] font-display font-bold text-white">
+            {businessName.trim().charAt(0).toUpperCase() || 'F'}
+          </span>
+          <span className="max-w-[160px] truncate text-sm font-bold">{businessName}</span>
+        </div>
+        <div className="w-40"><LogoutButton /></div>
       </div>
     </div>
   )

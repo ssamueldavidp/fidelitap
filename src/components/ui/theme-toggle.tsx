@@ -3,23 +3,42 @@
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
-  if (!mounted) return <div className="w-10 h-10" />
+  const dark = mounted && resolvedTheme === 'dark'
 
   return (
-    <button
-      type="button"
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-      aria-label="Cambiar tema"
-    >
-      {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-    </button>
+    <div className="flex rounded-full border border-border bg-muted p-1" role="group" aria-label="Tema">
+      <button
+        type="button"
+        onClick={() => setTheme('light')}
+        aria-pressed={mounted && !dark}
+        aria-label="Tema claro"
+        className={cn(
+          'flex h-9 w-10 items-center justify-center rounded-full transition-colors',
+          mounted && !dark ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+        )}
+      >
+        <Sun size={18} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setTheme('dark')}
+        aria-pressed={dark}
+        aria-label="Tema oscuro"
+        className={cn(
+          'flex h-9 w-10 items-center justify-center rounded-full transition-colors',
+          dark ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+        )}
+      >
+        <Moon size={18} />
+      </button>
+    </div>
   )
 }

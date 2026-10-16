@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { sendEmailCodeAction } from './actions'
 
 const INPUT =
-  'w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors'
+  'w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors'
 
 // Email input + "Enviar código" + code input. Submits `email` and `code` with
 // the surrounding form; the server actions verify the code before doing anything.
@@ -41,7 +41,7 @@ export function EmailCodeField({ placeholder, hint }: { placeholder: string; hin
           type="button"
           onClick={send}
           disabled={pending || !email}
-          className="text-xs font-semibold text-[#00C896] border border-[#00C896]/40 rounded-lg py-2 hover:bg-[#00C896]/10 disabled:opacity-50 transition-colors"
+          className="text-xs font-semibold text-primary border border-primary/40 rounded-lg py-2 hover:bg-primary/10 disabled:opacity-50 transition-colors"
         >
           {pending ? 'Enviando...' : 'Enviar código de verificación'}
         </button>
@@ -58,7 +58,7 @@ export function EmailCodeField({ placeholder, hint }: { placeholder: string; hin
           />
           <p className="text-[10px] text-muted-foreground/60">
             Te enviamos un código a {email}.{' '}
-            <button type="button" onClick={send} disabled={pending} className="text-[#00C896] underline">
+            <button type="button" onClick={send} disabled={pending} className="text-primary underline">
               Reenviar
             </button>
           </p>

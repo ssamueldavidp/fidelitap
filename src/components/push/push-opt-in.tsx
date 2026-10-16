@@ -90,7 +90,7 @@ export function PushOptIn({ customerCardId, walletAuthToken }: PushOptInProps) {
 
   if (status === 'enabled') {
     return (
-      <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-3 text-sm text-[#00C896]">
+      <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-3 text-sm text-primary">
         <Bell size={14} />
         Notificaciones activadas
       </div>
@@ -127,7 +127,7 @@ export function PushOptIn({ customerCardId, walletAuthToken }: PushOptInProps) {
   return (
     <div className="flex flex-col gap-2 bg-card border border-border rounded-xl px-4 py-3.5">
       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-        <Bell size={14} className="text-[#00C896]" />
+        <Bell size={14} className="text-primary" />
         Recibe un aviso cuando estés cerca de tu premio
       </div>
       <p className="text-[11px] text-muted-foreground leading-relaxed">
@@ -138,7 +138,7 @@ export function PushOptIn({ customerCardId, walletAuthToken }: PushOptInProps) {
           type="button"
           onClick={handleEnable}
           disabled={status === 'loading'}
-          className="flex-1 bg-[#00C896] text-slate-900 font-semibold text-xs rounded-lg py-2 hover:bg-[#00b386] disabled:opacity-50 transition-colors"
+          className="flex-1 bg-primary text-primary-foreground font-semibold text-xs rounded-lg py-2 hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {status === 'loading' ? 'Activando...' : 'Activar'}
         </button>

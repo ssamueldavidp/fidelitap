@@ -41,16 +41,16 @@ export function CardWidget({ card, customerCount, redemptionCount, onClick, dimm
       />
       <div className="mt-2.5 flex gap-4 px-1">
         <div>
-          <p className="text-sm font-bold text-white">{customerCount}</p>
-          <p className="text-[10px] text-white/30">clientes</p>
+          <p className="text-sm font-bold text-foreground">{customerCount}</p>
+          <p className="text-[10px] text-foreground/30">clientes</p>
         </div>
         <div>
-          <p className="text-sm font-bold text-white">{card.stamps_required}</p>
-          <p className="text-[10px] text-white/30">sellos</p>
+          <p className="text-sm font-bold text-foreground">{card.stamps_required}</p>
+          <p className="text-[10px] text-foreground/30">sellos</p>
         </div>
         <div>
-          <p className="text-sm font-bold text-white">{redemptionCount}</p>
-          <p className="text-[10px] text-white/30">canjes</p>
+          <p className="text-sm font-bold text-foreground">{redemptionCount}</p>
+          <p className="text-[10px] text-foreground/30">canjes</p>
         </div>
         <div className="ml-auto">
           <span

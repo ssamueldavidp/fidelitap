@@ -11,7 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-[#00C896] hover:bg-[#00b386] disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
+      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
     >
       {pending ? 'Guardando...' : 'Guardar nueva contraseña'}
     </button>
@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
               autoComplete="new-password"
               required
               placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número"
-              className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+              className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 

@@ -27,7 +27,7 @@ export default async function CampaignsPage() {
           </p>
           <a
             href="/settings?tab=suscripcion"
-            className="inline-block mt-4 bg-[#00C896] text-slate-900 font-semibold text-sm rounded-lg px-4 py-2 hover:bg-[#00b386] transition-colors"
+            className="inline-block mt-4 bg-primary text-primary-foreground font-semibold text-sm rounded-lg px-4 py-2 hover:bg-primary/90 transition-colors"
           >
             Ver planes
           </a>

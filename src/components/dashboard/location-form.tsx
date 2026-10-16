@@ -41,14 +41,14 @@ export function LocationForm({ initialLat, initialLng, initialRadius }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         Configura la ubicación de tu negocio para que los clientes con la app reciban un aviso
         cuando estén cerca. Requiere plan Pro o Premium.
       </p>
 
       <div className="flex gap-3">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Latitud</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Latitud</label>
           <input
             type="number"
             step="any"
@@ -59,7 +59,7 @@ export function LocationForm({ initialLat, initialLng, initialRadius }: Props) {
           />
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Longitud</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Longitud</label>
           <input
             type="number"
             step="any"
@@ -72,7 +72,7 @@ export function LocationForm({ initialLat, initialLng, initialRadius }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Radio de detección (metros)
         </label>
         <input
@@ -83,7 +83,7 @@ export function LocationForm({ initialLat, initialLng, initialRadius }: Props) {
           onChange={e => setRadius(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm"
         />
-        <p className="text-xs text-gray-400 mt-1">Recomendado: 200 m. Mínimo 50 m.</p>
+        <p className="text-xs text-muted-foreground mt-1">Recomendado: 200 m. Mínimo 50 m.</p>
       </div>
 
       <button
@@ -94,7 +94,7 @@ export function LocationForm({ initialLat, initialLng, initialRadius }: Props) {
         {saving ? 'Guardando...' : 'Guardar ubicación'}
       </button>
 
-      {message && <p className="text-sm text-gray-600">{message}</p>}
+      {message && <p className="text-sm text-muted-foreground">{message}</p>}
     </form>
   );
 }

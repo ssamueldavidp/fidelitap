@@ -93,7 +93,7 @@ export default async function CustomerDetailPage({
                   {Array.from({ length: lc.stamps_required }).map((_, i) => (
                     <span
                       key={i}
-                      className={i < cc.current_stamps ? 'text-[#00C896]' : 'text-muted-foreground/30'}
+                      className={i < cc.current_stamps ? 'text-primary' : 'text-muted-foreground/30'}
                     >
                       ●
                     </span>
@@ -122,7 +122,7 @@ export default async function CustomerDetailPage({
             const d = new Date(se.created_at)
             return (
               <div key={se.id} className="flex items-center gap-4 py-3 border-b border-border/50">
-                <div className="w-2 h-2 rounded-full bg-[#00C896] shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                 <span className="text-foreground text-sm">
                   {d.toLocaleDateString('es-CO', {
                     day: '2-digit',

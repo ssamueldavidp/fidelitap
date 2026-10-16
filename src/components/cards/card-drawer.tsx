@@ -128,7 +128,7 @@ export function CardDrawer({
           {/* Edit button */}
           <Link
             href={`/cards/${card.id}/editar`}
-            className="flex items-center justify-center gap-2 bg-[#00C896] text-slate-900 font-bold text-sm rounded-xl py-2.5 hover:bg-[#00b386] transition-colors"
+            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground font-bold text-sm rounded-xl py-2.5 hover:bg-primary/90 transition-colors"
           >
             ✏️ Editar tarjeta
           </Link>
@@ -139,7 +139,7 @@ export function CardDrawer({
             <button
               onClick={handleToggle}
               disabled={isPending}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-50 ${isActive ? 'bg-[#00C896]' : 'bg-muted-foreground/30'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-50 ${isActive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}
@@ -163,7 +163,7 @@ export function CardDrawer({
           {/* Share link */}
           <div className="bg-muted rounded-xl p-4 flex flex-col gap-3">
             <p className="text-xs text-muted-foreground">Enlace para clientes</p>
-            <p className="text-xs text-[#00C896] break-all">{shareUrl}</p>
+            <p className="text-xs text-primary break-all">{shareUrl}</p>
             <button
               onClick={handleCopyLink}
               className="w-full text-xs font-semibold text-foreground/80 hover:text-foreground border border-border hover:border-muted-foreground rounded-lg py-1.5 transition-colors"

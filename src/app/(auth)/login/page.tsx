@@ -12,7 +12,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-[#00C896] hover:bg-[#00b386] disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
+      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
     >
       {pending ? 'Iniciando sesión...' : 'Iniciar sesión'}
     </button>
@@ -42,7 +42,7 @@ function LoginForm() {
             autoComplete="email"
             required
             placeholder="tu@negocio.com"
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -51,7 +51,7 @@ function LoginForm() {
             <label htmlFor="password" className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Contraseña
             </label>
-            <Link href="/forgot-password" className="text-xs text-[#00C896] hover:underline">
+            <Link href="/forgot-password" className="text-xs text-primary hover:underline">
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -61,7 +61,7 @@ function LoginForm() {
             autoComplete="current-password"
             required
             placeholder="••••••••"
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -76,7 +76,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         ¿No tienes cuenta?{' '}
-        <Link href="/register" className="text-[#00C896] font-semibold hover:underline">
+        <Link href="/register" className="text-primary font-semibold hover:underline">
           Regístrate gratis
         </Link>
       </p>

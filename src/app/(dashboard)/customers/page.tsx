@@ -73,12 +73,12 @@ export default async function CustomersPage({
           name="q"
           defaultValue={searchParams.q}
           placeholder="Buscar por nombre..."
-          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] w-56"
+          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary w-56"
         />
         <select
           name="card"
           defaultValue={searchParams.card ?? ''}
-          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[#00C896]"
+          className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
         >
           <option value="">Todas las tarjetas</option>
           {loyaltyCards.map((c) => (
@@ -89,7 +89,7 @@ export default async function CustomersPage({
         </select>
         <button
           type="submit"
-          className="bg-[#00C896] text-slate-900 font-bold text-sm rounded-lg px-4 py-2 hover:bg-[#00b386] transition-colors"
+          className="bg-primary text-primary-foreground font-bold text-sm rounded-lg px-4 py-2 hover:bg-primary/90 transition-colors"
         >
           Buscar
         </button>
@@ -124,7 +124,7 @@ export default async function CustomersPage({
                   <td className="py-3 pr-6">
                     <Link
                       href={`/customers/${c.customer_id}`}
-                      className="text-foreground font-medium hover:text-[#00C896] transition-colors"
+                      className="text-foreground font-medium hover:text-primary transition-colors"
                     >
                       {c.customer_name}
                     </Link>
@@ -135,7 +135,7 @@ export default async function CustomersPage({
                       {Array.from({ length: c.stamps_required }).map((_, i) => (
                         <span
                           key={i}
-                          className={i < c.current_stamps ? 'text-[#00C896]' : 'text-muted-foreground/30'}
+                          className={i < c.current_stamps ? 'text-primary' : 'text-muted-foreground/30'}
                         >
                           ●
                         </span>

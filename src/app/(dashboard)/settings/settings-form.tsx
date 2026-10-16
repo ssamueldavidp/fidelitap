@@ -39,7 +39,7 @@ export function SettingsForm({ cooldownSeconds }: { cooldownSeconds: number }) {
         <select
           value={value}
           onChange={(e) => setValue(Number(e.target.value))}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[#00C896]"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
         >
           {COOLDOWN_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -55,12 +55,12 @@ export function SettingsForm({ cooldownSeconds }: { cooldownSeconds: number }) {
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#00C896] text-slate-900 font-bold text-sm rounded-lg px-4 py-2.5 hover:bg-[#00b386] disabled:opacity-40 transition-colors self-start"
+        className="bg-primary text-primary-foreground font-bold text-sm rounded-lg px-4 py-2.5 hover:bg-primary/90 disabled:opacity-40 transition-colors self-start"
       >
         {isPending ? 'Guardando...' : 'Guardar'}
       </button>
 
-      {saved && <p className="text-[#00C896] text-sm">✓ Configuración guardada</p>}
+      {saved && <p className="text-primary text-sm">✓ Configuración guardada</p>}
       {error && <p className="text-red-400 text-sm">{error}</p>}
     </form>
   )

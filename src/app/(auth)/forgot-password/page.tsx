@@ -9,7 +9,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-[#00C896] hover:bg-[#00b386] disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
+      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
     >
       {pending ? 'Enviando...' : 'Enviar enlace de recuperación'}
     </button>
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
               autoComplete="email"
               required
               placeholder="tu@negocio.com"
-              className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+              className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 
@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
       )}
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        <Link href="/login" className="text-[#00C896] font-semibold hover:underline">
+        <Link href="/login" className="text-primary font-semibold hover:underline">
           Volver a iniciar sesión
         </Link>
       </p>

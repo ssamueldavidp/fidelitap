@@ -35,7 +35,7 @@ export default async function CardActivationPage({
       <div className="w-full max-w-sm flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <p className="text-[#00C896] text-xs font-bold uppercase tracking-widest mb-1">
+          <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">
             {business?.name}
           </p>
           <h1 className="text-2xl font-black">{card.name}</h1>

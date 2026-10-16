@@ -73,7 +73,7 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
             minLength={2}
             maxLength={80}
             placeholder="Ej: María García"
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -98,16 +98,16 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
             type="tel"
             maxLength={20}
             placeholder="Ej: 3001234567"
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
         {/* Anti-fraud notice */}
         <div className="flex items-start gap-2 bg-muted/60 border border-border/50 rounded-lg px-3 py-2.5">
-          <Shield size={13} className="text-[#00C896] mt-0.5 shrink-0" />
+          <Shield size={13} className="text-primary mt-0.5 shrink-0" />
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             Cada email puede tener solo una tarjeta por negocio. Si perdiste el acceso, usa
-            la opción <span className="text-[#00C896]">Recuperar tarjeta</span> abajo.
+            la opción <span className="text-primary">Recuperar tarjeta</span> abajo.
           </p>
         </div>
 
@@ -118,11 +118,11 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
             type="checkbox"
             value="true"
             required
-            className="mt-0.5 accent-[#00C896] shrink-0"
+            className="mt-0.5 accent-primary shrink-0"
           />
           <span className="text-[11px] text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors">
             Acepto el{' '}
-            <a href="/privacy" target="_blank" className="text-[#00C896] underline underline-offset-2">
+            <a href="/privacy" target="_blank" className="text-primary underline underline-offset-2">
               tratamiento de mis datos personales
             </a>{' '}
             conforme a la Ley 1581 de 2012. <span className="text-red-400">*</span>
@@ -135,7 +135,7 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
             name="marketing"
             type="checkbox"
             value="true"
-            className="mt-0.5 accent-[#00C896] shrink-0"
+            className="mt-0.5 accent-primary shrink-0"
           />
           <span className="text-[11px] text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors">
             Acepto recibir comunicaciones y promociones del negocio por email.
@@ -151,7 +151,7 @@ export function ActivateForm({ loyaltyCardId, businessId, businessPlan, business
         <button
           type="submit"
           disabled={isPending}
-          className="bg-[#00C896] text-slate-900 font-bold text-sm rounded-xl py-3 hover:bg-[#00b386] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="bg-primary text-primary-foreground font-bold text-sm rounded-xl py-3 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? 'Activando...' : 'Activar mi tarjeta'}
         </button>

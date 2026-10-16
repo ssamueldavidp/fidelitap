@@ -44,19 +44,19 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black">Mis tarjetas</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Gestiona tus programas de fidelización</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Gestiona tus programas de fidelización</p>
         </div>
         {atCardLimit ? (
           <Link
             href="/settings#plan"
-            className="bg-slate-800 border border-slate-700 text-slate-300 text-sm font-semibold rounded-xl px-4 py-2.5 hover:border-slate-500 transition-colors"
+            className="bg-muted border border-border text-foreground text-sm font-semibold rounded-xl px-4 py-2.5 hover:border-foreground/30 transition-colors"
           >
             Límite alcanzado — Actualizar plan
           </Link>
         ) : (
           <Link
             href="/cards/nueva"
-            className="bg-[#00C896] text-slate-900 text-sm font-bold rounded-xl px-4 py-2.5 hover:bg-[#00b386] transition-colors"
+            className="bg-primary text-primary-foreground text-sm font-bold rounded-xl px-4 py-2.5 hover:bg-primary/90 transition-colors"
           >
             + Nueva tarjeta
           </Link>
@@ -64,7 +64,7 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 mb-6">
+      <div className="flex border-b border-border mb-6">
         {([['active', `Activas (${activeCount})`], ['inactive', `Inactivas (${inactiveCount})`]] as const).map(
           ([tab, label]) => (
             <button
@@ -72,8 +72,8 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-[#00C896] text-[#00C896]'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {label}
@@ -98,7 +98,7 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
         {!atCardLimit && (
           <Link
             href="/cards/nueva"
-            className="rounded-2xl border-2 border-dashed border-slate-800 flex flex-col items-center justify-center gap-2 min-h-[200px] text-slate-600 hover:border-[#00C896] hover:text-[#00C896] transition-colors"
+            className="rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 min-h-[200px] text-muted-foreground hover:border-primary hover:text-primary transition-colors"
           >
             <span className="text-4xl font-light">+</span>
             <span className="text-sm font-semibold">Nueva tarjeta</span>
@@ -106,7 +106,7 @@ export function CardsGrid({ cards, businessName, atCardLimit }: CardsGridProps) 
         )}
 
         {filtered.length === 0 && (
-          <div className="col-span-3 text-center py-16 text-slate-500">
+          <div className="col-span-3 text-center py-16 text-muted-foreground">
             <p className="text-4xl mb-3">◉</p>
             <p className="font-semibold">
               {activeTab === 'active' ? 'No tienes tarjetas activas' : 'No tienes tarjetas inactivas'}

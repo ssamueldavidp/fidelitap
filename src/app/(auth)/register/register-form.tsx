@@ -45,7 +45,7 @@ function SubmitButton({ isPaid }: { isPaid: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-[#00C896] hover:bg-[#00b386] disabled:opacity-60 text-slate-900 font-bold rounded-xl py-3 text-sm transition-colors"
+      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground font-bold rounded-xl py-3 text-sm transition-colors"
     >
       {pending
         ? 'Creando cuenta...'
@@ -88,18 +88,18 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
                 onClick={() => setSelectedPlan(plan.slug)}
                 className={`relative text-left rounded-xl border px-3 py-2.5 transition-all ${
                   active
-                    ? 'border-[#00C896] bg-[#00C896]/10 ring-1 ring-[#00C896]/40'
+                    ? 'border-primary bg-primary/10 ring-1 ring-[#00C896]/40'
                     : 'border-border bg-muted/30 hover:border-muted-foreground/30'
                 }`}
               >
                 {plan.badge && (
-                  <span className="absolute -top-2 right-2 bg-[#00C896] text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                     {plan.badge}
                   </span>
                 )}
                 <div className="flex items-start justify-between gap-1">
                   <div>
-                    <p className={`text-xs font-bold ${active ? 'text-[#00C896]' : 'text-foreground'}`}>
+                    <p className={`text-xs font-bold ${active ? 'text-primary' : 'text-foreground'}`}>
                       {plan.label}
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -107,7 +107,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
                     </p>
                   </div>
                   {active && (
-                    <Check size={12} className="text-[#00C896] mt-0.5 shrink-0" />
+                    <Check size={12} className="text-primary mt-0.5 shrink-0" />
                   )}
                 </div>
               </button>
@@ -117,7 +117,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
         <ul className="mt-3 flex flex-col gap-1">
           {getPlanFeatures(selectedPlan as PlanSlug).map((f) => (
             <li key={f} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-              <Check size={11} className="text-[#00C896] mt-0.5 shrink-0" />
+              <Check size={11} className="text-primary mt-0.5 shrink-0" />
               {f}
             </li>
           ))}
@@ -138,7 +138,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
             autoComplete="organization"
             required
             placeholder="Café Luna, Studio Hair..."
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -153,7 +153,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
             autoComplete="email"
             required
             placeholder="tu@negocio.com"
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -167,7 +167,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
             autoComplete="new-password"
             required
             placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número"
-            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#00C896] transition-colors"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -178,7 +178,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
         )}
 
         {state && 'checkoutUrl' in state && (
-          <div className="bg-[#00C896]/10 border border-[#00C896]/30 rounded-xl px-4 py-3 text-sm text-[#00C896]">
+          <div className="bg-primary/10 border border-primary/30 rounded-xl px-4 py-3 text-sm text-primary">
             Redirigiendo a Mercado Pago...
           </div>
         )}
@@ -205,7 +205,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/login" className="text-[#00C896] font-semibold hover:underline">
+        <Link href="/login" className="text-primary font-semibold hover:underline">
           Inicia sesión
         </Link>
       </p>

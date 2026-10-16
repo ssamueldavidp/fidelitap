@@ -127,13 +127,13 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
   }
 
   return (
-    <div className="flex h-screen bg-[#080810] text-white overflow-hidden">
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
 
       {/* LEFT SIDEBAR */}
-      <div className="w-80 shrink-0 flex flex-col border-r border-white/[0.06] overflow-y-auto">
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] shrink-0">
-          <Link href="/cards" className="text-white/40 hover:text-white transition-colors text-sm">←</Link>
-          <h1 className="font-bold text-sm text-white">{isEdit ? 'Editar tarjeta' : 'Nueva tarjeta'}</h1>
+      <div className="w-80 shrink-0 flex flex-col border-r border-foreground/[0.06] overflow-y-auto">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-foreground/[0.06] shrink-0">
+          <Link href="/cards" className="text-foreground/40 hover:text-foreground transition-colors text-sm">←</Link>
+          <h1 className="font-bold text-sm text-foreground">{isEdit ? 'Editar tarjeta' : 'Nueva tarjeta'}</h1>
         </div>
 
         <form id="card-form" onSubmit={handleSubmit} className="flex-1 flex flex-col gap-0">
@@ -150,18 +150,18 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
               <input
                 type="range" min={2} max={20} value={stampsRequired}
                 onChange={e => setStampsRequired(Number(e.target.value))}
-                className="w-full accent-[#00C896]"
+                className="w-full accent-primary"
               />
-              <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>2</span><span>20</span></div>
+              <div className="flex justify-between text-[10px] text-foreground/20 mt-1"><span>2</span><span>20</span></div>
             </Field>
             <Field label={`Avisar por push cuando falte${pushThreshold === 1 ? '' : 'n'}: ${pushThreshold} sello${pushThreshold === 1 ? '' : 's'}`}>
               <input
                 type="range" min={1} max={5} value={pushThreshold}
                 onChange={e => setPushThreshold(Number(e.target.value))}
-                className="w-full accent-[#00C896]"
+                className="w-full accent-primary"
               />
-              <div className="flex justify-between text-[10px] text-white/20 mt-1"><span>1</span><span>5</span></div>
-              <p className="text-[10px] text-white/30 mt-1">Solo aplica si tu plan incluye notificaciones push (Pro/Premium).</p>
+              <div className="flex justify-between text-[10px] text-foreground/20 mt-1"><span>1</span><span>5</span></div>
+              <p className="text-[10px] text-foreground/30 mt-1">Solo aplica si tu plan incluye notificaciones push (Pro/Premium).</p>
             </Field>
           </SidebarSection>
 
@@ -176,14 +176,14 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
             {multiRewards && (
               <div className="flex flex-col gap-2">
                 {rewards.map((r, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-2.5 py-2">
+                  <div key={i} className="flex items-center gap-2 bg-foreground/5 border border-foreground/10 rounded-lg px-2.5 py-2">
                     <input
                       type="number"
                       min={1}
                       max={200}
                       value={r.stamps_required}
                       onChange={e => setRewards(prev => prev.map((row, idx) => idx === i ? { ...row, stamps_required: Number(e.target.value) } : row))}
-                      className="w-14 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-[#00C896]"
+                      className="w-14 bg-foreground/5 border border-foreground/10 rounded px-2 py-1 text-xs text-foreground text-center focus:outline-none focus:border-primary"
                     />
                     <input
                       type="text"
@@ -191,13 +191,13 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                       onChange={e => setRewards(prev => prev.map((row, idx) => idx === i ? { ...row, reward_label: e.target.value } : row))}
                       placeholder={`Premio nivel ${i + 1}`}
                       maxLength={100}
-                      className="flex-1 bg-transparent text-xs text-white placeholder:text-white/20 focus:outline-none"
+                      className="flex-1 bg-transparent text-xs text-foreground placeholder:text-foreground/20 focus:outline-none"
                     />
                     {rewards.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setRewards(prev => prev.filter((_, idx) => idx !== i))}
-                        className="text-white/20 hover:text-red-400 transition-colors text-xs"
+                        className="text-foreground/20 hover:text-red-400 transition-colors text-xs"
                       >
                         ✕
                       </button>
@@ -212,7 +212,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                       reward_label: '',
                       color: REWARD_COLORS[prev.length % REWARD_COLORS.length],
                     }])}
-                    className="text-xs text-[#00C896] hover:underline text-left"
+                    className="text-xs text-primary hover:underline text-left"
                   >
                     + Agregar nivel
                   </button>
@@ -232,7 +232,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                 value={expiresAt}
                 min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
                 onChange={e => setExpiresAt(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00C896]"
+                className="w-full bg-foreground/5 border border-foreground/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
               />
             )}
           </SidebarSection>
@@ -249,8 +249,8 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                   whileTap={{ scale: 0.99 }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-colors ${
                     cardStyle === s.key
-                      ? 'border-[#00C896] bg-[#00C896]/8'
-                      : 'border-white/[0.07] hover:border-white/20'
+                      ? 'border-primary bg-primary/8'
+                      : 'border-foreground/[0.07] hover:border-foreground/20'
                   }`}
                 >
                   <div
@@ -258,10 +258,10 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                     style={{ background: cardStyle === s.key ? '#00C896' : 'rgba(255,255,255,0.05)' }}
                   />
                   <div>
-                    <p className={`text-sm font-semibold ${cardStyle === s.key ? 'text-white' : 'text-white/60'}`}>{s.label}</p>
-                    <p className="text-[10px] text-white/30">{s.desc}</p>
+                    <p className={`text-sm font-semibold ${cardStyle === s.key ? 'text-foreground' : 'text-foreground/60'}`}>{s.label}</p>
+                    <p className="text-[10px] text-foreground/30">{s.desc}</p>
                   </div>
-                  {cardStyle === s.key && <span className="ml-auto text-[#00C896] text-sm">✓</span>}
+                  {cardStyle === s.key && <span className="ml-auto text-primary text-sm">✓</span>}
                 </motion.button>
               ))}
             </div>
@@ -292,7 +292,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                 value={color}
                 onChange={e => { if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) setColor(e.target.value) }}
                 placeholder="#1d4ed8"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white placeholder:text-white/20 focus:outline-none focus:border-[#00C896]"
+                className="w-full bg-foreground/5 border border-foreground/10 rounded-lg px-3 py-2 text-sm font-mono text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-primary"
               />
             </Field>
 
@@ -305,8 +305,8 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                     onClick={() => setStampIcon(emoji)}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center text-base border transition-colors ${
                       stampIcon === emoji
-                        ? 'border-[#00C896] bg-white/10'
-                        : 'border-white/[0.07] hover:border-white/20'
+                        ? 'border-primary bg-foreground/10'
+                        : 'border-foreground/[0.07] hover:border-foreground/20'
                     }`}
                   >
                     {emoji}
@@ -320,9 +320,9 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
               {logoPreview ? (
                 <div className="flex items-center gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logoPreview} alt="logo" className="w-14 h-14 rounded-xl object-cover border border-white/10" />
+                  <img src={logoPreview} alt="logo" className="w-14 h-14 rounded-xl object-cover border border-foreground/10" />
                   <div className="flex flex-col gap-1">
-                    <button type="button" onClick={() => logoInputRef.current?.click()} className="text-xs text-white/50 hover:text-white transition-colors">Cambiar</button>
+                    <button type="button" onClick={() => logoInputRef.current?.click()} className="text-xs text-foreground/50 hover:text-foreground transition-colors">Cambiar</button>
                     <button type="button" onClick={() => { setLogoPreview(null); setLogoFile(null) }} className="text-xs text-red-400 hover:text-red-300 transition-colors">Quitar</button>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                 <button
                   type="button"
                   onClick={() => logoInputRef.current?.click()}
-                  className="w-full h-14 border border-dashed border-white/10 rounded-xl flex items-center justify-center gap-2 text-white/30 hover:border-white/25 hover:text-white/50 transition-colors text-sm"
+                  className="w-full h-14 border border-dashed border-foreground/10 rounded-xl flex items-center justify-center gap-2 text-foreground/30 hover:border-foreground/25 hover:text-foreground/50 transition-colors text-sm"
                 >
                   <span>📷</span> Subir logo (max 2MB)
                 </button>
@@ -349,7 +349,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                       type="button"
                       onClick={() => setBgMode(m)}
                       className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                        bgMode === m ? 'border-[#00C896] text-[#00C896]' : 'border-white/10 text-white/40 hover:border-white/20'
+                        bgMode === m ? 'border-primary text-primary' : 'border-foreground/10 text-foreground/40 hover:border-foreground/20'
                       }`}
                     >
                       {m === 'light' ? '☀️ Claro' : '🌙 Oscuro'}
@@ -367,7 +367,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                     type="button"
                     onClick={() => setBgType(t)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                      bgType === t ? 'border-[#00C896] text-[#00C896]' : 'border-white/10 text-white/40 hover:border-white/20'
+                      bgType === t ? 'border-primary text-primary' : 'border-foreground/10 text-foreground/40 hover:border-foreground/20'
                     }`}
                   >
                     {t === 'solid' ? 'Color' : 'Foto'}
@@ -378,7 +378,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                 <>
                   <input ref={bgInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleBgImageChange} className="hidden" />
                   {bgImagePreview ? (
-                    <div className="relative h-20 rounded-lg overflow-hidden border border-white/10 group cursor-pointer" onClick={() => bgInputRef.current?.click()}>
+                    <div className="relative h-20 rounded-lg overflow-hidden border border-foreground/10 group cursor-pointer" onClick={() => bgInputRef.current?.click()}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={bgImagePreview} alt="" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">Cambiar foto</div>
@@ -387,7 +387,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
                     <button
                       type="button"
                       onClick={() => bgInputRef.current?.click()}
-                      className="w-full h-20 border border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 text-white/30 hover:border-white/25 transition-colors"
+                      className="w-full h-20 border border-dashed border-foreground/10 rounded-lg flex flex-col items-center justify-center gap-1 text-foreground/30 hover:border-foreground/25 transition-colors"
                     >
                       <span className="text-xl">📷</span>
                       <span className="text-xs">Subir foto de fondo</span>
@@ -399,7 +399,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
           </SidebarSection>
 
           {/* Submit */}
-          <div className="px-5 py-4 border-t border-white/[0.06] mt-auto shrink-0">
+          <div className="px-5 py-4 border-t border-foreground/[0.06] mt-auto shrink-0">
             {error && (
               <p className="text-sm text-red-400 bg-red-950/50 border border-red-800 rounded-lg px-3 py-2 mb-3">
                 {error}
@@ -409,7 +409,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
               type="submit"
               form="card-form"
               disabled={isPending}
-              className="w-full bg-[#00C896] text-slate-900 font-bold text-sm rounded-xl py-3 hover:bg-[#00b386] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary text-primary-foreground font-bold text-sm rounded-xl py-3 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear tarjeta'}
             </button>
@@ -418,8 +418,8 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
       </div>
 
       {/* RIGHT: LIVE PREVIEW */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto bg-[#060609]">
-        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-6">Vista previa</p>
+      <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto bg-muted/50">
+        <p className="text-[10px] font-bold text-foreground/20 uppercase tracking-widest mb-6">Vista previa</p>
         <motion.div
           key={cardStyle}
           initial={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -443,7 +443,7 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
             size="md"
           />
         </motion.div>
-        <p className="text-[10px] text-white/20 mt-5 text-center leading-relaxed">
+        <p className="text-[10px] text-foreground/20 mt-5 text-center leading-relaxed">
           Así verán la tarjeta tus clientes.<br/>
           El QR real se muestra cuando el cliente activa la tarjeta.
         </p>
@@ -454,8 +454,8 @@ export function CardEditor({ card, existingRewards, businessName }: CardEditorPr
 
 function SidebarSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="border-b border-white/[0.06] px-5 py-4">
-      <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-3">{label}</p>
+    <div className="border-b border-foreground/[0.06] px-5 py-4">
+      <p className="text-[10px] font-bold text-foreground/25 uppercase tracking-widest mb-3">{label}</p>
       <div className="flex flex-col gap-4">{children}</div>
     </div>
   )
@@ -464,7 +464,7 @@ function SidebarSection({ label, children }: { label: string; children: React.Re
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs text-white/40 mb-1.5">{label}</label>
+      <label className="block text-xs text-foreground/40 mb-1.5">{label}</label>
       {children}
     </div>
   )
@@ -477,16 +477,16 @@ function ToggleRow({ title, subtitle, checked, onChange }: {
   onChange: (v: boolean) => void
 }) {
   return (
-    <label className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 cursor-pointer">
+    <label className="flex items-center gap-3 bg-foreground/5 border border-foreground/10 rounded-xl px-3 py-2.5 cursor-pointer">
       <div className="flex-1">
-        <p className="text-xs font-semibold text-white">{title}</p>
-        <p className="text-[10px] text-white/40 mt-0.5">{subtitle}</p>
+        <p className="text-xs font-semibold text-foreground">{title}</p>
+        <p className="text-[10px] text-foreground/40 mt-0.5">{subtitle}</p>
       </div>
       <input
         type="checkbox"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
-        className="w-4 h-4 accent-[#00C896]"
+        className="w-4 h-4 accent-primary"
       />
     </label>
   )
@@ -504,7 +504,7 @@ function EditorInput({ value, onChange, placeholder, maxLength }: {
       onChange={onChange}
       placeholder={placeholder}
       maxLength={maxLength}
-      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#00C896] transition-colors"
+      className="w-full bg-foreground/5 border border-foreground/10 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-primary transition-colors"
     />
   )
 }

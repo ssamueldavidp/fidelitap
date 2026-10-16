@@ -1,16 +1,42 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { getPlanLimits, getUsagePct, getUsageState } from '@/lib/plan-limits'
+import { getPlanLimits, getUsagePct, getUsageState, type UsageState } from '@/lib/plan-limits'
 
 interface PlanUsageProps {
   businessId: string
   plan: string
 }
 
+const BAR_COLOR: Record<UsageState, string> = {
+  ok: 'from-[#34D399] to-[#0A9F5B]',
+  warning: 'from-[#FFB020] to-[#FF7A45]',
+  full: 'from-[#FF7A45] to-[#E8452C]',
+}
+
+function UsageRow({ label, value, limit }: { label: string; value: number; limit: number | null }) {
+  if (limit === null) return null
+  const state = getUsageState(value, limit)
+  return (
+    <div className="mt-3">
+      <div className="flex justify-between text-[13px] font-semibold">
+        <span>{label}</span>
+        <span className={state === 'ok' ? 'text-muted-foreground' : 'text-tone-coral'}>
+          {value} / {limit}
+        </span>
+      </div>
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-border">
+        <div
+          className={`h-full rounded-full bg-gradient-to-r ${BAR_COLOR[state]}`}
+          style={{ width: `${getUsagePct(value, limit) ?? 0}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
   const supabase = await createClient()
 
-  // Fetch loyalty card IDs for this business
   const { data: loyaltyCards } = await supabase
     .from('loyalty_cards')
     .select('id')
@@ -19,7 +45,6 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
 
   const loyaltyCardIds = (loyaltyCards ?? []).map((c) => c.id)
 
-  // Count distinct customers across all loyalty cards for this business
   const { data: customerRows } = loyaltyCardIds.length > 0
     ? await supabase
         .from('customer_cards')
@@ -27,117 +52,53 @@ export async function PlanUsage({ businessId, plan }: PlanUsageProps) {
         .in('loyalty_card_id', loyaltyCardIds)
     : { data: [] }
 
-  const customerCount = new Set((customerRows ?? []).map((r) => r.customer_id)).size
-
-  // Count active loyalty cards for this business
-  const { count: cardCount } = await supabase
-    .from('loyalty_cards')
-    .select('id', { count: 'exact', head: true })
-    .eq('business_id', businessId)
-    .is('deleted_at', null)
-
+  const customers = new Set((customerRows ?? []).map((r) => r.customer_id)).size
+  const cards = loyaltyCardIds.length
   const limits = getPlanLimits(plan)
-  const customers = customerCount ?? 0
-  const cards = cardCount ?? 0
 
   const customerState = getUsageState(customers, limits.maxCustomers)
-  const customerPct = getUsagePct(customers, limits.maxCustomers)
   const cardState = getUsageState(cards, limits.maxCards)
-
   const showWarning = customerState !== 'ok' || cardState !== 'ok'
+  const isTopPlan = plan === 'premium'
 
   return (
-    <div className="px-3 mt-4 flex flex-col gap-2">
-      {/* Plan badge */}
-      <div className="bg-muted rounded-xl p-3 border border-border">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Plan actual</p>
-        <p className="text-sm font-bold text-foreground capitalize mb-2">{plan}</p>
-
-        {/* Customer usage */}
-        {limits.maxCustomers !== null && (
-          <div className="mb-2">
-            <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-muted-foreground">Clientes</span>
-              <span className={
-                customerState === 'full' ? 'text-red-400 font-bold' :
-                customerState === 'warning' ? 'text-amber-400 font-bold' :
-                'text-muted-foreground'
-              }>
-                {customers}/{limits.maxCustomers}
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  customerState === 'full' ? 'bg-red-500' :
-                  customerState === 'warning' ? 'bg-amber-400' :
-                  'bg-[#00C896]'
-                }`}
-                style={{ width: `${customerPct ?? 0}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Warning message */}
-        {customerState === 'full' && (
-          <p className="text-[10px] text-red-400 leading-relaxed mb-2">
-            Límite alcanzado. No se registrarán nuevos clientes.
-          </p>
-        )}
-        {customerState === 'warning' && (
-          <p className="text-[10px] text-amber-400 leading-relaxed mb-2">
-            Casi al límite. Quedan {(limits.maxCustomers ?? 0) - customers} espacios.
-          </p>
-        )}
-
-        {/* Card usage */}
-        {limits.maxCards !== null && (
-          <div className="mb-2">
-            <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-muted-foreground">Tarjetas</span>
-              <span className={
-                cardState === 'full' ? 'text-red-400 font-bold' :
-                cardState === 'warning' ? 'text-amber-400 font-bold' :
-                'text-muted-foreground'
-              }>
-                {cards}/{limits.maxCards}
-              </span>
-            </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  cardState === 'full' ? 'bg-red-500' :
-                  cardState === 'warning' ? 'bg-amber-400' :
-                  'bg-[#00C896]'
-                }`}
-                style={{ width: `${getUsagePct(cards, limits.maxCards) ?? 0}%` }}
-              />
-            </div>
-            {cardState === 'full' && (
-              <p className="text-[10px] text-red-400 leading-relaxed mt-1">
-                Límite de tarjetas alcanzado.
-              </p>
-            )}
-          </div>
-        )}
-
-        {showWarning ? (
-          <Link
-            href="/settings#plan"
-            className="block text-center text-xs font-bold bg-[#00C896] text-background rounded-lg py-1.5 hover:bg-[#00b386] transition-colors"
-          >
-            ↑ Actualizar plan
-          </Link>
-        ) : (
-          <Link
-            href="/settings#plan"
-            className="block text-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Actualizar plan →
-          </Link>
-        )}
+    <div className="rounded-3xl border border-border bg-muted p-[18px]">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Plan actual</span>
+        <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-extrabold capitalize text-accent-foreground">
+          {plan}
+        </span>
       </div>
+
+      <UsageRow label="Clientes" value={customers} limit={limits.maxCustomers} />
+      <UsageRow label="Tarjetas" value={cards} limit={limits.maxCards} />
+
+      {customerState === 'full' && (
+        <p className="mt-3 text-xs leading-relaxed text-tone-coral">
+          Límite alcanzado. No se registrarán nuevos clientes.
+        </p>
+      )}
+      {customerState === 'warning' && (
+        <p className="mt-3 text-xs leading-relaxed text-tone-coral">
+          Casi al límite. Quedan {(limits.maxCustomers ?? 0) - customers} espacios.
+        </p>
+      )}
+      {cardState === 'full' && (
+        <p className="mt-2 text-xs leading-relaxed text-tone-coral">Límite de tarjetas alcanzado.</p>
+      )}
+
+      {!isTopPlan && (
+        <Link
+          href="/settings#plan"
+          className={`mt-4 flex h-11 items-center justify-center rounded-full text-sm font-extrabold transition-transform hover:-translate-y-0.5 ${
+            showWarning || plan === 'free'
+              ? 'bg-gradient-to-br from-[#FF8A5B] to-[#FF6B3D] text-white shadow-[0_10px_22px_rgba(255,107,61,0.35)]'
+              : 'border border-border bg-card text-foreground'
+          }`}
+        >
+          {plan === 'free' ? 'Mejorar a Pro' : 'Actualizar plan'}
+        </Link>
+      )}
     </div>
   )
 }

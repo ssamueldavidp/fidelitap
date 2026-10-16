@@ -94,7 +94,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
   }
 
   Color _statusColor(String s) => switch (s) {
-        'sent' => const Color(0xFF00C896),
+        'sent' => const Color(0xFF0A9F5B),
         'scheduled' => const Color(0xFFFBBF24),
         'failed' => const Color(0xFFEF4444),
         _ => context.colors.textMuted,
@@ -113,7 +113,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Campañas push')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C896)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))
           : _data == null
               ? Center(child: Text(_error ?? 'Error', style: TextStyle(color: colors.textMuted)))
               : !_data!.eligible
@@ -160,14 +160,14 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                       ],
                       if (_success != null) ...[
                         const SizedBox(height: 8),
-                        Text(_success!, style: const TextStyle(color: Color(0xFF00C896))),
+                        Text(_success!, style: const TextStyle(color: Color(0xFF0A9F5B))),
                       ],
                       const SizedBox(height: 12),
                       ElevatedButton.icon(
                         onPressed: _sending ? null : _send,
                         icon: const Icon(Icons.send),
                         label: _sending
-                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                             : Text(_scheduledAt == null ? 'Enviar campaña' : 'Programar campaña'),
                       ),
                       const SizedBox(height: 28),

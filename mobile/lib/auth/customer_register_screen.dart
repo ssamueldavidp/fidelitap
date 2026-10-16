@@ -124,7 +124,7 @@ class _CustomerRegisterScreenState extends State<CustomerRegisterScreen> {
             onPressed: _submitting ? null : _register,
             child: _submitting
                 ? const SizedBox(height: 20, width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : const Text('Crear cuenta'),
           ),
         ],

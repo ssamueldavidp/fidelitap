@@ -14,7 +14,7 @@ class ChooseScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(),
-              const Icon(Icons.loyalty, size: 64, color: Color(0xFF00C896)),
+              const Icon(Icons.loyalty, size: 64, color: Color(0xFF0A9F5B)),
               const SizedBox(height: 16),
               const Text('FideliTap',
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900)),

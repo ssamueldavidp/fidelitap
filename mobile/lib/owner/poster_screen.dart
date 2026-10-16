@@ -135,7 +135,7 @@ class _PosterScreenState extends State<PosterScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Plantilla / Cartel')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C896)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -176,8 +176,8 @@ class _PosterScreenState extends State<PosterScreen> {
                     child: OutlinedButton(
                       onPressed: () => setState(() => _bgType = 'color'),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _bgType == 'color' ? const Color(0xFF00C896) : colors.border),
-                        foregroundColor: _bgType == 'color' ? const Color(0xFF00C896) : colors.textMuted,
+                        side: BorderSide(color: _bgType == 'color' ? const Color(0xFF0A9F5B) : colors.border),
+                        foregroundColor: _bgType == 'color' ? const Color(0xFF0A9F5B) : colors.textMuted,
                       ),
                       child: const Text('Color'),
                     ),
@@ -187,8 +187,8 @@ class _PosterScreenState extends State<PosterScreen> {
                     child: OutlinedButton(
                       onPressed: () => setState(() => _bgType = 'photo'),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _bgType == 'photo' ? const Color(0xFF00C896) : colors.border),
-                        foregroundColor: _bgType == 'photo' ? const Color(0xFF00C896) : colors.textMuted,
+                        side: BorderSide(color: _bgType == 'photo' ? const Color(0xFF0A9F5B) : colors.border),
+                        foregroundColor: _bgType == 'photo' ? const Color(0xFF0A9F5B) : colors.textMuted,
                       ),
                       child: const Text('Foto'),
                     ),
@@ -251,8 +251,8 @@ class _PosterScreenState extends State<PosterScreen> {
                     child: OutlinedButton(
                       onPressed: () => setState(() => _orientation = 'vertical'),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _orientation == 'vertical' ? const Color(0xFF00C896) : colors.border),
-                        foregroundColor: _orientation == 'vertical' ? const Color(0xFF00C896) : colors.textMuted,
+                        side: BorderSide(color: _orientation == 'vertical' ? const Color(0xFF0A9F5B) : colors.border),
+                        foregroundColor: _orientation == 'vertical' ? const Color(0xFF0A9F5B) : colors.textMuted,
                       ),
                       child: const Text('Vertical'),
                     ),
@@ -262,8 +262,8 @@ class _PosterScreenState extends State<PosterScreen> {
                     child: OutlinedButton(
                       onPressed: () => setState(() => _orientation = 'horizontal'),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _orientation == 'horizontal' ? const Color(0xFF00C896) : colors.border),
-                        foregroundColor: _orientation == 'horizontal' ? const Color(0xFF00C896) : colors.textMuted,
+                        side: BorderSide(color: _orientation == 'horizontal' ? const Color(0xFF0A9F5B) : colors.border),
+                        foregroundColor: _orientation == 'horizontal' ? const Color(0xFF0A9F5B) : colors.textMuted,
                       ),
                       child: const Text('Horizontal'),
                     ),

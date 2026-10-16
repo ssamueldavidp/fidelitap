@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// launches, mirroring the web dashboard's own theme toggle.
 class ThemeController extends ChangeNotifier {
   static const _prefKey = 'theme_mode';
-  ThemeMode _mode = ThemeMode.dark;
+  ThemeMode _mode = ThemeMode.light;
   ThemeMode get mode => _mode;
   bool get isDark => _mode == ThemeMode.dark;
 
@@ -13,10 +13,10 @@ class ThemeController extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_prefKey);
-      _mode = saved == 'light' ? ThemeMode.light : ThemeMode.dark;
+      _mode = saved == 'dark' ? ThemeMode.dark : ThemeMode.light;
       notifyListeners();
     } catch (_) {
-      // Local storage unavailable — keep the dark default.
+      // Local storage unavailable — keep the light default.
     }
   }
 

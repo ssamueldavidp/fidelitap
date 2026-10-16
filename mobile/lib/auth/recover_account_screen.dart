@@ -102,7 +102,7 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
           ElevatedButton(
             onPressed: _busy ? null : (_codeSent ? _verify : _sendCode),
             child: _busy
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : Text(_codeSent ? 'Verificar y recuperar' : 'Enviar código'),
           ),
           if (_codeSent)

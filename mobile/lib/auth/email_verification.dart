@@ -98,7 +98,7 @@ class _EmailCodeDialogState extends State<_EmailCodeDialog> {
         ElevatedButton(
           onPressed: _busy ? null : _verify,
           child: _busy
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
               : const Text('Verificar'),
         ),
       ],

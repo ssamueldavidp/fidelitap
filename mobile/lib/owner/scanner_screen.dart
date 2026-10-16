@@ -84,7 +84,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     : Container(
                         color: context.colors.surface,
                         child: const Center(
-                            child: CircularProgressIndicator(color: Color(0xFF00C896)))),
+                            child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))),
               ),
             ),
             const SizedBox(height: 20),
@@ -120,7 +120,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               icon: const Icon(Icons.star),
               label: _loading
                   ? const SizedBox(height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Text('Agregar sello'),
             ),
           ] else ...[
@@ -162,7 +162,7 @@ class _StampResultCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Icon(Icons.check_circle, color: Color(0xFF00C896), size: 48),
+            const Icon(Icons.check_circle, color: Color(0xFF0A9F5B), size: 48),
             const SizedBox(height: 12),
             const Text('¡Sello agregado!',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
@@ -174,7 +174,7 @@ class _StampResultCard extends StatelessWidget {
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
               backgroundColor: context.colors.surfaceAlt,
-              color: isReadyToClaim ? const Color(0xFFFBBF24) : const Color(0xFF00C896),
+              color: isReadyToClaim ? const Color(0xFFFBBF24) : const Color(0xFF0A9F5B),
             ),
             const SizedBox(height: 8),
             Text('$current / $required sellos',
@@ -198,14 +198,14 @@ class _StampResultCard extends StatelessWidget {
                 icon: const Icon(Icons.card_giftcard),
                 label: loading
                     ? const SizedBox(height: 20, width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('Entregar premio'),
               ),
             ],
             if (isClaimed) ...[
               const SizedBox(height: 16),
               const Text('✅ Premio entregado',
-                  style: TextStyle(color: Color(0xFF00C896), fontWeight: FontWeight.w600)),
+                  style: TextStyle(color: Color(0xFF0A9F5B), fontWeight: FontWeight.w600)),
             ],
           ],
         ),

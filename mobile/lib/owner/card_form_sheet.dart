@@ -218,7 +218,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                     onPressed: _saving ? null : _save,
                     child: _saving
                         ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Guardar', style: TextStyle(color: Color(0xFF00C896), fontWeight: FontWeight.w700)),
+                        : const Text('Guardar', style: TextStyle(color: Color(0xFF0A9F5B), fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -262,13 +262,13 @@ class _CardFormSheetState extends State<CardFormSheet>
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: selected ? const Color(0xFF00C896) : context.colors.border),
-                              color: selected ? const Color(0xFF00C896).withValues(alpha: 0.08) : Colors.transparent,
+                              border: Border.all(color: selected ? const Color(0xFF0A9F5B) : context.colors.border),
+                              color: selected ? const Color(0xFF0A9F5B).withValues(alpha: 0.08) : Colors.transparent,
                             ),
                             child: Row(children: [
                               Container(width: 28, height: 28,
                                   decoration: BoxDecoration(
-                                      color: selected ? const Color(0xFF00C896) : context.colors.surfaceAlt,
+                                      color: selected ? const Color(0xFF0A9F5B) : context.colors.surfaceAlt,
                                       borderRadius: BorderRadius.circular(8))),
                               const SizedBox(width: 12),
                               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -276,7 +276,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                                 Text(s.desc, style: TextStyle(color: context.colors.textMuted, fontSize: 10)),
                               ]),
                               if (selected) const Spacer(),
-                              if (selected) const Icon(Icons.check, color: Color(0xFF00C896), size: 16),
+                              if (selected) const Icon(Icons.check, color: Color(0xFF0A9F5B), size: 16),
                             ]),
                           ),
                         ),
@@ -329,11 +329,11 @@ class _CardFormSheetState extends State<CardFormSheet>
                         height: 44,
                         decoration: BoxDecoration(
                           color: _icon == ic
-                              ? const Color(0xFF00C896).withValues(alpha: 0.2)
+                              ? const Color(0xFF0A9F5B).withValues(alpha: 0.2)
                               : context.colors.surfaceAlt,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: _icon == ic ? const Color(0xFF00C896) : Colors.transparent,
+                            color: _icon == ic ? const Color(0xFF0A9F5B) : Colors.transparent,
                             width: 1.5,
                           ),
                         ),
@@ -387,8 +387,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                         child: OutlinedButton(
                           onPressed: () => setState(() => _bgMode = 'light'),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF00C896) : context.colors.border),
-                            foregroundColor: _bgMode == 'light' ? const Color(0xFF00C896) : context.colors.textMuted,
+                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF0A9F5B) : context.colors.border),
+                            foregroundColor: _bgMode == 'light' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                           ),
                           child: const Text('☀️ Claro'),
                         ),
@@ -398,8 +398,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                         child: OutlinedButton(
                           onPressed: () => setState(() => _bgMode = 'dark'),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF00C896) : context.colors.border),
-                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF00C896) : context.colors.textMuted,
+                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF0A9F5B) : context.colors.border),
+                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                           ),
                           child: const Text('🌙 Oscuro'),
                         ),
@@ -414,8 +414,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                       child: OutlinedButton(
                         onPressed: () => setState(() => _bgType = 'solid'),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF00C896) : context.colors.border),
-                          foregroundColor: _bgType == 'solid' ? const Color(0xFF00C896) : context.colors.textMuted,
+                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF0A9F5B) : context.colors.border),
+                          foregroundColor: _bgType == 'solid' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                         ),
                         child: const Text('Color'),
                       ),
@@ -425,8 +425,8 @@ class _CardFormSheetState extends State<CardFormSheet>
                       child: OutlinedButton(
                         onPressed: () => setState(() => _bgType = 'image'),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF00C896) : context.colors.border),
-                          foregroundColor: _bgType == 'image' ? const Color(0xFF00C896) : context.colors.textMuted,
+                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF0A9F5B) : context.colors.border),
+                          foregroundColor: _bgType == 'image' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                         ),
                         child: const Text('Foto'),
                       ),
@@ -441,7 +441,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                         decoration: BoxDecoration(
                           color: context.colors.surfaceAlt,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: _bgImageUrl != null ? const Color(0xFF00C896).withValues(alpha: 0.3) : context.colors.border),
+                          border: Border.all(color: _bgImageUrl != null ? const Color(0xFF0A9F5B).withValues(alpha: 0.3) : context.colors.border),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -450,11 +450,11 @@ class _CardFormSheetState extends State<CardFormSheet>
                               const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                             else
                               Icon(_bgImageUrl != null ? Icons.check_circle_outline : Icons.upload_outlined,
-                                  color: _bgImageUrl != null ? const Color(0xFF00C896) : context.colors.textMuted, size: 20),
+                                  color: _bgImageUrl != null ? const Color(0xFF0A9F5B) : context.colors.textMuted, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               _bgImageUrl != null ? 'Foto subida ✓ — toca para cambiar' : 'Subir foto de fondo',
-                              style: TextStyle(color: _bgImageUrl != null ? const Color(0xFF00C896) : context.colors.textMuted, fontSize: 13),
+                              style: TextStyle(color: _bgImageUrl != null ? const Color(0xFF0A9F5B) : context.colors.textMuted, fontSize: 13),
                             ),
                           ],
                         ),
@@ -472,7 +472,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                         color: context.colors.surfaceAlt,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _logoUrl != null ? const Color(0xFF00C896).withValues(alpha: 0.3) : context.colors.border,
+                          color: _logoUrl != null ? const Color(0xFF0A9F5B).withValues(alpha: 0.3) : context.colors.border,
                         ),
                       ),
                       child: Row(
@@ -480,14 +480,14 @@ class _CardFormSheetState extends State<CardFormSheet>
                         children: [
                           Icon(
                             _logoUrl != null ? Icons.check_circle_outline : Icons.upload_outlined,
-                            color: _logoUrl != null ? const Color(0xFF00C896) : context.colors.textMuted,
+                            color: _logoUrl != null ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             _logoUrl != null ? 'Logo subido ✓ — toca para cambiar' : 'Subir logo (PNG, JPG, WebP)',
                             style: TextStyle(
-                              color: _logoUrl != null ? const Color(0xFF00C896) : context.colors.textMuted,
+                              color: _logoUrl != null ? const Color(0xFF0A9F5B) : context.colors.textMuted,
                               fontSize: 13,
                             ),
                           ),
@@ -527,7 +527,7 @@ class _CardFormSheetState extends State<CardFormSheet>
                           : null,
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text('Agregar nivel'),
-                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF00C896)),
+                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF0A9F5B)),
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -590,7 +590,7 @@ class _CardFormSheetState extends State<CardFormSheet>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF00C896)),
+            borderSide: const BorderSide(color: Color(0xFF0A9F5B)),
           ),
         ),
       );
@@ -629,7 +629,7 @@ class _CardFormSheetState extends State<CardFormSheet>
             Switch(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: const Color(0xFF00C896),
+              activeThumbColor: const Color(0xFF0A9F5B),
             ),
           ],
         ),

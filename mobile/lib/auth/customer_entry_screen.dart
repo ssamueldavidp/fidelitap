@@ -27,7 +27,7 @@ class CustomerEntryScreen extends StatelessWidget {
               const Icon(
                 Icons.qr_code_scanner,
                 size: 56,
-                color: Color(0xFF00C896),
+                color: Color(0xFF0A9F5B),
               ),
               const SizedBox(height: 20),
               Text(

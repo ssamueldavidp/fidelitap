@@ -3,7 +3,7 @@ import 'card_list_screen.dart';
 import 'stores_screen.dart';
 import 'settings_screen.dart';
 import '../geofence/geofence_manager.dart';
-import '../core/app_colors.dart';
+import '../shared/ui.dart';
 
 class CustomerHomeShell extends StatefulWidget {
   const CustomerHomeShell({super.key});
@@ -30,31 +30,20 @@ class _CustomerHomeShellState extends State<CustomerHomeShell> {
 
   final _screens = const [CardListScreen(), StoresScreen(), SettingsScreen()];
 
+  static const _items = [
+    NavItem(icon: Icons.credit_card_outlined, activeIcon: Icons.credit_card_rounded, label: 'Tarjetas'),
+    NavItem(icon: Icons.location_on_outlined, activeIcon: Icons.location_on_rounded, label: 'Tiendas'),
+    NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Perfil'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _tab, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: context.colors.surface,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.credit_card_outlined),
-            selectedIcon: Icon(Icons.credit_card),
-            label: 'Mis tarjetas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront),
-            label: 'Tiendas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Ajustes',
-          ),
-        ],
+      bottomNavigationBar: FloatingNavBar(
+        items: _items,
+        index: _tab,
+        onChanged: (i) => setState(() => _tab = i),
       ),
     );
   }

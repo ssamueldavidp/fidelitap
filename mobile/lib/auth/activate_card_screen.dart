@@ -163,7 +163,7 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
                       onPressed: _submitting ? null : _activate,
                       child: _submitting
                           ? const SizedBox(height: 20, width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : const Text('Activar mi tarjeta'),
                     ),
                   ],
@@ -183,7 +183,7 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text((c['business_name'] as String? ?? '').toUpperCase(),
-              style: const TextStyle(color: Color(0xFF00C896), fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              style: const TextStyle(color: Color(0xFF0A9F5B), fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1)),
           const SizedBox(height: 4),
           Text(c['card_name'] as String? ?? '',
               style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),

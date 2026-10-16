@@ -37,9 +37,9 @@ class _RoleGateScreenState extends State<RoleGateScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.loyalty, size: 80, color: Color(0xFF00C896)),
+            const Icon(Icons.loyalty, size: 80, color: Color(0xFF0A9F5B)),
             const SizedBox(height: 24),
-            const CircularProgressIndicator(color: Color(0xFF00C896)),
+            const CircularProgressIndicator(color: Color(0xFF0A9F5B)),
           ],
         ),
       ),

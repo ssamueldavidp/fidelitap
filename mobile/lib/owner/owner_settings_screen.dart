@@ -6,6 +6,7 @@ import '../core/env.dart';
 import '../core/supabase_client.dart';
 import '../core/theme_controller.dart';
 import '../core/app_colors.dart';
+import '../core/theme.dart';
 import '../core/business_categories.dart';
 import 'campaigns_screen.dart';
 
@@ -175,12 +176,17 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Text('Ajustes', style: displayStyle(size: 28, color: context.colors.textPrimary)),
+            ),
             // ── Datos del negocio ──────────────────────────────────────────
             _sectionHeader('Datos del negocio'),
             _field('Nombre del negocio', _name),
@@ -360,7 +366,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
               ..._planFeatures.map((f) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Icon(Icons.check, size: 14, color: Color(0xFF00C896)),
+                      const Icon(Icons.check, size: 14, color: Color(0xFF0A9F5B)),
                       const SizedBox(width: 6),
                       Expanded(child: Text(f, style: TextStyle(color: context.colors.textSecondary, fontSize: 12))),
                     ]),
@@ -400,7 +406,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             if (_success != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(_success!, style: const TextStyle(color: Color(0xFF7CFF3A))),
+                child: Text(_success!, style: const TextStyle(color: Color(0xFF0A9F5B))),
               ),
 
             // ── Guardar ────────────────────────────────────────────────────
@@ -417,6 +423,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -461,6 +468,5 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
 
   InputDecoration _inputDeco(String label) => InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      );
+              );
 }

@@ -5,6 +5,7 @@ import '../data/mobile_api_client.dart';
 import '../core/supabase_client.dart';
 import '../core/notification_service.dart';
 import '../core/app_colors.dart';
+import '../core/theme.dart';
 import '../shared/wallet_preview_card.dart';
 
 class CardListScreen extends StatefulWidget {
@@ -139,7 +140,7 @@ class _CardListScreenState extends State<CardListScreen> {
                           rewardLabel,
                           style: TextStyle(
                             fontSize: 11,
-                            color: done ? const Color(0xFF00C896) : barColor,
+                            color: done ? const Color(0xFF0A9F5B) : barColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -153,7 +154,7 @@ class _CardListScreenState extends State<CardListScreen> {
                       value: progress,
                       backgroundColor: Colors.white.withValues(alpha: 0.08),
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        done ? const Color(0xFF00C896) : barColor,
+                        done ? const Color(0xFF0A9F5B) : barColor,
                       ),
                       minHeight: 4,
                     ),
@@ -169,25 +170,40 @@ class _CardListScreenState extends State<CardListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis tarjetas'),
-        actions: [
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
-          IconButton(
-            onPressed: () => Navigator.of(context).pushNamed('/auth/claim'),
-            icon: const Icon(Icons.add),
+      body: SafeArea(
+        bottom: false,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
+            child: Row(children: [
+              Expanded(child: Text('Mis tarjetas', style: displayStyle(size: 28, color: colors.textPrimary))),
+              IconButton(onPressed: _load, tooltip: 'Actualizar', icon: Icon(Icons.refresh_rounded, color: colors.textPrimary)),
+              IconButton(
+                onPressed: () => Navigator.of(context).pushNamed('/auth/claim'),
+                tooltip: 'Agregar tarjeta',
+                icon: Icon(Icons.add_circle_outline_rounded, color: colors.textPrimary),
+              ),
+              IconButton(onPressed: _logout, tooltip: 'Cerrar sesión', icon: Icon(Icons.logout_rounded, color: colors.textPrimary)),
+            ]),
           ),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
-        ],
+          Expanded(child: _content()),
+        ]),
       ),
+    );
+  }
+
+  Widget _content() {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C896)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))
           : _error != null
               ? Center(child: Text('Error: $_error'))
               : RefreshIndicator(
                   onRefresh: _load,
-                  color: const Color(0xFF00C896),
+                  color: const Color(0xFF0A9F5B),
                   child: _cards.isEmpty
                       ? ListView(
                           children: [
@@ -205,7 +221,7 @@ class _CardListScreenState extends State<CardListScreen> {
                           ],
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                           itemCount: _cards.length,
                           itemBuilder: (ctx, i) {
                             final card = _cards[i] as Map<String, dynamic>;
@@ -263,7 +279,7 @@ class _CardListScreenState extends State<CardListScreen> {
                                             borderRadius: BorderRadius.circular(20),
                                           ),
                                           child: const Text('¡PREMIO!',
-                                              style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w800)),
+                                              style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
                                         ),
                                       ),
                                   ],
@@ -309,10 +325,10 @@ class _WalletButton extends StatelessWidget {
     return GestureDetector(
       onTap: loading ? null : onTap,
       child: Container(
-        height: 48,
+        height: 52,
         decoration: BoxDecoration(
           color: isIOS ? Colors.black : const Color(0xFF1A73E8),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(999),
         ),
         child: loading
             ? const Center(

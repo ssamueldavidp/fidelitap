@@ -94,7 +94,7 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
                   : Container(
                       color: const Color(0xFF1E293B),
                       child: const Center(
-                          child: CircularProgressIndicator(color: Color(0xFF00C896)))),
+                          child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))),
             ),
           ),
           const SizedBox(height: 24),
@@ -129,7 +129,7 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
             onPressed: _loading ? null : () => _claim(_codeController.text),
             child: _loading
                 ? const SizedBox(height: 20, width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : const Text('Vincular tarjeta'),
           ),
         ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
+import '../shared/ui.dart';
 import 'dashboard_screen.dart';
 import 'scanner_screen.dart';
 import 'cards_screen.dart';
@@ -16,50 +16,31 @@ class OwnerHomeShell extends StatefulWidget {
 class _OwnerHomeShellState extends State<OwnerHomeShell> {
   int _tab = 0;
 
-  final _screens = const [
-    DashboardScreen(),
-    CardsScreen(),
-    ScannerScreen(),
-    CustomersScreen(),
-    OwnerSettingsScreen(),
+  late final _screens = [
+    DashboardScreen(onOpenTab: (i) => setState(() => _tab = i)),
+    const CardsScreen(),
+    const ScannerScreen(),
+    const CustomersScreen(),
+    const OwnerSettingsScreen(),
+  ];
+
+  static const _items = [
+    NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Inicio'),
+    NavItem(icon: Icons.credit_card_outlined, activeIcon: Icons.credit_card_rounded, label: 'Tarjetas'),
+    NavItem(icon: Icons.qr_code_scanner_outlined, activeIcon: Icons.qr_code_scanner_rounded, label: 'Escanear'),
+    NavItem(icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded, label: 'Clientes'),
+    NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings_rounded, label: 'Ajustes'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _tab, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        backgroundColor: context.colors.surface,
-        indicatorColor: const Color(0xFF00C896).withValues(alpha: 0.15),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart, color: Color(0xFF00C896)),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.credit_card_outlined),
-            selectedIcon: Icon(Icons.credit_card, color: Color(0xFF00C896)),
-            label: 'Tarjetas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.qr_code_scanner_outlined),
-            selectedIcon: Icon(Icons.qr_code_scanner, color: Color(0xFF00C896)),
-            label: 'Scanner',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people, color: Color(0xFF00C896)),
-            label: 'Clientes',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings, color: Color(0xFF00C896)),
-            label: 'Ajustes',
-          ),
-        ],
+      bottomNavigationBar: FloatingNavBar(
+        items: _items,
+        index: _tab,
+        centerIndex: 2,
+        onChanged: (i) => setState(() => _tab = i),
       ),
     );
   }

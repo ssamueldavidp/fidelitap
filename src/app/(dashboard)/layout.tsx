@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { PlanUsage } from '@/components/dashboard/plan-usage'
+import { Logo } from '@/components/ui/logo'
 import { SidebarNav } from '@/components/dashboard/sidebar-nav'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { MobileNav } from '@/components/dashboard/mobile-nav'
@@ -28,8 +29,7 @@ export default async function DashboardLayout({
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-[272px] shrink-0 flex-col gap-5 border-r border-border bg-[hsl(var(--sidebar))] px-0 py-6">
         <Link href="/dashboard" aria-label="Fidelitap, inicio" className="px-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-[46px] w-auto dark:brightness-[1.45] dark:saturate-110" />
+          <Logo />
         </Link>
 
         <SidebarNav />

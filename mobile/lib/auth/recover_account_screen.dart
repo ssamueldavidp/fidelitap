@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase_client.dart';
 import '../core/auth_error.dart';
 import '../core/app_colors.dart';
+import '../shared/auth_ui.dart';
+
 import '../data/mobile_api_client.dart';
 
 /// Recover a customer account (new phone / reinstall): prove ownership of the
@@ -66,19 +68,12 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Recuperar mi cuenta')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Text(
-            _codeSent
-                ? 'Te enviamos un código de 6 dígitos a ${_email.text.trim()}. Ingrésalo para recuperar tus tarjetas.'
-                : 'Ingresa el correo con el que te registraste. Te enviaremos un código para verificar que es tuyo.',
-            style: TextStyle(color: colors.textSecondary, fontSize: 14),
-          ),
-          const SizedBox(height: 20),
+    return AuthScaffold(
+      title: 'Recupera tu cuenta',
+      subtitle: _codeSent
+          ? 'Te enviamos un código de 6 dígitos a ${_email.text.trim()}. Ingrésalo para recuperar tus tarjetas.'
+          : 'Ingresa el correo con el que te registraste. Te enviaremos un código para verificar que es tuyo.',
+      children: [
           TextField(
             controller: _email,
             enabled: !_codeSent,
@@ -94,15 +89,12 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
               decoration: const InputDecoration(hintText: 'Código de 6 dígitos', prefixIcon: Icon(Icons.pin_outlined)),
             ),
           ],
-          if (_error != null) ...[
-            const SizedBox(height: 8),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent)),
-          ],
-          const SizedBox(height: 16),
+          if (_error != null) AuthError(_error!),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _busy ? null : (_codeSent ? _verify : _sendCode),
             child: _busy
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.onBrand))
                 : Text(_codeSent ? 'Verificar y recuperar' : 'Enviar código'),
           ),
           if (_codeSent)
@@ -110,8 +102,7 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
               onPressed: _busy ? null : () => setState(() { _codeSent = false; _code.clear(); _error = null; }),
               child: const Text('Cambiar correo'),
             ),
-        ],
-      ),
+      ],
     );
   }
 }

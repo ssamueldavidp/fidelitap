@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { SidebarNav } from './sidebar-nav'
+import { Logo } from '@/components/ui/logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LogoutButton } from './logout-button'
 import type { ReactNode } from 'react'
@@ -22,8 +23,7 @@ export function MobileNav({ planContent, userEmail }: MobileNavProps) {
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-card">
         <Link href="/dashboard" aria-label="Fidelitap, inicio">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-9 w-auto dark:brightness-[1.45] dark:saturate-110" />
+          <Logo className="h-9" />
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -54,8 +54,7 @@ export function MobileNav({ planContent, userEmail }: MobileNavProps) {
       >
         <div className="flex items-center justify-between px-6 h-14 border-b border-border/30">
           <Link href="/dashboard" aria-label="Fidelitap, inicio" onClick={() => setOpen(false)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/fidelitap-logo.png" alt="Fidelitap" className="h-9 w-auto dark:brightness-[1.45] dark:saturate-110" />
+            <Logo className="h-9" />
           </Link>
           <button
             type="button"

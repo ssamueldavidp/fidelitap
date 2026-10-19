@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
+import '../shared/auth_ui.dart';
+
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/supabase_client.dart';
 import '../core/auth_error.dart';
@@ -69,19 +72,13 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Agregar tarjeta')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          const Text('Escanea el QR del negocio o de tu tarjeta',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          const Text('Nuevo cliente: escanea el QR del negocio para activar tu tarjeta.\nYa tienes tarjeta: escanea o ingresa tu código.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-          const SizedBox(height: 16),
+    final c = context.colors;
+    return AuthScaffold(
+      title: 'Agrega tu tarjeta',
+      subtitle: 'Escanea el QR del negocio para activarla, o ingresa tu código si ya tienes una.',
+      children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(28),
             child: SizedBox(
               height: 260,
               child: _cameraActive
@@ -92,17 +89,17 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
                       },
                     )
                   : Container(
-                      color: const Color(0xFF1E293B),
+                      color: c.surfaceAlt,
                       child: const Center(
                           child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))),
             ),
           ),
           const SizedBox(height: 24),
-          const Row(children: [
-            Expanded(child: Divider()),
-            Padding(padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('o', style: TextStyle(color: Color(0xFF64748B)))),
-            Expanded(child: Divider()),
+          Row(children: [
+            Expanded(child: Divider(color: c.divider)),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text('o', style: TextStyle(color: c.textMuted))),
+            Expanded(child: Divider(color: c.divider)),
           ]),
           const SizedBox(height: 16),
           TextField(
@@ -113,27 +110,16 @@ class _ClaimCardScreenState extends State<ClaimCardScreen> {
               prefixIcon: Icon(Icons.keyboard_outlined),
             ),
           ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF450A0A),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(_error!, style: const TextStyle(color: Color(0xFFFCA5A5))),
-            ),
-          ],
-          const SizedBox(height: 16),
+          if (_error != null) AuthError(_error!),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _loading ? null : () => _claim(_codeController.text),
             child: _loading
-                ? const SizedBox(height: 20, width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? SizedBox(height: 20, width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: c.onBrand))
                 : const Text('Vincular tarjeta'),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

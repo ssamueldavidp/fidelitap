@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../core/email_validation.dart';
 import 'email_verification.dart';
 import '../core/app_colors.dart';
+import '../shared/auth_ui.dart';
+
 import '../data/mobile_api_client.dart';
 
 /// Registers a customer with no card yet — same profile fields as
@@ -68,16 +70,10 @@ class _CustomerRegisterScreenState extends State<CustomerRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Text('Tus datos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textPrimary)),
-          const SizedBox(height: 4),
-          Text('Podrás agregar tu primera tarjeta de fidelización cuando quieras.',
-              style: TextStyle(fontSize: 12, color: colors.textMuted)),
-          const SizedBox(height: 16),
+    return AuthScaffold(
+      title: 'Crea tu cuenta',
+      subtitle: 'Podrás agregar tu primera tarjeta de fidelización cuando quieras.',
+      children: [
           TextField(
             controller: _name,
             decoration: const InputDecoration(hintText: 'Nombre completo', prefixIcon: Icon(Icons.person_outline)),
@@ -115,20 +111,16 @@ class _CustomerRegisterScreenState extends State<CustomerRegisterScreen> {
               style: TextStyle(fontSize: 12),
             ),
           ),
-          if (_error != null) ...[
-            const SizedBox(height: 8),
-            Text(_error!, style: const TextStyle(color: Colors.redAccent)),
-          ],
-          const SizedBox(height: 16),
+          if (_error != null) AuthError(_error!),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: _submitting ? null : _register,
             child: _submitting
-                ? const SizedBox(height: 20, width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? SizedBox(height: 20, width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: colors.onBrand))
                 : const Text('Crear cuenta'),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../data/mobile_api_client.dart';
 import '../core/app_colors.dart';
+import '../core/theme.dart';
 import '../shared/wallet_preview_card.dart';
 
 // Matches src/components/cards/card-editor.tsx's EMOJIS/PALETTE exactly, so
@@ -192,7 +193,7 @@ class _CardFormSheetState extends State<CardFormSheet>
       builder: (_, controller) => Container(
         decoration: BoxDecoration(
           color: context.colors.bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Column(
           children: [
@@ -206,19 +207,24 @@ class _CardFormSheetState extends State<CardFormSheet>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    widget.existing != null ? 'Editar tarjeta' : 'Nueva tarjeta',
-                    style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w700, fontSize: 18),
+                  Expanded(
+                    child: Text(
+                      widget.existing != null ? 'Editar tarjeta' : 'Nueva tarjeta',
+                      style: displayStyle(size: 24, color: context.colors.textPrimary),
+                    ),
                   ),
-                  TextButton(
-                    onPressed: _saving ? null : _save,
-                    child: _saving
-                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Guardar', style: TextStyle(color: Color(0xFF0A9F5B), fontWeight: FontWeight.w700)),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : _save,
+                      style: ElevatedButton.styleFrom(minimumSize: const Size(110, 44), padding: const EdgeInsets.symmetric(horizontal: 22)),
+                      child: _saving
+                          ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.onBrand))
+                          : const Text('Guardar'),
+                    ),
                   ),
                 ],
               ),
@@ -226,14 +232,21 @@ class _CardFormSheetState extends State<CardFormSheet>
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(_error!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12)),
+                child: Text(_error!, style: TextStyle(color: context.colors.coral, fontSize: 13, fontWeight: FontWeight.w600)),
               ),
             Expanded(
               child: ListView(
                 controller: controller,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [
-                  WalletPreviewCard(
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [context.colors.brandSoft, context.colors.surfaceAlt]),
+                      border: Border.all(color: context.colors.border),
+                    ),
+                    child: WalletPreviewCard(
                     businessName: '',
                     name: _name.text,
                     benefitDescription: _benefit.text,
@@ -247,43 +260,47 @@ class _CardFormSheetState extends State<CardFormSheet>
                     logoUrl: _logoUrl,
                     filledStamps: (_stamps * 0.6).ceil().clamp(0, _stamps),
                   ),
+                  ),
                   const SizedBox(height: 24),
 
                   _label('Estilo de tarjeta'),
-                  Column(
-                    children: _styles.map((s) {
-                      final selected = _style == s.value;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: InkWell(
-                          onTap: () => setState(() => _style = s.value),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: selected ? const Color(0xFF0A9F5B) : context.colors.border),
-                              color: selected ? const Color(0xFF0A9F5B).withValues(alpha: 0.08) : Colors.transparent,
-                            ),
-                            child: Row(children: [
-                              Container(width: 28, height: 28,
-                                  decoration: BoxDecoration(
-                                      color: selected ? const Color(0xFF0A9F5B) : context.colors.surfaceAlt,
-                                      borderRadius: BorderRadius.circular(8))),
-                              const SizedBox(width: 12),
-                              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(s.label, style: TextStyle(color: selected ? context.colors.textPrimary : context.colors.textSecondary, fontWeight: FontWeight.w600, fontSize: 13)),
-                                Text(s.desc, style: TextStyle(color: context.colors.textMuted, fontSize: 10)),
-                              ]),
-                              if (selected) const Spacer(),
-                              if (selected) const Icon(Icons.check, color: Color(0xFF0A9F5B), size: 16),
-                            ]),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.25,
+                    children: _styles.map((st) {
+                      final selected = _style == st.value;
+                      return InkWell(
+                        onTap: () => setState(() => _style = st.value),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: selected ? context.colors.brand : context.colors.border, width: selected ? 2 : 1),
+                            color: selected ? context.colors.brandSoft : context.colors.surface,
                           ),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Expanded(child: _StyleThumb(style: st.value, color: hexToColor(_color))),
+                            const SizedBox(height: 6),
+                            Row(children: [
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Text(st.label, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 13)),
+                                  Text(st.desc, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: context.colors.textMuted, fontSize: 10)),
+                                ]),
+                              ),
+                              if (selected) Icon(Icons.check_circle_rounded, color: context.colors.brand, size: 20),
+                            ]),
+                          ]),
                         ),
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   _label('Nombre de la tarjeta'),
                   _field(_name, 'ej. Tarjeta Café'),
@@ -383,55 +400,17 @@ class _CardFormSheetState extends State<CardFormSheet>
                   if (_style == CardStyle.clean) ...[
                     _label('Modo'),
                     Row(children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => setState(() => _bgMode = 'light'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'light' ? const Color(0xFF0A9F5B) : context.colors.border),
-                            foregroundColor: _bgMode == 'light' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
-                          ),
-                          child: const Text('☀️ Claro'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => setState(() => _bgMode = 'dark'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: _bgMode == 'dark' ? const Color(0xFF0A9F5B) : context.colors.border),
-                            foregroundColor: _bgMode == 'dark' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
-                          ),
-                          child: const Text('🌙 Oscuro'),
-                        ),
-                      ),
+                      _seg('Claro', _bgMode == 'light', () => setState(() => _bgMode = 'light')),
+                      _seg('Oscuro', _bgMode == 'dark', () => setState(() => _bgMode = 'dark'))
                     ]),
                     const SizedBox(height: 16),
                   ],
 
                   _label('Foto de fondo (opcional)'),
                   Row(children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => setState(() => _bgType = 'solid'),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'solid' ? const Color(0xFF0A9F5B) : context.colors.border),
-                          foregroundColor: _bgType == 'solid' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
-                        ),
-                        child: const Text('Color'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => setState(() => _bgType = 'image'),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: _bgType == 'image' ? const Color(0xFF0A9F5B) : context.colors.border),
-                          foregroundColor: _bgType == 'image' ? const Color(0xFF0A9F5B) : context.colors.textMuted,
-                        ),
-                        child: const Text('Foto'),
-                      ),
-                    ),
-                  ]),
+                      _seg('Color', _bgType == 'solid', () => setState(() => _bgType = 'solid')),
+                      _seg('Foto', _bgType == 'image', () => setState(() => _bgType = 'image'))
+                    ]),
                   if (_bgType == 'image') ...[
                     const SizedBox(height: 8),
                     GestureDetector(
@@ -562,78 +541,134 @@ class _CardFormSheetState extends State<CardFormSheet>
   }
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Text(text,
-            style: TextStyle(
-                color: context.colors.textMuted,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.8)),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 14, fontWeight: FontWeight.w700)),
+      );
+
+  Widget _seg(String label, bool selected, VoidCallback onTap) => Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Material(
+            color: selected ? context.colors.brand : context.colors.surface,
+            shape: StadiumBorder(side: BorderSide(color: selected ? Colors.transparent : context.colors.border)),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: onTap,
+              child: SizedBox(
+                height: 44,
+                child: Center(
+                  child: Text(label,
+                      style: TextStyle(color: selected ? context.colors.onBrand : context.colors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14)),
+                ),
+              ),
+            ),
+          ),
+        ),
       );
 
   Widget _field(TextEditingController ctrl, String hint) => TextField(
         controller: ctrl,
         onChanged: (_) => setState(() {}),
         style: TextStyle(color: context.colors.textPrimary),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: context.colors.textMuted),
-          filled: true,
-          fillColor: context.colors.surfaceAlt,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.colors.border),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.colors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF0A9F5B)),
-          ),
-        ),
+        decoration: InputDecoration(hintText: hint),
       );
 
-  Widget _iconBtn(IconData icon, VoidCallback onTap) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: context.colors.surfaceAlt,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: context.colors.textSecondary, size: 18),
+  Widget _iconBtn(IconData icon, VoidCallback onTap) => Material(
+        color: context.colors.brandSoft,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(width: 44, height: 44, child: Icon(icon, color: context.colors.brand, size: 22)),
         ),
       );
 
   Widget _toggleRow(String title, String subtitle, bool value, void Function(bool) onChanged) =>
       Container(
-        padding: const EdgeInsets.all(14),
-        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: context.colors.surfaceAlt,
-          borderRadius: BorderRadius.circular(12),
+          color: context.colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(title, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(subtitle, style: TextStyle(color: context.colors.textMuted, fontSize: 11)),
+                Text(subtitle, style: TextStyle(color: context.colors.textMuted, fontSize: 12)),
               ]),
             ),
             Switch(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: const Color(0xFF0A9F5B),
+              activeThumbColor: Colors.white,
+              activeTrackColor: context.colors.brand,
             ),
           ],
         ),
       );
+}
+
+/// Miniatura ilustrativa de cada estilo de tarjeta.
+class _StyleThumb extends StatelessWidget {
+  const _StyleThumb({required this.style, required this.color});
+  final CardStyle style;
+  final Color color;
+
+  Widget _dots(Color on, Color off) => Row(children: [
+        for (var i = 0; i < 4; i++)
+          Container(width: 12, height: 12, margin: const EdgeInsets.only(right: 5), decoration: BoxDecoration(shape: BoxShape.circle, color: i < 2 ? on : off)),
+      ]);
+
+  @override
+  Widget build(BuildContext context) {
+    Color bg1 = color;
+    Color bg2 = color.withValues(alpha: 0.75);
+    Color bar = Colors.white.withValues(alpha: 0.85);
+    Color on = Colors.white;
+    Color off = Colors.white.withValues(alpha: 0.3);
+    Border? border;
+    switch (style) {
+      case CardStyle.modern:
+        bg1 = const Color(0xFF12161C);
+        bg2 = Color.alphaBlend(color.withValues(alpha: 0.4), const Color(0xFF12161C));
+        on = color;
+        off = Colors.white.withValues(alpha: 0.18);
+      case CardStyle.luxury:
+        bg1 = bg2 = const Color(0xFF0B0B0B);
+        bar = on = const Color(0xFFC9A227);
+        off = const Color(0x33C9A227);
+        border = Border.all(color: const Color(0x55C9A227));
+      case CardStyle.editorial:
+        bg1 = bg2 = const Color(0xFFF2ECE0);
+        bar = on = color;
+        off = const Color(0x1F000000);
+      case CardStyle.minimal:
+        bg1 = bg2 = Colors.white;
+        bar = const Color(0xB3000000);
+        on = color;
+        off = const Color(0x1A000000);
+        border = Border.all(color: const Color(0x1A000000));
+      default:
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [bg1, bg2]),
+        border: border,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Container(width: 34, height: 5, decoration: BoxDecoration(color: bar, borderRadius: BorderRadius.circular(3))),
+        _dots(on, off),
+      ]),
+    );
+  }
 }
 
 class _RewardEntry {

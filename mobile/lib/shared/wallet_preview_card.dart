@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/material.dart';
 
 /// Single source of truth for how a loyalty card LOOKS, ported field-for-field
@@ -392,16 +393,30 @@ class WalletPreviewCard extends StatelessWidget {
                     const SizedBox(height: 16),
                   ] else
                     const SizedBox(height: 4),
-                  Container(
-                    margin: EdgeInsets.only(top: compact ? 8 : 0, left: -(compact ? 14.0 : 22.0), right: -(compact ? 14.0 : 22.0), bottom: -(compact ? 14.0 : 22.0)),
-                    padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 22, vertical: compact ? 8 : 16),
-                    decoration: BoxDecoration(color: vis.footerBg, border: Border(top: BorderSide(color: vis.footerBorder))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text('Fideli', style: TextStyle(color: vis.poweredByColor, fontSize: compact ? 9 : 11, fontWeight: FontWeight.w900)),
-                        const Text('tap', style: TextStyle(color: Color(0xFF00C896), fontSize: 11, fontWeight: FontWeight.w900)),
-                      ],
+                  // El pie sangra hasta los bordes de la tarjeta (sin márgenes negativos,
+                  // que Flutter rechaza en modo debug).
+                  Padding(
+                    padding: EdgeInsets.only(top: compact ? 8 : 0),
+                    child: Transform.translate(
+                      offset: Offset(0, compact ? 14.0 : 22.0),
+                      child: LayoutBuilder(
+                        builder: (context, box) => OverflowBox(
+                          fit: OverflowBoxFit.deferToChild,
+                          minWidth: box.maxWidth + 2 * (compact ? 14.0 : 22.0),
+                          maxWidth: box.maxWidth + 2 * (compact ? 14.0 : 22.0),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 22, vertical: compact ? 8 : 16),
+                            decoration: BoxDecoration(color: vis.footerBg, border: Border(top: BorderSide(color: vis.footerBorder))),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('Fideli', style: TextStyle(color: vis.poweredByColor, fontSize: compact ? 9 : 11, fontWeight: FontWeight.w900)),
+                                const Text('tap', style: TextStyle(color: Color(0xFF00C896), fontSize: 11, fontWeight: FontWeight.w900)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],

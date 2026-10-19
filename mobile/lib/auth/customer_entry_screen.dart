@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../core/theme.dart';
+import '../shared/auth_ui.dart';
+import '../shared/ui.dart';
 import 'claim_card_screen.dart';
 import 'customer_register_screen.dart';
 import 'recover_account_screen.dart';
@@ -14,66 +17,73 @@ class CustomerEntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Soy cliente')),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.qr_code_scanner,
-                size: 56,
-                color: Color(0xFF0A9F5B),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '¿Tienes un código o QR de una tarjeta de fidelización?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: colors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Si un negocio ya te dio su QR, escanéalo para activar tu tarjeta. Si no, puedes crear tu cuenta y agregar una tarjeta más adelante.',
-                style: TextStyle(fontSize: 14, color: colors.textSecondary),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ClaimCardScreen()),
-                ),
-                icon: const Icon(Icons.qr_code),
-                label: const Text('Sí, escanearlo'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const CustomerRegisterScreen(),
-                  ),
-                ),
-                icon: const Icon(Icons.person_add_alt),
-                label: const Text('No, quiero registrarme'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const RecoverAccountScreen(),
-                  ),
-                ),
-                child: const Text('Ya tengo cuenta — recuperar mis tarjetas'),
-              ),
-            ],
+    final c = context.colors;
+    return AuthScaffold(
+      title: '¿Tienes un código o QR de una tarjeta?',
+      subtitle: 'Si un negocio ya te dio su QR, escanéalo para activar tu tarjeta. Si no, crea tu cuenta y agrega una más adelante.',
+      children: [
+        _OptionTile(
+          icon: Icons.qr_code_scanner_rounded,
+          tone: c.brand,
+          soft: c.brandSoft,
+          title: 'Sí, escanearlo',
+          subtitle: 'Activa tu tarjeta con el QR del negocio',
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClaimCardScreen())),
+        ),
+        const SizedBox(height: 14),
+        _OptionTile(
+          icon: Icons.person_add_alt_1_rounded,
+          tone: c.lilac,
+          soft: c.lilacSoft,
+          title: 'No, quiero registrarme',
+          subtitle: 'Crea tu cuenta y explora tiendas cercanas',
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerRegisterScreen())),
+        ),
+        const SizedBox(height: 18),
+        Center(
+          child: TextButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RecoverAccountScreen())),
+            child: const Text('Ya tengo cuenta — recuperar mis tarjetas'),
           ),
         ),
-      ),
+      ],
+    );
+  }
+}
+
+class _OptionTile extends StatelessWidget {
+  const _OptionTile({required this.icon, required this.tone, required this.soft, required this.title, required this.subtitle, required this.onTap});
+  final IconData icon;
+  final Color tone;
+  final Color soft;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return AppCard(
+      onTap: onTap,
+      radius: 26,
+      padding: const EdgeInsets.all(18),
+      child: Row(children: [
+        Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(18)),
+          child: Icon(icon, color: tone, size: 28),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: displayStyle(size: 18, color: c.textPrimary)),
+            const SizedBox(height: 3),
+            Text(subtitle, style: TextStyle(fontSize: 13, color: c.textMuted, height: 1.3)),
+          ]),
+        ),
+        Icon(Icons.chevron_right_rounded, color: c.textMuted),
+      ]),
     );
   }
 }

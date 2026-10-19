@@ -88,6 +88,8 @@ ThemeData _buildTheme(Brightness brightness, AppColors colors) {
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide(color: colors.border)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide(color: colors.brand, width: 1.5)),
       hintStyle: TextStyle(color: colors.textMuted),
+      prefixIconColor: colors.textMuted,
+      suffixIconColor: colors.textMuted,
     ),
     chipTheme: ChipThemeData(shape: pill, side: BorderSide(color: colors.border)),
     dialogTheme: DialogThemeData(

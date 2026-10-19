@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../core/theme.dart';
+import '../shared/ui.dart';
 import '../core/email_validation.dart';
 import 'email_verification.dart';
 import '../data/mobile_api_client.dart';
@@ -173,27 +175,27 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
 
   Widget _cardPreview() {
     final c = _card!;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text((c['business_name'] as String? ?? '').toUpperCase(),
-              style: const TextStyle(color: Color(0xFF0A9F5B), fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1)),
-          const SizedBox(height: 4),
-          Text(c['card_name'] as String? ?? '',
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 4),
-          Text(c['benefit_description'] as String? ?? '',
-              style: const TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 12),
-          Text('${c['stamps_required']} sellos para completar',
-              style: const TextStyle(color: Colors.white38, fontSize: 12)),
-        ],
+    return GradientHero(
+      radius: 28,
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text((c['business_name'] as String? ?? '').toUpperCase(),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+            const SizedBox(height: 6),
+            Text(c['card_name'] as String? ?? '', style: displayStyle(size: 26, color: Colors.white)),
+            const SizedBox(height: 6),
+            Text(c['benefit_description'] as String? ?? '', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 15)),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(999)),
+              child: Text('${c['stamps_required']} sellos para completar', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
       ),
     );
   }

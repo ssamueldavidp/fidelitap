@@ -19,7 +19,7 @@ class _OwnerHomeShellState extends State<OwnerHomeShell> {
   late final _screens = [
     DashboardScreen(onOpenTab: (i) => setState(() => _tab = i)),
     const CardsScreen(),
-    const ScannerScreen(),
+    const SizedBox.shrink(), // el escáner se crea solo al abrir su pestaña (evita pedir la cámara al iniciar)
     const CustomersScreen(),
     const OwnerSettingsScreen(),
   ];
@@ -35,7 +35,12 @@ class _OwnerHomeShellState extends State<OwnerHomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _tab, children: _screens),
+      body: IndexedStack(
+        index: _tab,
+        children: [
+          for (var i = 0; i < _screens.length; i++) i == 2 ? (_tab == 2 ? const ScannerScreen() : const SizedBox.shrink()) : _screens[i],
+        ],
+      ),
       bottomNavigationBar: FloatingNavBar(
         items: _items,
         index: _tab,

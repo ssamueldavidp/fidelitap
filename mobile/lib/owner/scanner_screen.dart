@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../data/mobile_api_client.dart';
 import '../core/app_colors.dart';
+import '../core/theme.dart';
+import '../shared/auth_ui.dart';
+import '../shared/ui.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -58,79 +61,85 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Escanear cliente'),
-        actions: [
-          if (_result != null || _error != null)
-            TextButton(onPressed: _reset, child: const Text('Nuevo')),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          if (_result == null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                height: 240,
-                child: _cameraOn && !_loading
-                    ? MobileScanner(
-                        onDetect: (capture) {
-                          final code = capture.barcodes.firstOrNull?.rawValue;
-                          if (code != null && !_loading) _stamp(code);
-                        },
-                      )
-                    : Container(
-                        color: context.colors.surface,
-                        child: const Center(
-                            child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))),
-              ),
-            ),
-            const SizedBox(height: 20),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+          children: [
             Row(children: [
-              const Expanded(child: Divider()),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('o', style: TextStyle(color: context.colors.textMuted))),
-              const Expanded(child: Divider()),
+              Expanded(child: Text('Escanear cliente', style: displayStyle(size: 28, color: c.textPrimary))),
+              if (_result != null || _error != null)
+                TextButton.icon(onPressed: _reset, icon: const Icon(Icons.refresh_rounded, size: 18), label: const Text('Nuevo')),
             ]),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _codeController,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                hintText: 'Código QR del cliente',
-                prefixIcon: Icon(Icons.qr_code),
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+            const SizedBox(height: 4),
+            Text('Apunta la cámara al QR de la tarjeta del cliente.', style: TextStyle(color: c.textMuted, fontSize: 14)),
+            const SizedBox(height: 18),
+            if (_result == null) ...[
+              AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Stack(fit: StackFit.expand, children: [
+                    _cameraOn && !_loading
+                        ? MobileScanner(
+                            onDetect: (capture) {
+                              final code = capture.barcodes.firstOrNull?.rawValue;
+                              if (code != null && !_loading) _stamp(code);
+                            },
+                          )
+                        : Container(color: c.surfaceAlt, child: Center(child: CircularProgressIndicator(color: c.brand))),
+                    // Marco de enfoque
+                    Center(
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.9), width: 3),
+                        ),
+                      ),
+                    ),
+                  ]),
                 ),
-                child: Text(_error!, style: const TextStyle(color: Color(0xFFEF4444))),
+              ),
+              const SizedBox(height: 22),
+              Row(children: [
+                Expanded(child: Divider(color: c.divider)),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text('o ingresa el código', style: TextStyle(color: c.textMuted, fontSize: 13))),
+                Expanded(child: Divider(color: c.divider)),
+              ]),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _codeController,
+                textCapitalization: TextCapitalization.characters,
+                onSubmitted: (v) => _loading ? null : _stamp(v),
+                decoration: const InputDecoration(
+                  hintText: 'Código QR del cliente',
+                  prefixIcon: Icon(Icons.qr_code_rounded),
+                ),
+              ),
+              if (_error != null) AuthError(_error!),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _loading ? null : () => _stamp(_codeController.text),
+                icon: const Icon(Icons.add_circle_outline_rounded),
+                label: _loading
+                    ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: c.onBrand))
+                    : const Text('Agregar sello'),
+              ),
+            ] else ...[
+              _StampResultCard(
+                result: _result!,
+                onClaim: () => _claimReward(_result!['customerCardId'] as String),
+                loading: _loading,
               ),
             ],
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loading ? null : () => _stamp(_codeController.text),
-              icon: const Icon(Icons.star),
-              label: _loading
-                  ? const SizedBox(height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Agregar sello'),
-            ),
-          ] else ...[
-            _StampResultCard(
-              result: _result!,
-              onClaim: () => _claimReward(_result!['customerCardId'] as String),
-              loading: _loading,
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -149,67 +158,78 @@ class _StampResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
     final current = result['currentStamps'] as int? ?? 0;
     final required = result['stampsRequired'] as int? ?? 1;
     final name = result['customerName'] as String? ?? 'Cliente';
     final status = result['status'] as String? ?? 'active';
     final isReadyToClaim = status == 'ready_to_claim';
     final isClaimed = status == 'claimed';
-    final progress = current / required;
+    final progress = required > 0 ? current / required : 0.0;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Icon(Icons.check_circle, color: Color(0xFF0A9F5B), size: 48),
-            const SizedBox(height: 12),
-            const Text('¡Sello agregado!',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            Text(name, style: TextStyle(color: context.colors.textMuted)),
-            const SizedBox(height: 20),
-            LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
-              backgroundColor: context.colors.surfaceAlt,
-              color: isReadyToClaim ? const Color(0xFFFBBF24) : const Color(0xFF0A9F5B),
+    return Column(children: [
+      GradientHero(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.2)),
+              child: const Icon(Icons.check_rounded, color: Colors.white, size: 26),
             ),
-            const SizedBox(height: 8),
-            Text('$current / $required sellos',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (isReadyToClaim && !isClaimed) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFBBF24).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text('🎉 ¡Tarjeta completa! Cliente listo para reclamar su premio.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.w600)),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: loading ? null : onClaim,
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFBBF24)),
-                icon: const Icon(Icons.card_giftcard),
-                label: loading
-                    ? const SizedBox(height: 20, width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Entregar premio'),
-              ),
-            ],
-            if (isClaimed) ...[
-              const SizedBox(height: 16),
-              const Text('✅ Premio entregado',
-                  style: TextStyle(color: Color(0xFF0A9F5B), fontWeight: FontWeight.w600)),
-            ],
-          ],
-        ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('¡Sello agregado!', style: displayStyle(size: 22, color: Colors.white)),
+                Text(name, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+              ]),
+            ),
+          ]),
+          const SizedBox(height: 20),
+          Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+            Text('$current', style: displayStyle(size: 52, color: Colors.white, height: 1)),
+            Text(' / $required sellos', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          ]),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 10,
+              backgroundColor: Colors.white.withValues(alpha: 0.25),
+              color: isReadyToClaim ? const Color(0xFFFFD36E) : Colors.white,
+            ),
+          ),
+        ]),
       ),
-    );
+      if (isReadyToClaim && !isClaimed) ...[
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: c.sunSoft, borderRadius: BorderRadius.circular(22)),
+          child: Text('¡Tarjeta completa! El cliente está listo para reclamar su premio.',
+              textAlign: TextAlign.center, style: TextStyle(color: c.sun, fontWeight: FontWeight.w700, fontSize: 15)),
+        ),
+        const SizedBox(height: 14),
+        ElevatedButton.icon(
+          onPressed: loading ? null : onClaim,
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.white),
+          icon: const Icon(Icons.card_giftcard_rounded),
+          label: loading
+              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+              : const Text('Entregar premio'),
+        ),
+      ],
+      if (isClaimed) ...[
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: c.brandSoft, borderRadius: BorderRadius.circular(22)),
+          child: Text('Premio entregado', textAlign: TextAlign.center, style: TextStyle(color: c.brand, fontWeight: FontWeight.w800, fontSize: 15)),
+        ),
+      ],
+    ]);
   }
 }

@@ -111,7 +111,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Scaffold(
-      appBar: AppBar(title: const Text('Campañas push')),
+      appBar: AppBar(title: const Text('Notificaciones a clientes')),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0A9F5B)))
           : _data == null

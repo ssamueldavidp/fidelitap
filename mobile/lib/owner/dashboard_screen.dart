@@ -70,7 +70,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                       children: [
-                        _Header(greeting: _greeting(), name: name),
+                        _Header(
+                          greeting: _greeting(),
+                          name: name,
+                          onNotifications: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CampaignsScreen())),
+                        ),
                         const SizedBox(height: 20),
                         _TodayCard(today: today, delta: delta, rewardsMonth: rewardsMonth),
                         const SizedBox(height: 16),
@@ -117,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _QuickAction(icon: Icons.add_card_rounded, label: 'Nueva tarjeta', fg: Colors.white, solid: c.sun, soft: c.sunSoft, onTap: () => widget.onOpenTab?.call(1)),
                               _QuickAction(
                                 icon: Icons.campaign_outlined,
-                                label: 'Campaña',
+                                label: 'Notificar',
                                 fg: Colors.white,
                                 solid: c.coral,
                                 soft: c.coralSoft,
@@ -159,9 +163,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.greeting, required this.name});
+  const _Header({required this.greeting, required this.name, required this.onNotifications});
   final String greeting;
   final String name;
+  final VoidCallback onNotifications;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +188,18 @@ class _Header extends StatelessWidget {
           Text(greeting, style: TextStyle(color: c.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
           Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: displayStyle(size: 22, color: c.textPrimary)),
         ]),
+      ),
+      Material(
+        color: c.surface,
+        shape: CircleBorder(side: BorderSide(color: c.border)),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onNotifications,
+          child: Tooltip(
+            message: 'Notificaciones a tus clientes',
+            child: SizedBox(width: 48, height: 48, child: Icon(Icons.notifications_none_rounded, color: c.textPrimary, size: 24)),
+          ),
+        ),
       ),
     ]);
   }

@@ -206,17 +206,29 @@ class _CardListScreenState extends State<CardListScreen> {
                   color: const Color(0xFF0A9F5B),
                   child: _cards.isEmpty
                       ? ListView(
+                          padding: const EdgeInsets.fromLTRB(28, 56, 28, 120),
                           children: [
-                            const SizedBox(height: 80),
                             Center(
-                              child: Column(children: [
-                                Icon(Icons.credit_card_off_outlined,
-                                    size: 64, color: context.colors.textMuted),
-                                const SizedBox(height: 16),
-                                Text('No tienes tarjetas aún',
-                                    style: TextStyle(
-                                        color: context.colors.textSecondary, fontSize: 16)),
-                              ]),
+                              child: Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(shape: BoxShape.circle, color: context.colors.brandSoft),
+                                child: Icon(Icons.credit_card_rounded, size: 44, color: context.colors.brand),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text('Aún no tienes tarjetas',
+                                textAlign: TextAlign.center,
+                                style: displayStyle(size: 24, color: context.colors.textPrimary)),
+                            const SizedBox(height: 8),
+                            Text('Escanea el QR de un negocio o descubre tiendas cerca de ti para empezar a juntar sellos.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: context.colors.textMuted, fontSize: 15, height: 1.4)),
+                            const SizedBox(height: 28),
+                            ElevatedButton.icon(
+                              onPressed: () => Navigator.of(context).pushNamed('/auth/claim'),
+                              icon: const Icon(Icons.qr_code_scanner_rounded),
+                              label: const Text('Escanear QR de un negocio'),
                             ),
                           ],
                         )

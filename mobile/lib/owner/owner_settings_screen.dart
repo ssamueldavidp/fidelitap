@@ -317,7 +317,7 @@ class _OwnerSettingsScreenState extends State<OwnerSettingsScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.campaign_outlined),
-              title: const Text('Campañas push'),
+              title: const Text('Notificaciones a clientes'),
               subtitle: Text(_isPro ? 'Envía promociones a tus clientes' : 'Disponible en plan Pro o Premium'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(

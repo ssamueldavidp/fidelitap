@@ -72,7 +72,8 @@ class _StoresScreenState extends State<StoresScreen> {
           );
         }
         if (!silent) return;
-        setState(() { _loading = false; });
+        setState(() => _locationLabel = 'Todas las ciudades');
+        await _load();
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
@@ -90,7 +91,8 @@ class _StoresScreenState extends State<StoresScreen> {
       if (!silent) {
         setState(() { _loading = false; _error = 'No se pudo obtener tu ubicación'; });
       } else {
-        setState(() { _loading = false; });
+        setState(() => _locationLabel = 'Todas las ciudades');
+        await _load();
       }
     }
   }
@@ -377,7 +379,7 @@ class _StoreTile extends StatelessWidget {
     final daysLeft = expiresAt?.difference(DateTime.now()).inDays;
     final isUrgent = daysLeft != null && daysLeft <= 7;
     final icon = store.designConfig['stamp_icon'] as String? ?? '🏪';
-    final total = store.stampsRequired.clamp(1, 10);
+    final total = store.stampsRequired.clamp(1, 8);
 
     return AppCard(
       padding: EdgeInsets.zero,

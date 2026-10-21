@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { timingSafeEqual } from 'crypto'
+import { isAuthorizedCron } from '@/lib/cron-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendCampaignPush } from '@/lib/push/send'
 
+// Vercel Cron llama con GET; POST se mantiene para planificadores externos y pruebas a mano.
 export async function POST(request: NextRequest) {
-  const secret = request.headers.get('x-cron-secret') ?? ''
-  const expected = process.env.CRON_SECRET ?? ''
-  if (
-    !secret ||
-    !expected ||
-    secret.length !== expected.length ||
-    !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))
-  ) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -57,3 +51,5 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ dispatched })
 }
+
+export const GET = POST

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { timingSafeEqual } from 'crypto'
+import { isAuthorizedCron } from '@/lib/cron-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 import { findExpiredBusinessIds } from '@/lib/subscriptions/apply'
 
@@ -9,15 +9,9 @@ import { findExpiredBusinessIds } from '@/lib/subscriptions/apply'
 // stayed on its paid plan forever. Same auth pattern as
 // /api/push/jobs/reengagement (CRON_SECRET header, called by an external
 // scheduler daily).
+// Vercel Cron llama con GET; POST se mantiene para planificadores externos y pruebas a mano.
 export async function POST(request: NextRequest) {
-  const secret = request.headers.get('x-cron-secret') ?? ''
-  const expected = process.env.CRON_SECRET ?? ''
-  if (
-    !secret ||
-    !expected ||
-    secret.length !== expected.length ||
-    !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))
-  ) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -44,3 +38,5 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ downgraded: ids.length })
 }
+
+export const GET = POST

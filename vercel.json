@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/push/campaigns/dispatch", "schedule": "*/5 * * * *" },
+    { "path": "/api/push/jobs/reengagement", "schedule": "0 14 * * *" },
+    { "path": "/api/subscriptions/jobs/downgrade-expired", "schedule": "0 9 * * *" }
+  ]
+}

@@ -55,14 +55,14 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   static const dark = AppColors(
-    bg: Color(0xFF0A0E13),
-    surface: Color(0xFF121922),
-    surfaceAlt: Color(0xFF18212C),
-    textPrimary: Color(0xFFEEF2F7),
-    textSecondary: Color(0xFFB4BFCC),
-    textMuted: Color(0xFF9AA6B6),
-    border: Color(0x14FFFFFF),
-    divider: Color(0x14FFFFFF),
+    bg: Color(0xFF0F0F10),
+    surface: Color(0xFF1A1A1C),
+    surfaceAlt: Color(0xFF252528),
+    textPrimary: Color(0xFFF4F4F5),
+    textSecondary: Color(0xFFD0D0D6),
+    textMuted: Color(0xFFB4B4BB),
+    border: Color(0x1FFFFFFF),
+    divider: Color(0x1FFFFFFF),
     brand: Color(0xFF34D399),
     brandSoft: Color(0x2434D399),
     onBrand: Color(0xFF05281A),

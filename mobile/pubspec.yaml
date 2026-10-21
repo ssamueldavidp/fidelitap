@@ -50,6 +50,7 @@ dependencies:
   firebase_messaging: ^16.4.3
   share_plus: ^11.0.0
   google_fonts: ^6.3.0
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/wallet/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../data/mobile_api_client.dart';
@@ -45,7 +47,7 @@ class _CardListScreenState extends State<CardListScreen> {
     if (mounted) Navigator.of(context).pushReplacementNamed('/');
   }
 
-  Future<void> _addToWallet(String customerCardId, String cardName) async {
+  Future<void> _addToWallet(String customerCardId, String cardName, {required bool apple}) async {
     setState(() => _walletLoading.add(customerCardId));
     try {
       final res = await MobileApiClient().get('/api/mobile/wallet-link/$customerCardId');
@@ -59,9 +61,7 @@ class _CardListScreenState extends State<CardListScreen> {
         return;
       }
 
-      final url = defaultTargetPlatform == TargetPlatform.iOS
-          ? data['apple_url'] as String
-          : data['google_url'] as String;
+      final url = apple ? data['apple_url'] as String : data['google_url'] as String;
 
       final launched = await launchUrl(
         Uri.parse(url),
@@ -305,12 +305,9 @@ class _CardListScreenState extends State<CardListScreen> {
                                 _buildRewardProgress(lc, design, currentStamps),
                                 const SizedBox(height: 10),
                                 _WalletButton(
-                                  isIOS: defaultTargetPlatform == TargetPlatform.iOS,
                                   loading: isWalletLoading,
-                                  onTap: () => _addToWallet(
-                                    cardId,
-                                    lc['name'] as String? ?? 'Tarjeta',
-                                  ),
+                                  onApple: () => _addToWallet(cardId, lc['name'] as String? ?? 'Tarjeta', apple: true),
+                                  onGoogle: () => _addToWallet(cardId, lc['name'] as String? ?? 'Tarjeta', apple: false),
                                 ),
                                 const SizedBox(height: 24),
                               ],
@@ -322,55 +319,85 @@ class _CardListScreenState extends State<CardListScreen> {
   }
 }
 
+/// Botones para agregar la tarjeta al Wallet del teléfono.
+/// - Google Wallet: botón oficial de Google (SVG sin modificar).
+/// - Apple Wallet: la insignia oficial de Apple (`assets/wallet/add_to_apple_wallet.svg`,
+///   que Apple entrega bajo su licencia de arte de marketing). Mientras ese archivo no esté,
+///   se muestra un botón negro provisional.
+/// En iOS se muestra solo el de Apple, en Android solo el de Google; en web/escritorio ambos.
 class _WalletButton extends StatelessWidget {
-  final bool isIOS;
   final bool loading;
-  final VoidCallback onTap;
-  const _WalletButton({
-    required this.isIOS,
-    required this.loading,
-    required this.onTap,
-  });
+  final VoidCallback onApple;
+  final VoidCallback onGoogle;
+  const _WalletButton({required this.loading, required this.onApple, required this.onGoogle});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: loading ? null : onTap,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: isIOS ? Colors.black : const Color(0xFF1A73E8),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: loading
-            ? const Center(
-                child: SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isIOS ? Icons.wallet : Icons.account_balance_wallet,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isIOS ? 'Agregar a Apple Wallet' : 'Agregar a Google Wallet',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+    final platform = defaultTargetPlatform;
+    final showApple = kIsWeb || platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+    final showGoogle = kIsWeb || platform != TargetPlatform.iOS && platform != TargetPlatform.macOS;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (loading)
+        const SizedBox(height: 50, child: Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))))
+      else ...[
+        if (showApple) _AppleBadge(onTap: onApple),
+        if (showApple && showGoogle) const SizedBox(height: 12),
+        if (showGoogle)
+          GestureDetector(
+            onTap: onGoogle,
+            child: Semantics(
+              button: true,
+              label: 'Agregar a Google Wallet',
+              child: SvgPicture.asset('assets/wallet/add_to_google_wallet.svg', height: 52, fit: BoxFit.contain),
+            ),
+          ),
+      ],
+    ]);
+  }
+}
+
+class _AppleBadge extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AppleBadge({required this.onTap});
+
+  Future<bool> _hasOfficialBadge() async {
+    try {
+      await rootBundle.load('assets/wallet/add_to_apple_wallet.svg');
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _hasOfficialBadge(),
+      builder: (context, snap) {
+        if (snap.data == true) {
+          return GestureDetector(
+            onTap: onTap,
+            child: Semantics(
+              button: true,
+              label: 'Agregar a Apple Wallet',
+              child: SvgPicture.asset('assets/wallet/add_to_apple_wallet.svg', height: 52, fit: BoxFit.contain),
+            ),
+          );
+        }
+        // Provisional hasta contar con la insignia oficial de Apple.
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 52,
+            decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(999)),
+            child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.wallet, color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Text('Agregar a Apple Wallet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+            ]),
+          ),
+        );
+      },
     );
   }
 }

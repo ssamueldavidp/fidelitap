@@ -91,6 +91,17 @@ ThemeData _buildTheme(Brightness brightness, AppColors colors) {
       prefixIconColor: colors.textMuted,
       suffixIconColor: colors.textMuted,
     ),
+    checkboxTheme: CheckboxThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+      side: BorderSide(color: colors.textMuted, width: 1.6),
+      fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? colors.brand : Colors.transparent),
+      checkColor: WidgetStatePropertyAll(colors.onBrand),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: const WidgetStatePropertyAll(Colors.white),
+      trackColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? colors.brand : colors.textMuted.withValues(alpha: 0.4)),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+    ),
     chipTheme: ChipThemeData(shape: pill, side: BorderSide(color: colors.border)),
     dialogTheme: DialogThemeData(
       backgroundColor: colors.surface,

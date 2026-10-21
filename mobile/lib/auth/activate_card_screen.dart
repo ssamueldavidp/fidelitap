@@ -4,6 +4,7 @@ import '../shared/ui.dart';
 import '../core/email_validation.dart';
 import 'email_verification.dart';
 import '../data/mobile_api_client.dart';
+import '../core/supabase_client.dart';
 
 /// A brand-new customer registers a card entirely inside the app: they
 /// scanned a business's activation QR (handled by ClaimCardScreen, which
@@ -36,7 +37,32 @@ class _ActivateCardScreenState extends State<ActivateCardScreen> {
   @override
   void initState() {
     super.initState();
+    _prefill();
     _loadCard();
+  }
+
+  /// Si la persona ya tiene cuenta, rellena sus datos para no pedírselos de nuevo.
+  Future<void> _prefill() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+      final row = await supabase
+          .from('customers')
+          .select('name, email, phone')
+          .eq('auth_user_id', user.id)
+          .maybeSingle();
+      if (!mounted) return;
+      if (row != null) {
+        if (_name.text.isEmpty) _name.text = (row['name'] as String?) ?? '';
+        if (_email.text.isEmpty) _email.text = (row['email'] as String?) ?? '';
+        if (_phone.text.isEmpty) _phone.text = (row['phone'] as String?) ?? '';
+      } else if (_email.text.isEmpty && (user.email ?? '').isNotEmpty) {
+        _email.text = user.email!;
+      }
+      setState(() {});
+    } catch (_) {
+      // Sin datos previos: el formulario queda vacío.
+    }
   }
 
   @override

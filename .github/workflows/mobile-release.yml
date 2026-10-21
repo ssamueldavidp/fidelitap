@@ -1,0 +1,65 @@
+name: Mobile release (Android)
+
+# Compila la app firmada (AAB para Play Store + APK) en la nube, sin necesitar Android Studio.
+# Se lanza a mano: GitHub → Actions → "Mobile release (Android)" → Run workflow.
+# Secrets necesarios (Settings → Secrets and variables → Actions): ver docs/app-movil-publicacion.md
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Llave de firma
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.p12"
+          cat > android/key.properties <<PROPS
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=$RUNNER_TEMP/upload.p12
+          PROPS
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+
+      - run: flutter pub get
+      - run: flutter analyze
+
+      - name: Compilar AAB (Play Store)
+        run: >
+          flutter build appbundle --release
+          --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Compilar APK (instalar directo en un celular)
+        run: >
+          flutter build apk --release
+          --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fidelitap-android
+          path: |
+            mobile/build/app/outputs/bundle/release/app-release.aab
+            mobile/build/app/outputs/flutter-apk/app-release.apk

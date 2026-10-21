@@ -91,3 +91,19 @@ jobs:
         with:
           name: e2e-screenshots
           path: e2e/screenshots/
+
+  mobile-analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze

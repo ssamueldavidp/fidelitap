@@ -12,14 +12,19 @@ Orden recomendado. Los pasos 1, 3 y 4 los haces tú (cuentas y cobros); el resto
    pnpm supabase link --project-ref <REF_DEL_PROYECTO>
    pnpm supabase db push
    ```
-   `db push` aplica las 33 migraciones. El `<REF_DEL_PROYECTO>` es el código de la URL (`https://<REF>.supabase.co`).
+   `db push` aplica las migraciones pendientes (el proyecto actual `dytajdactdafuyprhwgo` ya las tiene todas, aplicadas el 2026-11-02). El `<REF_DEL_PROYECTO>` es el código de la URL (`https://<REF>.supabase.co`).
 4. Authentication → Providers → Email: activa "Confirm email" si quieres que los dueños confirmen su correo. Authentication → URL Configuration: Site URL `https://fidelitap.co`.
 5. Authentication → SMTP: usa Resend (SMTP `smtp.resend.com`, usuario `resend`, contraseña = tu API key) una vez verificado el dominio.
 6. Storage: confirma que existen los buckets de logos y fondos (las migraciones los crean).
+7. Tareas programadas push (pg_cron): en SQL Editor ejecuta, con el valor real de `CRON_SECRET` que pusiste en Vercel:
+   ```sql
+   alter database postgres set app.settings.app_url = 'https://fidelitap.co';
+   alter database postgres set app.settings.cron_secret = '<CRON_SECRET>';
+   ```
 
 ## 2. Vercel (plan Pro, USD 20/mes por persona)
 
-El plan gratuito (Hobby) es solo para uso no comercial y limita los cron a una vez al día; las campañas programadas necesitan correr cada 5 minutos (`vercel.json`), así que para producción hace falta Pro.
+El plan gratuito (Hobby) es solo para uso no comercial; para un negocio real hace falta Pro. Las tareas programadas: el envío de campañas push (cada minuto) y el recordatorio de 14 días corren desde la base de datos con pg_cron (ver paso 1.7); Vercel solo ejecuta una vez al día la baja de planes vencidos (`vercel.json`).
 
 1. vercel.com → Add New → Project → importa `ssamueldavidp/fidelitap`. Framework: Next.js (se detecta solo).
 2. En Settings → Environment Variables agrega estas variables (valores: los de `.env.local`, salvo lo marcado):

@@ -1,6 +1,6 @@
 -- device_registrations: stores Apple Wallet push tokens per device/pass pair
 CREATE TABLE public.device_registrations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_library_identifier TEXT NOT NULL,
   push_token TEXT NOT NULL,
   pass_type_identifier TEXT NOT NULL,

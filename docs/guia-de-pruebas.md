@@ -14,17 +14,23 @@ Requisitos: Supabase local (`pnpm supabase start`), `pnpm dev` y `ngrok http 300
 
 ## 1. Correos (Resend)
 
-Mientras `fidelitap.co` no esté verificado en Resend, los correos salen de `onboarding@resend.dev` y **solo se entregan al correo dueño de la cuenta de Resend** (`fidelitap.desarrollo@gmail.com`). Por eso, para probar usa ese correo como cliente.
+`fidelitap.co` está verificado en Resend (región São Paulo): los correos salen de `noreply@fidelitap.co` y llegan a cualquier dirección. Tanto los de la app (bienvenida, premio completado) como los códigos de verificación de Supabase (SMTP de Resend, plantilla en `supabase/templates/magic_link.html`).
+
+Para que Supabase local use Resend hay que iniciarlo con la llave cargada:
+
+```bash
+set -a; . ./.env.local; set +a; pnpm supabase start
+```
 
 1. En tu celular abre `<URL pública>/c/prueba-de-tarjetas-fidelitap-41af` (tarjeta de Café Luna).
-2. Regístrate con `fidelitap.desarrollo@gmail.com`. Debe llegar: **código de verificación** (de Supabase; en local queda en el buzón de pruebas, no en Gmail) y luego el **correo de bienvenida** (Resend).
+2. Regístrate con tu correo real. Llega el **código de verificación** y, al activar, el correo de **bienvenida**.
 3. Cuando completes la tarjeta (paso 4) llega el correo de **premio completado**.
 
-Los códigos de verificación de Supabase local no salen a Gmail: se leen en el buzón local (`http://127.0.0.1:54324`). En producción salen por Resend/SMTP.
+Estado de cada envío: resend.com → Emails.
 
 ## 2. Tarjeta en Google Wallet
 
-Google Wallet está en modo demo: **solo las cuentas añadidas como "usuarios de prueba"** en Google Pay & Wallet Console → Wallet API → tu emisor → Usuarios de prueba pueden guardar la tarjeta. Agrega tu cuenta de Google ahí.
+Google Wallet está en modo demo: **solo las cuentas añadidas como "cuentas de prueba"** pueden guardar la tarjeta. Se agregan en la consola de la cuenta de la empresa (`fidelitap.desarrollo@gmail.com`) → API de la Billetera de Google → "Configurar cuentas de prueba". Ya está agregada `ssamueldavidp@gmail.com`.
 
 1. Después de activar la tarjeta (paso 1) aparece el botón "Agregar a la Billetera de Google". Tócalo desde un celular Android con esa cuenta de Google.
 2. Debe abrir Google Wallet con la tarjeta de Café Luna. En el panel de Google Wallet (Console) puedes ver el pase emitido.

@@ -13,3 +13,5 @@ export function getResend(): Resend {
 }
 
 export const FROM = process.env.RESEND_FROM ?? 'FideliTap <noreply@fidelitap.co>'
+
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://fidelitap.co'

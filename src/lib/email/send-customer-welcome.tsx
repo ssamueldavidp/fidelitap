@@ -1,5 +1,5 @@
 import { render } from '@react-email/render'
-import { getResend, FROM } from './client'
+import { getResend, FROM, APP_URL } from './client'
 import { CustomerWelcomeEmail } from './templates/customer-welcome'
 
 export async function sendCustomerWelcome(params: {
@@ -14,6 +14,7 @@ export async function sendCustomerWelcome(params: {
         customerName={params.customerName}
         businessName={params.businessName}
         cardUrl={params.cardUrl}
+        appUrl={APP_URL}
       />
     )
     await getResend().emails.send({

@@ -1,5 +1,5 @@
 import { render } from '@react-email/render'
-import { getResend, FROM } from './client'
+import { getResend, FROM, APP_URL } from './client'
 import { CardCompleteEmail } from './templates/card-complete'
 
 export async function sendCardComplete(params: {
@@ -16,12 +16,13 @@ export async function sendCardComplete(params: {
         businessName={params.businessName}
         appleWalletUrl={params.appleWalletUrl}
         googleWalletUrl={params.googleWalletUrl}
+        appUrl={APP_URL}
       />
     )
     await getResend().emails.send({
       from: FROM,
       to: params.to,
-      subject: `¡Completaste tu tarjeta de ${params.businessName}! 🎉`,
+      subject: `¡Completaste tu tarjeta de ${params.businessName}!`,
       html,
     })
   } catch (err) {

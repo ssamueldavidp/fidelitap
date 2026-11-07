@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { createSubscriptionLink, type PlanSlug } from '@/lib/mercadopago'
 
 const VALID_PLANS: PlanSlug[] = ['basic', 'pro', 'premium']
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, email, plan, subscription_status')
+    .select('id, plan, subscription_status')
     .eq('owner_id', user.id)
     .single()
 
@@ -35,10 +36,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ya tienes este plan activo' }, { status: 400 })
   }
 
+  // El correo del negocio es una columna protegida: se lee en el servidor con la service role.
+  const { data: billing } = await createServiceClient()
+    .from('businesses')
+    .select('email')
+    .eq('id', business.id)
+    .single()
+  if (!billing?.email) {
+    return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 })
+  }
+
   try {
     const initPoint = await createSubscriptionLink({
       businessId: business.id,
-      businessEmail: business.email,
+      businessEmail: billing.email,
       planSlug,
     })
     return NextResponse.json({ init_point: initPoint })

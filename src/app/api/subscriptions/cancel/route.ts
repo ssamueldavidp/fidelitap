@@ -16,13 +16,22 @@ export async function POST() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('id, plan, subscription_status, subscription_end_date, mp_preapproval_id')
+    .select('id, plan, subscription_status, subscription_end_date')
     .eq('owner_id', user.id)
     .single()
 
   if (!business) {
     return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 })
   }
+
+  // mp_preapproval_id no es legible con la sesión del usuario (columna protegida): se lee en el servidor.
+  const serviceClient = createServiceClient()
+  const { data: billing } = await serviceClient
+    .from('businesses')
+    .select('mp_preapproval_id')
+    .eq('id', business.id)
+    .single()
+  const mpPreapprovalId = billing?.mp_preapproval_id ?? null
 
   if (business.plan === 'free') {
     return NextResponse.json({ error: 'No tienes una suscripción activa' }, { status: 400 })
@@ -34,9 +43,9 @@ export async function POST() {
 
   // Primero MercadoPago: si falla no marcamos nada, para no dejar al cliente creyendo que
   // canceló mientras se le sigue cobrando.
-  if (business.mp_preapproval_id) {
+  if (mpPreapprovalId) {
     try {
-      await cancelMpSubscription(business.mp_preapproval_id)
+      await cancelMpSubscription(mpPreapprovalId)
     } catch (err) {
       console.error('[subscriptions/cancel] MercadoPago', err)
       return NextResponse.json({ error: 'No se pudo cancelar en MercadoPago. Intenta de nuevo en unos minutos.' }, { status: 502 })
@@ -47,8 +56,6 @@ export async function POST() {
   const endDate = business.subscription_end_date && new Date(business.subscription_end_date) > new Date()
     ? new Date(business.subscription_end_date)
     : new Date()
-
-  const serviceClient = createServiceClient()
 
   const { error } = await serviceClient
     .from('businesses')
@@ -62,7 +69,7 @@ export async function POST() {
 
   await serviceClient.from('payment_events').insert({
     business_id:       business.id,
-    mp_preapproval_id: business.mp_preapproval_id,
+    mp_preapproval_id: mpPreapprovalId,
     event_type:        'subscription_cancelled',
     plan_slug:         business.plan,
     status:            'pending_cancel',

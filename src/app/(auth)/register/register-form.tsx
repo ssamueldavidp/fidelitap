@@ -1,4 +1,5 @@
 'use client'
+import { Turnstile } from '@/components/ui/turnstile'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -59,6 +60,9 @@ function SubmitButton({ isPaid }: { isPaid: boolean }) {
 export function RegisterForm({ initialPlan }: { initialPlan: string }) {
   const [selectedPlan, setSelectedPlan] = useState(initialPlan)
   const [state, formAction] = useFormState<RegisterResult, FormData>(registerAction, null)
+  const [cfToken, setCfToken] = useState('')
+  const [cfReset, setCfReset] = useState(0)
+  useEffect(() => { if (state) setCfReset(k => k + 1) }, [state]) // el token es de un solo uso
 
   useEffect(() => {
     if (state && 'checkoutUrl' in state) {
@@ -126,6 +130,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
 
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="plan" value={selectedPlan} />
+        <input type="hidden" name="cf_token" value={cfToken} />
 
         <div>
           <label htmlFor="businessName" className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
@@ -193,6 +198,7 @@ export function RegisterForm({ initialPlan }: { initialPlan: string }) {
           </p>
         )}
 
+        <Turnstile onToken={setCfToken} resetKey={cfReset} />
         <SubmitButton isPaid={isPaid} />
 
         <p className="text-center text-xs text-muted-foreground leading-relaxed">

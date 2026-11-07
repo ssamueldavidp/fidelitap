@@ -1,3 +1,4 @@
+import { claimRateLimit, rateLimited } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { mobileSupabaseClient, getMobileUser } from '@/lib/mobile/auth'
@@ -6,6 +7,9 @@ import { claimRewardForBusiness } from '@/lib/scanner/add-stamp'
 export async function POST(req: NextRequest) {
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const limited = await rateLimited(claimRateLimit, `${user.id}`)
+  if (limited) return limited
+
 
   const { customerCardId } = await req.json()
   if (!customerCardId) return NextResponse.json({ error: 'customerCardId requerido' }, { status: 400 })

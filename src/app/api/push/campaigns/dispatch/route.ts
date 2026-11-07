@@ -1,3 +1,4 @@
+import { isPushEligible } from '@/lib/push/eligibility'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAuthorizedCron } from '@/lib/cron-auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -27,6 +28,29 @@ export async function POST(request: NextRequest) {
   let dispatched = 0
   for (const campaign of due) {
     try {
+      // Defensa en profundidad: aunque la fila se haya creado saltándose la app, solo se envía si
+      // el negocio sigue siendo Pro/Premium activo y la tarjeta (si hay) es suya.
+      const { data: biz } = await supabase
+        .from('businesses')
+        .select('plan, subscription_status')
+        .eq('id', campaign.business_id)
+        .single()
+      let allowed = !!biz && isPushEligible(biz.plan, biz.subscription_status)
+      if (allowed && campaign.loyalty_card_id) {
+        const { data: card } = await supabase
+          .from('loyalty_cards')
+          .select('id')
+          .eq('id', campaign.loyalty_card_id)
+          .eq('business_id', campaign.business_id)
+          .is('deleted_at', null)
+          .maybeSingle()
+        allowed = !!card
+      }
+      if (!allowed) {
+        await supabase.from('push_campaigns').update({ status: 'failed' }).eq('id', campaign.id)
+        continue
+      }
+
       const sentCount = await sendCampaignPush(supabase, {
         businessId: campaign.business_id,
         loyaltyCardId: campaign.loyalty_card_id,

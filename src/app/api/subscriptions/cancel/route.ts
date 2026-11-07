@@ -1,3 +1,4 @@
+import { billingRateLimit, rateLimited } from '@/lib/rate-limit'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -13,6 +14,9 @@ export async function POST() {
   if (!user) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
   }
+  const limited = await rateLimited(billingRateLimit, `${user.id}`)
+  if (limited) return limited
+
 
   const { data: business } = await supabase
     .from('businesses')

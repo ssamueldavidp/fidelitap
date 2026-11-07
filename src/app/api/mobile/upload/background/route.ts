@@ -1,3 +1,4 @@
+import { uploadRateLimit, rateLimited } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -5,6 +6,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 export async function POST(req: NextRequest) {
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const limited = await rateLimited(uploadRateLimit, `${user.id}`)
+  if (limited) return limited
+
 
   const serviceClient = createServiceClient()
   const { data: business, error: bizError } = await serviceClient

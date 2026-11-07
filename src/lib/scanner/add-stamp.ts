@@ -4,6 +4,7 @@ import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
 import { sendPushToCustomerCard } from '@/lib/push/send'
 import { isPushEligible } from '@/lib/push/eligibility'
+import { stampRateLimit } from '@/lib/rate-limit'
 
 export type CardStatus = 'active' | 'ready_to_claim' | 'claimed'
 
@@ -52,6 +53,18 @@ export async function addStampForBusiness(params: AddStampParams): Promise<Stamp
     ownerId,
     uniqueCode,
   } = params
+
+  // Tope por negocio (10 sellos/min): frena un escáner automatizado o una sesión robada.
+  try {
+    const { success } = await stampRateLimit.limit(businessId)
+    if (!success) return { error: 'Demasiados sellos seguidos. Espera un momento.' }
+  } catch (err) {
+    console.error('[add-stamp] rate limit', err instanceof Error ? err.message : err)
+  }
+
+  if (typeof uniqueCode !== 'string' || uniqueCode.length < 4 || uniqueCode.length > 64) {
+    return { error: 'Código QR inválido' }
+  }
 
   const { data: ccRaw } = await serviceClient
     .from('customer_cards')

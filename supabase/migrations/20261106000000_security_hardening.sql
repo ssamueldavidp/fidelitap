@@ -40,10 +40,12 @@ revoke insert, update on public.businesses from anon, authenticated;
 grant update (
   name, address, category, latitude, longitude, lat, lng, geo_radius_m,
   geofence_enabled, geofence_radius_m, geofence_message, geofence_cooldown_h,
-  timezone, quiet_hours_start, quiet_hours_end, stamp_cooldown_seconds,
-  poster_bg_color, poster_bg_image_url, avatar_url
-) on public.businesses to authenticated;
+  timezone, quiet_hours_start, quiet_hours_end, stamp_cooldown_seconds
+)
+-- (poster_bg_*/avatar_url no se conceden: se escriben desde el servidor tras validar la imagen;
+--  una URL arbitraria ahí haría que el servidor la descargue al generar el póster.) on public.businesses to authenticated;
 
+-- (owner_id se deja legible: las políticas RLS de loyalty_cards lo consultan con los permisos de quien lee.)
 -- 3b. Lectura: la política pública (negocios con tarjeta activa) dejaba leer TODAS las columnas
 --     con la anon key: correo, id de suscripción de MercadoPago, correo del pagador...
 --     Se retiran esas columnas a anon y authenticated; el servidor las lee con la service role.
@@ -67,7 +69,7 @@ begin
    where table_schema = 'public' and table_name = 'businesses'
      and column_name not in (
        'email', 'mp_payer_email', 'mp_preapproval_id', 'wompi_customer_id',
-       'owner_id', 'subscription_end_date', 'quiet_hours_start', 'quiet_hours_end',
+       'subscription_end_date', 'quiet_hours_start', 'quiet_hours_end',
        'geofence_cooldown_h', 'geofence_message', 'stamp_cooldown_seconds'
      );
 

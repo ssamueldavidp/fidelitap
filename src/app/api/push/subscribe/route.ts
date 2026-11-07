@@ -1,14 +1,32 @@
+import { publicRateLimit, rateLimited, getIP } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { isPushEligible } from '@/lib/push/eligibility'
 
+// El servidor envía Web Push a este endpoint: solo se aceptan los servicios de push de los navegadores
+// (https), para que nadie registre una URL interna o arbitraria (SSRF).
+const PUSH_HOSTS = [
+  /(^|\.)fcm\.googleapis\.com$/,
+  /(^|\.)push\.services\.mozilla\.com$/,
+  /(^|\.)notify\.windows\.com$/,
+  /(^|\.)push\.apple\.com$/,
+]
+function isAllowedPushEndpoint(endpoint: string): boolean {
+  try {
+    const u = new URL(endpoint)
+    return u.protocol === 'https:' && !u.username && !u.password && PUSH_HOSTS.some(r => r.test(u.hostname))
+  } catch {
+    return false
+  }
+}
+
 const subscribeSchema = z.object({
   customerCardId: z.string().uuid(),
   walletAuthToken: z.string().uuid(),
   subscription: z.object({
-    endpoint: z.string().url(),
+    endpoint: z.string().url().refine(isAllowedPushEndpoint, 'Servicio de push no permitido'),
     keys: z.object({
       p256dh: z.string().min(1),
       auth: z.string().min(1),
@@ -17,6 +35,9 @@ const subscribeSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimited(publicRateLimit, `pub:${getIP(request)}`)
+  if (limited) return limited
+
   const json = await request.json().catch(() => null)
   const parsed = subscribeSchema.safeParse(json)
   if (!parsed.success) {

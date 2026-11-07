@@ -1,3 +1,4 @@
+import { uploadRateLimit, rateLimited } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -11,6 +12,9 @@ export async function GET(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const limited = await rateLimited(uploadRateLimit, `poster:${user.id}`)
+  if (limited) return limited
+
 
   const format = request.nextUrl.searchParams.get('format') ?? 'png'
   const orientation = request.nextUrl.searchParams.get('orientation') ?? 'vertical'

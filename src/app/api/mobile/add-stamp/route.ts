@@ -7,8 +7,9 @@ export async function POST(req: NextRequest) {
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const { uniqueCode } = await req.json()
-  if (!uniqueCode) return NextResponse.json({ error: 'uniqueCode requerido' }, { status: 400 })
+  const body = await req.json().catch(() => null)
+  const uniqueCode = body?.uniqueCode
+  if (typeof uniqueCode !== 'string' || !uniqueCode) return NextResponse.json({ error: 'uniqueCode requerido' }, { status: 400 })
 
   const supabase = mobileSupabaseClient(req)
   const { data: business } = await supabase

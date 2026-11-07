@@ -1,4 +1,5 @@
 'use server'
+import { verifyTurnstile } from '@/lib/turnstile'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { emailSchema } from '@/lib/validations/common'
@@ -39,6 +40,10 @@ export async function registerAction(
   const { success } = await loginRateLimit.limit(ip)
   if (!success) {
     return { error: 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.' }
+  }
+
+  if (!(await verifyTurnstile(formData.get('cf_token'), ip))) {
+    return { error: 'No pudimos verificar que eres una persona. Recarga la página e intenta de nuevo.' }
   }
 
   const parsed = registerSchema.safeParse({

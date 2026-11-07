@@ -1,3 +1,4 @@
+import { isOptionalTrustedStorageUrl } from '@/lib/trusted-url'
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -32,7 +33,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const owned = await getOwnedCard(user.id, params.id)
   if (!owned) return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 })
 
-  const body = await req.json()
+  const body = await req.json().catch(() => null)
+  if (!body || typeof body !== 'object') return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
   const {
     name,
     stamps_required,
@@ -53,6 +55,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     rewards,
   } = body
 
+  if (!isOptionalTrustedStorageUrl(logo_url) || !isOptionalTrustedStorageUrl(bg_image_url))
+    return NextResponse.json({ error: 'Las imágenes deben subirse a Fidelitap' }, { status: 400 })
+  if ((name !== undefined && String(name).length > 50) || (benefit_description !== undefined && String(benefit_description).length > 100))
+    return NextResponse.json({ error: 'Texto demasiado largo' }, { status: 400 })
+  if (color !== undefined && !/^#[0-9A-Fa-f]{6}$/.test(String(color)))
+    return NextResponse.json({ error: 'Color inválido' }, { status: 400 })
   if (style !== undefined && !['clean', 'modern', 'luxury', 'editorial', 'minimal'].includes(style))
     return NextResponse.json({ error: 'Estilo inválido' }, { status: 400 })
   if (bg_mode !== undefined && !['light', 'dark'].includes(bg_mode))

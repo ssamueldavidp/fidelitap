@@ -1,3 +1,4 @@
+import { isOptionalTrustedStorageUrl } from '@/lib/trusted-url'
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -69,7 +70,8 @@ export async function POST(req: NextRequest) {
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const body = await req.json()
+  const body = await req.json().catch(() => null)
+  if (!body || typeof body !== 'object') return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
   const {
     name,
     stamps_required,
@@ -90,7 +92,17 @@ export async function POST(req: NextRequest) {
     rewards = [],
   } = body
 
-  if (!name?.trim()) return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 })
+  if (typeof name !== 'string' || !name.trim()) return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 })
+  if (typeof benefit_description !== 'string') return NextResponse.json({ error: 'Premio requerido' }, { status: 400 })
+  if (!isOptionalTrustedStorageUrl(logo_url) || !isOptionalTrustedStorageUrl(bg_image_url))
+    return NextResponse.json({ error: 'Las imágenes deben subirse a Fidelitap' }, { status: 400 })
+  if (String(name).length > 50 || String(benefit_description).length > 100)
+    return NextResponse.json({ error: 'Texto demasiado largo' }, { status: 400 })
+  if (typeof bg_value === 'string' && bg_value.length > 64)
+    return NextResponse.json({ error: 'bg_value inválido' }, { status: 400 })
+  if (typeof stamp_icon !== 'string' || stamp_icon.length > 16)
+    return NextResponse.json({ error: 'Ícono inválido' }, { status: 400 })
+
   const stampsNum = Number(stamps_required)
   if (!stampsNum || stampsNum < 2 || stampsNum > 20)
     return NextResponse.json({ error: 'Sellos: entre 2 y 20' }, { status: 400 })

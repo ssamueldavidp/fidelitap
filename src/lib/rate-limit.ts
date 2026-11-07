@@ -62,6 +62,39 @@ export const apiRateLimit = isDev
       prefix: 'rl:api',
     })
 
+function makeLimiter(count: number, window: `${number} ${'s' | 'm' | 'h'}`, prefix: string) {
+  return isDev ? noopLimiter : new Ratelimit({ redis: redis!, limiter: Ratelimit.slidingWindow(count, window), prefix })
+}
+
+// 10 subidas de imagen por 10 minutos por usuario
+export const uploadRateLimit = makeLimiter(10, '10 m', 'rl:upload')
+// 5 intentos de crear suscripción / cancelar por 10 minutos por usuario
+export const billingRateLimit = makeLimiter(5, '10 m', 'rl:billing')
+// 10 campañas push por 10 minutos por negocio
+export const campaignRateLimit = makeLimiter(10, '10 m', 'rl:campaign')
+// 10 canjes de premio por minuto por negocio
+export const claimRateLimit = makeLimiter(10, '1 m', 'rl:claim')
+// 60 peticiones por minuto por IP en endpoints públicos (wallet, directorio, suscripción push)
+export const publicRateLimit = makeLimiter(60, '1 m', 'rl:public')
+
+/**
+ * Devuelve una respuesta 429 si se excedió el límite, o null si puede seguir.
+ * Si Redis falla, deja pasar (disponibilidad) y lo registra; los logins/OTP siguen cerrando en falso
+ * porque usan sus limitadores directamente.
+ */
+export async function rateLimited(
+  limiter: { limit: (id: string) => Promise<{ success: boolean }> },
+  key: string
+): Promise<Response | null> {
+  try {
+    const { success } = await limiter.limit(key)
+    return success ? null : rateLimitExceededResponse()
+  } catch (err) {
+    console.error('[rate-limit] fallo del limitador', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
 // Requires a trusted reverse proxy (Vercel/Cloudflare) that strips client-injected x-forwarded-for.
 // Without a proxy, this header is attacker-controlled and can be spoofed to bypass rate limits.
 export function getIP(request: Request): string {

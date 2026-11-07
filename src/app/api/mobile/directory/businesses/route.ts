@@ -1,3 +1,4 @@
+import { publicRateLimit, rateLimited } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { getMobileUser } from '@/lib/mobile/auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -9,6 +10,9 @@ import { queryDirectory } from '@/lib/directory'
 export async function GET(req: NextRequest) {
   const user = await getMobileUser(req)
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  const limited = await rateLimited(publicRateLimit, `dir:${user.id}`)
+  if (limited) return limited
+
 
   const p = req.nextUrl.searchParams
   try {

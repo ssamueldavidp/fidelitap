@@ -1,3 +1,4 @@
+import { isTrustedStorageUrl } from '@/lib/trusted-url'
 import 'server-only'
 import { PKPass } from 'passkit-generator'
 import { readFileSync } from 'fs'
@@ -60,7 +61,7 @@ export async function generateApplePass(data: ApplePassData): Promise<Buffer> {
 
   // Attempt to fetch business logo for the pass
   let logoBuffer: Buffer = iconBuffer // fallback to icon
-  if (data.logoUrl && data.logoUrl.startsWith('https')) {
+  if (data.logoUrl && isTrustedStorageUrl(data.logoUrl)) {
     try {
       const logoRes = await fetch(data.logoUrl, { signal: AbortSignal.timeout(3000) })
       if (logoRes.ok) {

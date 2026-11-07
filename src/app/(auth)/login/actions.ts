@@ -48,6 +48,6 @@ export async function loginAction(
   // 4. Redirect — sesión en httpOnly cookie, nunca en cliente
   // Redirect — validate to prevent open redirect
   const rawRedirect = (formData.get('redirectTo') as string | null) ?? '/dashboard'
-  const safePath = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard'
+  const safePath = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.includes('\\') ? rawRedirect : '/dashboard'
   redirect(safePath)
 }

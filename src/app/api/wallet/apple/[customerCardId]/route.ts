@@ -1,3 +1,4 @@
+import { publicRateLimit, rateLimited, getIP } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -24,6 +25,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { customerCardId: string } }
 ) {
+  const limited = await rateLimited(publicRateLimit, `pub:${getIP(request)}`)
+  if (limited) return limited
+
   const token = request.nextUrl.searchParams.get('token')
   if (!token) return NextResponse.json({ error: 'Token requerido' }, { status: 401 })
 

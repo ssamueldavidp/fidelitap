@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getPlanLimits, isAtLimit } from '@/lib/plan-limits'
 import { generateSlug } from '@/lib/slug'
+import { readValidatedImage } from '@/lib/uploads'
 import { z } from 'zod'
 
 const cardFormSchema = z.object({
@@ -45,13 +46,12 @@ async function uploadImage(
   businessId: string,
   file: File
 ): Promise<string | { error: string }> {
-  if (file.size > 2 * 1024 * 1024) return { error: 'La imagen no puede superar 2MB' }
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-  const path = `${businessId}/${crypto.randomUUID()}.${ext}`
-  const bytes = await file.arrayBuffer()
+  const img = await readValidatedImage(file)
+  if ('error' in img) return { error: img.error }
+  const path = `${businessId}/${crypto.randomUUID()}.${img.kind.ext}`
   const { error } = await supabase.storage
     .from('card-backgrounds')
-    .upload(path, bytes, { contentType: file.type, upsert: false })
+    .upload(path, img.bytes, { contentType: img.kind.contentType, upsert: false })
   if (error) return { error: 'Error subiendo imagen. Intenta de nuevo.' }
   const { data: { publicUrl } } = supabase.storage
     .from('card-backgrounds')
@@ -64,13 +64,12 @@ async function uploadLogo(
   businessId: string,
   file: File
 ): Promise<string | { error: string }> {
-  if (file.size > 2 * 1024 * 1024) return { error: 'El logo no puede superar 2MB' }
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
-  const path = `${businessId}/${crypto.randomUUID()}.${ext}`
-  const bytes = await file.arrayBuffer()
+  const img = await readValidatedImage(file)
+  if ('error' in img) return { error: img.error }
+  const path = `${businessId}/${crypto.randomUUID()}.${img.kind.ext}`
   const { error } = await supabase.storage
     .from('card-logos')
-    .upload(path, bytes, { contentType: file.type, upsert: false })
+    .upload(path, img.bytes, { contentType: img.kind.contentType, upsert: false })
   if (error) return { error: 'Error subiendo logo. Intenta de nuevo.' }
   const { data: { publicUrl } } = supabase.storage
     .from('card-logos')

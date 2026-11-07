@@ -51,6 +51,7 @@ Todas las credenciales están en `.env.local` y NUNCA se commitean. Variables cl
 | `GOOGLE_SERVICE_ACCOUNT_*` | Credenciales Google Wallet |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | Service account Firebase Admin para envío FCM (geofencing + push móvil) |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web Push (suscripciones, campañas, recordatorios) |
+| `TURNSTILE_SECRET_KEY` / `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile (anti-bots en registro y envío de códigos). Sin ellas queda desactivado |
 | `CRON_SECRET` | Autoriza los endpoints de cron de push (`/api/push/campaigns/dispatch`, `/api/push/jobs/reengagement`) |
 
 ---
@@ -208,6 +209,18 @@ Luego restaurar los tipos custom al final del archivo: `CardDesignConfig`, `Loya
 ---
 
 ## Seguridad
+
+Reglas que salen de la auditoría (migraciones `20261106…security_hardening.sql` y `20261107…grants_storage.sql`; no revertir):
+
+- **`businesses` tiene permisos por columna.** `anon`/`authenticated` NO pueden leer `email`, `mp_payer_email`, `mp_preapproval_id`, `wompi_customer_id` y solo pueden ESCRIBIR perfil/configuración (no `plan`, `subscription_*`, `owner_id`, `poster_bg_*`, `avatar_url`). Esos datos se leen/escriben con `createServiceClient()` tras validar al dueño. **Toda columna nueva de `businesses` necesita su `GRANT SELECT (col)`** (y `UPDATE` si el dueño puede editarla) o la consulta con sesión de usuario falla con "permission denied".
+- `add_stamp`, `claim_reward`, `get_business_metrics`, `get_customers_list` solo se ejecutan con service role (`revoke execute … from anon, authenticated`). `claim_customer_card` solo `authenticated`.
+- `customers`, `customer_cards` y `stamp_events` no tienen política de INSERT para clientes de Supabase: las altas van por el servidor. `anon` solo tiene SELECT en `loyalty_cards`, `subscription_plans` y columnas seguras de `businesses`.
+- Storage: los dueños solo escriben en la carpeta `<business_id>/` y los buckets limitan tipo/tamaño. Toda imagen subida pasa por `src/lib/uploads.ts` (firma binaria, extensión derivada del contenido). Las URLs de logo/fondo guardadas por un negocio deben ser de nuestro Storage (`src/lib/trusted-url.ts`): evita SSRF al generar el pase de Apple Wallet.
+- Web Push: `push/subscribe` solo acepta endpoints https de FCM/Mozilla/Windows/Apple (SSRF).
+- Rate limiting (Upstash) en login, registro, códigos por correo, sellos, canjes, subidas, campañas, suscripciones y endpoints públicos (`src/lib/rate-limit.ts`, helper `rateLimited`).
+- Cookies de sesión `HttpOnly` + `Secure` (prod) + `SameSite=Lax` (`src/lib/supabase/server.ts`, `middleware.ts`). No hay cliente Supabase en el navegador: no añadir uno sin revisar esto.
+- CSP/cabeceras en `next.config.mjs` (sin `unsafe-eval` ni orígenes de desarrollo en producción).
+- Contraseñas: Supabase Auth (bcrypt), mínimo 8 con mayúscula, minúscula y número (`supabase/config.toml`).
 
 - **Ninguna API key, token o credencial puede quedar expuesta en el frontend.**
 - `server-only` en todas las libs con credenciales.

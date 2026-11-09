@@ -142,7 +142,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-5 md:p-8">
       <Suspense fallback={null}>
-        <SubscriptionSuccessNotice />
+        <SubscriptionSuccessNotice currentPlan={business.plan} />
       </Suspense>
 
       {/* Saludo */}

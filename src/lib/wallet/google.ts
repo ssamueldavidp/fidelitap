@@ -146,7 +146,7 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
     ...(data.color && /^#[0-9A-Fa-f]{6}$/.test(data.color) ? { hexBackgroundColor: data.color } : {}),
     loyaltyPoints: {
       label: 'Sellos',
-      balance: { int: data.stampsCurrent },
+      balance: { string: `${data.stampsCurrent} de ${data.stampsRequired}` },
     },
     barcode: {
       type: 'QR_CODE',
@@ -196,7 +196,7 @@ async function upsertLoyaltyObject(accessToken: string, data: LoyaltyPassData): 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        loyaltyPoints: { label: 'Sellos', balance: { int: data.stampsCurrent } },
+        loyaltyPoints: { label: 'Sellos', balance: { string: `${data.stampsCurrent} de ${data.stampsRequired}` } },
       }),
     })
     if (!res.ok) {
@@ -238,6 +238,7 @@ export async function updateGoogleWalletStamps(
   customerCardId: string,
   _loyaltyCardId: string, // reserved — objectId is sufficient for PATCH
   newStampCount: number,
+  stampsRequired: number,
   nextRewardLabel?: string
 ): Promise<void> {
   if (!process.env.GOOGLE_WALLET_ISSUER_ID) return
@@ -254,7 +255,10 @@ export async function updateGoogleWalletStamps(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      loyaltyPoints: { label: nextRewardLabel ?? 'Sellos', balance: { int: newStampCount } },
+      loyaltyPoints: { label: 'Sellos', balance: { string: `${newStampCount} de ${stampsRequired}` } },
+      // Avisa al cliente en su celular cuando cambia la tarjeta.
+      notifyPreference: 'notifyOnUpdate',
+      ...(nextRewardLabel ? { secondaryLoyaltyPoints: { label: 'Próximo premio', balance: { string: nextRewardLabel } } } : {}),
     }),
   })
 

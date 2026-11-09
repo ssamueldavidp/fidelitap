@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { sendApnsPush } from '@/lib/wallet/apns'
 import { updateGoogleWalletStamps } from '@/lib/wallet/google'
 import { sendCardComplete } from '@/lib/email/send-card-complete'
+import { sendStampAdded } from '@/lib/email/send-stamp-added'
 import { sendPushToCustomerCard } from '@/lib/push/send'
 import { isPushEligible } from '@/lib/push/eligibility'
 import { stampRateLimit } from '@/lib/rate-limit'
@@ -201,19 +202,35 @@ export async function addStampForBusiness(params: AddStampParams): Promise<Stamp
     'apns_push',
     'google_wallet_update',
     'completion_email',
+    'stamp_email',
     'progress_web_push',
     'completion_web_push',
   ]
-  void Promise.allSettled([
+  // Se ESPERA (con tope de 12 s): en Vercel lo que queda suelto tras responder se corta y el sello
+  // no llegaba a Wallet ni al correo.
+  await Promise.race([
+    Promise.allSettled([
     !skipWalletUpdate && pushTokens.length > 0 ? sendApnsPush(pushTokens) : Promise.resolve(),
     !skipWalletUpdate
-      ? updateGoogleWalletStamps(cc.id, card.id, currentStamps, nextRewardLabel)
+      ? updateGoogleWalletStamps(cc.id, card.id, currentStamps, card.stamps_required, nextRewardLabel)
       : Promise.resolve(),
     isComplete && customerEmail
       ? sendCardComplete({
           to: customerEmail,
           customerName: cc.customers?.name ?? 'Cliente',
           businessName,
+          appleWalletUrl: `${appUrl}/api/wallet/apple/${cc.id}`,
+          googleWalletUrl: `${appUrl}/api/wallet/google/${cc.id}`,
+        })
+      : Promise.resolve(),
+    !isComplete && customerEmail
+      ? sendStampAdded({
+          to: customerEmail,
+          customerName: cc.customers?.name ?? 'Cliente',
+          businessName,
+          currentStamps,
+          stampsRequired: card.stamps_required,
+          benefit: card.benefit_description,
           appleWalletUrl: `${appUrl}/api/wallet/apple/${cc.id}`,
           googleWalletUrl: `${appUrl}/api/wallet/google/${cc.id}`,
         })
@@ -236,7 +253,9 @@ export async function addStampForBusiness(params: AddStampParams): Promise<Stamp
         console.error(`[addStamp] ${sideEffectNames[i]} failed for customer_card ${cc.id}:`, r.reason)
       }
     })
-  })
+  }),
+    new Promise<void>((resolve) => setTimeout(resolve, 12_000)),
+  ])
 
   return {
     customerCardId: cc.id,
@@ -290,6 +309,32 @@ export async function claimRewardForBusiness(
     .from('customer_cards')
     .update({ near_completion_notified_at: null })
     .eq('id', customerCardId)
+
+  // La tarjeta del cliente (Google/Apple Wallet) vuelve a mostrar los sellos tras canjear.
+  try {
+    const { data: after } = await serviceClient
+      .from('customer_cards')
+      .select('current_stamps, wallet_pass_serial, loyalty_card_id, loyalty_cards(stamps_required, businesses(plan))')
+      .eq('id', customerCardId)
+      .maybeSingle()
+    const lc = (after?.loyalty_cards ?? null) as unknown as { stamps_required: number; businesses: { plan: string } | null } | null
+    if (after && lc && lc.businesses?.plan !== 'free') {
+      const tasks: Promise<unknown>[] = [
+        updateGoogleWalletStamps(customerCardId, after.loyalty_card_id, after.current_stamps, lc.stamps_required),
+      ]
+      if (after.wallet_pass_serial) {
+        const { data: regs } = await serviceClient
+          .from('device_registrations')
+          .select('push_token')
+          .eq('serial_number', after.wallet_pass_serial)
+        const tokens = regs?.map((r) => r.push_token) ?? []
+        if (tokens.length > 0) tasks.push(sendApnsPush(tokens))
+      }
+      await Promise.race([Promise.allSettled(tasks), new Promise((r) => setTimeout(r, 8_000))])
+    }
+  } catch (err) {
+    console.error('[claimReward] wallet update failed', err)
+  }
 
   return {
     timesCompleted: result.times_completed ?? 0,

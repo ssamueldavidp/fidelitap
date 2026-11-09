@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,7 +18,8 @@ class CardListScreen extends StatefulWidget {
   State<CardListScreen> createState() => _CardListScreenState();
 }
 
-class _CardListScreenState extends State<CardListScreen> {
+class _CardListScreenState extends State<CardListScreen> with WidgetsBindingObserver {
+  Timer? _poll;
   List<dynamic> _cards = [];
   bool _loading = true;
   String? _error;
@@ -26,18 +28,37 @@ class _CardListScreenState extends State<CardListScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
+    // Los sellos se actualizan solos: refresco silencioso cada 15 s mientras la pantalla está abierta.
+    _poll = Timer.periodic(const Duration(seconds: 15), (_) => _load(silent: true));
   }
 
-  Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+  @override
+  void dispose() {
+    _poll?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _load(silent: true);
+  }
+
+  Future<void> _load({bool silent = false}) async {
+    if (!mounted) return;
+    if (!silent) setState(() { _loading = true; _error = null; });
     try {
       final res = await MobileApiClient().get('/api/mobile/customer-cards');
+      if (!mounted) return;
       setState(() {
         _cards = res['cards'] as List<dynamic>? ?? [];
         _loading = false;
+        _error = null;
       });
     } on Exception catch (e) {
+      if (!mounted || silent) return; // un fallo de red en el refresco silencioso no pisa lo que ya se ve
       setState(() { _error = e.toString(); _loading = false; });
     }
   }

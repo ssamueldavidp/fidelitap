@@ -37,13 +37,13 @@ grant  execute on function public.claim_customer_card(text) to authenticated;
 --     Ahora solo puede editar los campos de perfil/configuración; el plan y la suscripción
 --     solo los cambia el webhook de pago (service role). El negocio se crea desde el servidor.
 revoke insert, update on public.businesses from anon, authenticated;
+-- (poster_bg_*/avatar_url no se conceden: se escriben desde el servidor tras validar la imagen;
+--  una URL arbitraria ahí haría que el servidor la descargue al generar el póster.)
 grant update (
   name, address, category, latitude, longitude, lat, lng, geo_radius_m,
   geofence_enabled, geofence_radius_m, geofence_message, geofence_cooldown_h,
   timezone, quiet_hours_start, quiet_hours_end, stamp_cooldown_seconds
-)
--- (poster_bg_*/avatar_url no se conceden: se escriben desde el servidor tras validar la imagen;
---  una URL arbitraria ahí haría que el servidor la descargue al generar el póster.) on public.businesses to authenticated;
+) on public.businesses to authenticated;
 
 -- (owner_id se deja legible: las políticas RLS de loyalty_cards lo consultan con los permisos de quien lee.)
 -- 3b. Lectura: la política pública (negocios con tarjeta activa) dejaba leer TODAS las columnas

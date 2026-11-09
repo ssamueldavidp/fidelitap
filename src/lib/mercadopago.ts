@@ -1,4 +1,5 @@
 import 'server-only'
+import { timingSafeEqual } from 'crypto'
 // src/lib/mercadopago.ts
 // Server-only MercadoPago client. Never import in 'use client' files.
 import { MercadoPagoConfig, PreApproval, Payment } from 'mercadopago'
@@ -97,6 +98,11 @@ export async function verifyMpSignature(
 ): Promise<boolean> {
   const secret = process.env.MP_WEBHOOK_SECRET
   if (!secret) {
+    // En producción sin secreto se rechaza todo: si no, cualquiera podría simular un pago.
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[mp-webhook] MP_WEBHOOK_SECRET no está definido: se rechaza la notificación')
+      return false
+    }
     console.warn('[mp-webhook] MP_WEBHOOK_SECRET not set — skipping signature verification in dev')
     return true
   }
@@ -126,5 +132,7 @@ export async function verifyMpSignature(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 
-  return computed === v1
+  const a = Buffer.from(computed)
+  const b = Buffer.from(v1)
+  return a.length === b.length && timingSafeEqual(a, b)
 }

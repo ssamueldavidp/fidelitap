@@ -2,7 +2,10 @@ name: Mobile release (Android)
 
 # Compila la app firmada (AAB para Play Store + APK) en la nube, sin necesitar Android Studio.
 # Se lanza a mano: GitHub → Actions → "Mobile release (Android)" → Run workflow.
-# Secrets necesarios (Settings → Secrets and variables → Actions): ver docs/app-movil-publicacion.md
+# Sin ningún secret compila un APK instalable (firmado con la llave de depuración) para probar en un celular.
+# Si existen los 4 secrets ANDROID_* (ver docs/app-movil-publicacion.md) compila además el AAB firmado para Play Store.
+# API_BASE_URL, SUPABASE_URL y SUPABASE_ANON_KEY NO son secretos: van dentro de cualquier APK (la anon key está
+# protegida por RLS), por eso están aquí a la vista.
 on:
   workflow_dispatch:
 
@@ -12,6 +15,11 @@ jobs:
     defaults:
       run:
         working-directory: mobile
+    env:
+      API_BASE_URL: https://fidelitap.co
+      SUPABASE_URL: https://dytajdactdafuyprhwgo.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5dGFqZGFjdGRhZnV5cHJod2dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2NTI4MjYsImV4cCI6MjA5OTIyODgyNn0.i-gycRlW0BOg4_T5OpAu8CgwvCz_jOeMa5JJziXGaWQ
+      HAS_SIGNING_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +34,7 @@ jobs:
           cache: true
 
       - name: Llave de firma
+        if: env.HAS_SIGNING_KEY == 'true'
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.p12"
           cat > android/key.properties <<PROPS
@@ -43,19 +52,20 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
 
-      - name: Compilar AAB (Play Store)
+      - name: Compilar AAB (Play Store, solo si hay llave de firma)
+        if: env.HAS_SIGNING_KEY == 'true'
         run: >
           flutter build appbundle --release
-          --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
-          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=API_BASE_URL=$API_BASE_URL
+          --dart-define=SUPABASE_URL=$SUPABASE_URL
+          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
 
       - name: Compilar APK (instalar directo en un celular)
         run: >
           flutter build apk --release
-          --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
-          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=API_BASE_URL=$API_BASE_URL
+          --dart-define=SUPABASE_URL=$SUPABASE_URL
+          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
 
       - uses: actions/upload-artifact@v4
         with:
@@ -63,3 +73,4 @@ jobs:
           path: |
             mobile/build/app/outputs/bundle/release/app-release.aab
             mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: warn
